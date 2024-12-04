@@ -16,7 +16,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { getInvoices, getInvoice, createInvoice, deleteInvoice, updateInvoice, getInvoiceList, getInvoiceListbyid, getInvoiceListbyAccountid } = require("../controller/invoiceController");
+const { getInvoiceforPrint,getInvoices, getInvoice, createInvoice, deleteInvoice, updateInvoice, getInvoiceList, getInvoiceListbyid, getInvoiceListbyAccountid } = require("../controller/invoiceController");
 
 router.get("/invoice", getInvoices);
 router.get("/invoice/:id", getInvoice);
@@ -26,5 +26,5 @@ router.patch("/invoice/:id", updateInvoice);
 router.get("/invoice/invoicelist", getInvoiceList);
 router.get("/invoice/invoicelist/invoicelistbyid/:id", getInvoiceListbyid);
 router.get("/invoice/invoicelistby/accountid/:id", getInvoiceListbyAccountid);
-
+router.get('/invoice/invoiceforprint/:id', getInvoiceforPrint)
 module.exports = router;

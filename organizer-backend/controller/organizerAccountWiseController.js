@@ -6,6 +6,54 @@ const OrganizerTemplate = require('../models/organizerTempModel')
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; 
+
+
+const currentDate = new Date();
+const lastDay = new Date(currentDate);
+lastDay.setDate(lastDay.getDate() - 1); // Subtract 1 day to get the last day
+const nextDay = new Date(currentDate);
+nextDay.setDate(nextDay.getDate() + 1); // Add 1 day to get the next day
+
+// Define options for formatting date
+const options = {
+    weekday: 'long',          // Full name of the day of the week (e.g., "Monday")
+    day: '2-digit',          // Two-digit day of the month (01 through 31)
+    month: 'long',           // Full name of the month (e.g., "January")
+    year: 'numeric',         // Four-digit year (e.g., 2022)
+    week: 'numeric',         // ISO week of the year (1 through 53)
+    monthNumber: '2-digit',  // Two-digit month number (01 through 12)
+    quarter: 'numeric',      // Quarter of the year (1 through 4)
+};
+
+// Format the current date using options
+const currentFullDate = currentDate.toLocaleDateString('en-US', options);
+const currentDayNumber = currentDate.getDate();
+const currentDayName = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
+const currentWeek = currentDate.toLocaleDateString('en-US', { week: 'numeric' });
+const currentMonthNumber = currentDate.getMonth() + 1; // Months are zero-based, so add 1
+const currentMonthName = currentDate.toLocaleDateString('en-US', { month: 'long' });
+const currentQuarter = Math.floor((currentDate.getMonth() + 3) / 3); // Calculate the quarter
+const currentYear = currentDate.getFullYear();
+
+// Format the last day using options
+const lastDayFullDate = lastDay.toLocaleDateString('en-US', options);
+const lastDayNumber = lastDay.getDate();
+const lastDayName = lastDay.toLocaleDateString('en-US', { weekday: 'long' });
+const lastWeek = lastDay.toLocaleDateString('en-US', { week: 'numeric' });
+const lastMonthNumber = lastDay.getMonth() + 1; // Months are zero-based, so add 1
+const lastMonthName = lastDay.toLocaleDateString('en-US', { month: 'long' });
+const lastQuarter = Math.floor((lastDay.getMonth() + 3) / 3); // Calculate the quarter
+const lastYear = lastDay.getFullYear();
+
+// Format the next day using options
+const nextDayFullDate = nextDay.toLocaleDateString('en-US', options);
+const nextDayNumber = nextDay.getDate();
+const nextDayName = nextDay.toLocaleDateString('en-US', { weekday: 'long' });
+const nextWeek = nextDay.toLocaleDateString('en-US', { week: 'numeric' });
+const nextMonthNumber = nextDay.getMonth() + 1; // Months are zero-based, so add 1
+const nextMonthName = nextDay.toLocaleDateString('en-US', { month: 'long' });
+const nextQuarter = Math.floor((nextDay.getMonth() + 3) / 3); // Calculate the quarter
+const nextYear = nextDay.getFullYear();
 //get all OrganizerAccountWise
 const getOrganizerAccountWises = async (req, res) => {
   try {
@@ -139,52 +187,7 @@ const createOrganizerAccountWise = async (req, res) => {
       //     console.log('Notification email sent to user about missing contacts');
       // }
       // Get the current date
-      const currentDate = new Date();
-      const lastDay = new Date(currentDate);
-      lastDay.setDate(lastDay.getDate() - 1); // Subtract 1 day to get the last day
-      const nextDay = new Date(currentDate);
-      nextDay.setDate(nextDay.getDate() + 1); // Add 1 day to get the next day
-
-      // Define options for formatting date
-      const options = {
-          weekday: 'long',          // Full name of the day of the week (e.g., "Monday")
-          day: '2-digit',          // Two-digit day of the month (01 through 31)
-          month: 'long',           // Full name of the month (e.g., "January")
-          year: 'numeric',         // Four-digit year (e.g., 2022)
-          week: 'numeric',         // ISO week of the year (1 through 53)
-          monthNumber: '2-digit',  // Two-digit month number (01 through 12)
-          quarter: 'numeric',      // Quarter of the year (1 through 4)
-      };
-
-      // Format the current date using options
-      const currentFullDate = currentDate.toLocaleDateString('en-US', options);
-      const currentDayNumber = currentDate.getDate();
-      const currentDayName = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
-      const currentWeek = currentDate.toLocaleDateString('en-US', { week: 'numeric' });
-      const currentMonthNumber = currentDate.getMonth() + 1; // Months are zero-based, so add 1
-      const currentMonthName = currentDate.toLocaleDateString('en-US', { month: 'long' });
-      const currentQuarter = Math.floor((currentDate.getMonth() + 3) / 3); // Calculate the quarter
-      const currentYear = currentDate.getFullYear();
-
-      // Format the last day using options
-      const lastDayFullDate = lastDay.toLocaleDateString('en-US', options);
-      const lastDayNumber = lastDay.getDate();
-      const lastDayName = lastDay.toLocaleDateString('en-US', { weekday: 'long' });
-      const lastWeek = lastDay.toLocaleDateString('en-US', { week: 'numeric' });
-      const lastMonthNumber = lastDay.getMonth() + 1; // Months are zero-based, so add 1
-      const lastMonthName = lastDay.toLocaleDateString('en-US', { month: 'long' });
-      const lastQuarter = Math.floor((lastDay.getMonth() + 3) / 3); // Calculate the quarter
-      const lastYear = lastDay.getFullYear();
-
-      // Format the next day using options
-      const nextDayFullDate = nextDay.toLocaleDateString('en-US', options);
-      const nextDayNumber = nextDay.getDate();
-      const nextDayName = nextDay.toLocaleDateString('en-US', { weekday: 'long' });
-      const nextWeek = nextDay.toLocaleDateString('en-US', { week: 'numeric' });
-      const nextMonthNumber = nextDay.getMonth() + 1; // Months are zero-based, so add 1
-      const nextMonthName = nextDay.toLocaleDateString('en-US', { month: 'long' });
-      const nextQuarter = Math.floor((nextDay.getMonth() + 3) / 3); // Calculate the quarter
-      const nextYear = nextDay.getFullYear();
+     
 
       const emailPromises = validContacts.map(async (contactId) => {
 
@@ -351,23 +354,111 @@ const deleteOrganizerAccountWise = async (req, res) => {
 
 // //Get a single OrganizerAccountWise
 
+// const getOrganizerByAccountId = async (req, res) => {
+//   try {
+//     const organizerAccountWise = await OrganizerAccountWise.find({ accountid: req.params.id })
+//       .populate({ path: "accountid", model: "Accounts" }) // Populate the account details if needed
+//       .populate({ path: "organizertemplateid", model: "OrganizerTemplate" }); // Populate the organizer template details if needed
+//     // .populate({ path: 'jobid', model: 'Job' }); // Populate the job details if needed
+
+//     if (!organizerAccountWise) {
+//       return res.status(404).json({ error: "Organizer AccountWise not found" });
+//     }
+
+//     res.status(200).json({ message: "Organizer AccountWise retrieved successfully", organizerAccountWise });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
 const getOrganizerByAccountId = async (req, res) => {
   try {
-    const organizerAccountWise = await OrganizerAccountWise.find({ accountid: req.params.id })
-      .populate({ path: "accountid", model: "Accounts" }) // Populate the account details if needed
-      .populate({ path: "organizertemplateid", model: "OrganizerTemplate" }); // Populate the organizer template details if needed
-    // .populate({ path: 'jobid', model: 'Job' }); // Populate the job details if needed
+      const organizerAccountWise = await OrganizerAccountWise.find({ accountid: req.params.id })
+          .populate({ path: 'accountid', model: 'Accounts' })
+          .populate({ path: 'organizertemplateid', model: 'OrganizerTemplate' });
 
-    if (!organizerAccountWise) {
-      return res.status(404).json({ error: "Organizer AccountWise not found" });
-    }
+      if (!organizerAccountWise) {
+          return res.status(404).json({ error: "Organizer AccountWise not found" });
+      }
 
-    res.status(200).json({ message: "Organizer AccountWise retrieved successfully", organizerAccountWise });
+      // Function to process organizer data
+      const processOrganizerData = async (organizerAccountWise) => {
+          for (const organizer of organizerAccountWise) {
+              console.log(organizer.accountid._id);
+
+              // Fetch account details and populate contacts
+              const account = await Accounts.findById(organizer.accountid._id).populate("contacts");
+              if (!account) {
+                  console.error(`Account not found for ID: ${organizer.accountid._id}`);
+                  continue; // Skip processing this organizer if account is not found
+              }
+
+              // Filter contacts with emailSync enabled
+              const validContact = account.contacts.filter(contact => contact.emailSync);
+              console.log(validContact);
+
+              // Define placeholder values
+              const placeholderValues = {
+                  ACCOUNT_NAME: account.accountName || '',
+                  FIRST_NAME: validContact[0]?.firstName || '',
+                  MIDDLE_NAME: validContact[0]?.middleName || '',
+                  LAST_NAME: validContact[0]?.lastName || '',
+                  CONTACT_NAME: validContact[0]?.contactName || '',
+                  COMPANY_NAME: validContact[0]?.companyName || '',
+                  COUNTRY: validContact[0]?.country || '',
+                  STREET_ADDRESS: validContact[0]?.streetAddress || '',
+                  STATEPROVINCE: validContact[0]?.state || '',
+                  PHONE_NUMBER: validContact[0]?.phoneNumbers || '',
+                  ZIPPOSTALCODE: validContact[0]?.postalCode || '',
+                  CITY: validContact[0]?.city || '',
+                  CURRENT_DAY_FULL_DATE: new Date().toLocaleDateString(),
+                  CURRENT_DAY_NUMBER: new Date().getDate(),
+                  CURRENT_DAY_NAME: new Date().toLocaleString('default', { weekday: 'long' }),
+                  CURRENT_MONTH_NUMBER: new Date().getMonth() + 1,
+                  CURRENT_MONTH_NAME: new Date().toLocaleString('default', { month: 'long' }),
+                  CURRENT_YEAR: new Date().getFullYear(),
+                  LAST_DAY_FULL_DATE: lastDayFullDate,
+                  LAST_DAY_NUMBER: lastDayNumber,
+                  LAST_DAY_NAME: lastDayName,
+                  LAST_WEEK: lastWeek,
+                  LAST_MONTH_NUMBER: lastMonthNumber,
+                  LAST_MONTH_NAME: lastMonthName,
+                  LAST_QUARTER: lastQuarter,
+                  LAST_YEAR: lastYear,
+                  NEXT_DAY_FULL_DATE: nextDayFullDate,
+                  NEXT_DAY_NUMBER: nextDayNumber,
+                  NEXT_DAY_NAME: nextDayName,
+                  NEXT_WEEK: nextWeek,
+                  NEXT_MONTH_NUMBER: nextMonthNumber,
+                  NEXT_MONTH_NAME: nextMonthName,
+                  NEXT_QUARTER: nextQuarter,
+                  NEXT_YEAR: nextYear,
+              };
+
+              // Function to replace placeholders in text
+              const replacePlaceholders = (template, data) => {
+                  return template.replace(/\[([\w\s]+)\]/g, (match, placeholder) => {
+                      return data[placeholder.trim()] || '';
+                  });
+              };
+
+              // Replace placeholders in the organizer's template
+              if (organizer.organizertemplateid) {
+                  organizer.organizertemplateid.organizerName = replacePlaceholders(
+                      organizer.organizertemplateid.organizerName || '',
+                      placeholderValues
+                  );
+              }
+          }
+      };
+
+      // Call the function to process organizer data
+      await processOrganizerData(organizerAccountWise);
+
+      res.status(200).json({ message: "Organizer AccountWise retrieved successfully", organizerAccountWise });
   } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+      res.status(500).json({ error: error.message });
+    }
 };
-
 //update a new OrganizerTemplate
 const updateOrganizerAccountWise = async (req, res) => {
   const { id } = req.params;

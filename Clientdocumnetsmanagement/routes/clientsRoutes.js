@@ -1,12 +1,17 @@
 const express = require('express');
-const { createClient, getClientsByAccount ,folderTemplate,getFoldersAndFilesByAccountId,} = require('../controller/clientController');
+const {createFolderInSubfolder,deleteSubFolder,createSubFolder, createClient, getClientsByAccount ,folderTemplate,getFoldersAndFilesByAccountId,} = require('../controller/clientController');
 const {getClientsFoldersAndFiles} = require('../controller/showclientdocs')
 
 const router = express.Router();
 
-// Create a new client
+// Create a folder with accountid
 router.post('/clients', createClient);
-
+// create subfolders in accountid folder
+router.post('/clients/folders', createSubFolder);
+// delete subfolders from account id folder
+router.delete('/clients/deleteSubFolder', deleteSubFolder)
+// create new folder in subfolder
+router.post('/clients/folders/newfolder',createFolderInSubfolder)
 // Get all clients for a specific account
 router.get('/clients/account/:accountId', getClientsByAccount);
 router.post('/accountfoldertemp', folderTemplate);

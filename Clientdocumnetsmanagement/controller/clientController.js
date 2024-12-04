@@ -41,17 +41,48 @@
 //     res.status(500).json({ message: 'Error fetching clients', error: error.message });
 //   }
 // };
-const Client = require('../models/client');
-// const Account = require('../models/AccountModel');
-const fs = require('fs');
-const path = require('path');
 
 
-// Create a new client linked to an account
-exports.createClient = async (req, res) => {
 
+// exports.getFoldersByAccountId = async (req, res) => {
+//   try {
+//       const { accountId } = req.params;
 
-  // try {
+//       if (!accountId) {
+//           return res.status(400).json({ message: "Account ID is required" });
+//       }
+
+//       console.log("Fetching folders for Account ID:", accountId);
+
+//       // Define the account directory path
+//       const baseDir = path.join(__dirname, '../uploads');
+//       const accountDir = path.join(baseDir, accountId);
+
+//       // Check if the account directory exists
+//       if (!fs.existsSync(accountDir)) {
+//           return res.status(404).json({ message: "Account folder does not exist" });
+//       }
+
+//       // Read and filter directories within the account folder
+//       const items = fs.readdirSync(accountDir, { withFileTypes: true });
+//       const folders = items
+//           .filter((item) => item.isDirectory())
+//           .map((folder) => folder.name);
+
+//       res.status(200).json({
+//           message: "Folders fetched successfully",
+//           accountId,
+//           folders,
+//       });
+//   } catch (error) {
+//       console.error('Error in getFoldersByAccountId:', error);
+//       res.status(500).json({
+//           message: "An error occurred while fetching folders",
+//           error: error.message,
+//       });
+//   }
+// };
+// try {
   //   // Extract accountId from the request body
   //   const { accountId } = req.body;
 
@@ -77,51 +108,6 @@ exports.createClient = async (req, res) => {
   //   console.error('Error creating folder:', error);
   //   res.status(500).json({ message: "An error occurred while creating the folder", error: error.message });
   // }
-
-  try {
-    // Extract accountId from the request body
-    const { accountId } = req.body;
-
-    if (!accountId) {
-      return res.status(400).json({ message: "Account ID is required" });
-    }
-
-    // Define the base directory for the account
-    const baseDir = path.join(__dirname, '../uploads');
-    const accountDir = path.join(baseDir, accountId);
-
-    // Subfolder names
-    const subfolders = [
-      'FirmClient Uploaded Document',
-      'Firm Doc Shared With Client',
-      'Private'
-    ];
-
-    // Check if the account folder already exists
-    if (fs.existsSync(accountDir)) {
-      return res.status(400).json({ message: "Account folder already exists" });
-    }
-
-    // Create the account folder and subfolders
-    fs.mkdirSync(accountDir, { recursive: true });
-    subfolders.forEach(subfolder => {
-      const subfolderPath = path.join(accountDir, subfolder);
-      fs.mkdirSync(subfolderPath);
-    });
-
-    // Respond with success
-    res.status(201).json({
-      message: `Account folder and subfolders created for account ID: ${accountId}`,
-      folders: [accountDir, ...subfolders.map(name => path.join(accountDir, name))]
-    });
-  } catch (error) {
-    console.error('Error creating folders:', error);
-    res.status(500).json({ message: "An error occurred while creating folders", error: error.message });
-  }
-};
-
-
-exports.folderTemplate = async (req, res) => {
   // const { accountId ,foldertempId} = req.body;
   // console.log(accountId)
   // console.log(foldertempId)
@@ -361,6 +347,183 @@ exports.folderTemplate = async (req, res) => {
 //   });
 // }
 
+const Client = require('../models/client');
+// const Account = require('../models/AccountModel');
+const fs = require('fs');
+const path = require('path');
+
+
+// Create a new client linked to an account
+exports.createClient = async (req, res) => {
+  try {
+    // Extract accountId from the request body
+    const { accountId } = req.body;
+
+    if (!accountId) {
+      return res.status(400).json({ message: "Account ID is required" });
+    }
+
+    // Define the base directory for the account
+    const baseDir = path.join(__dirname, '../uploads');
+    const accountDir = path.join(baseDir, accountId);
+
+    // Subfolder names
+    const subfolders = [
+      'FirmClient Uploaded Document',
+      'Firm Doc Shared With Client',
+      'Private'
+    ];
+
+    // Check if the account folder already exists
+    if (fs.existsSync(accountDir)) {
+      return res.status(400).json({ message: "Account folder already exists" });
+    }
+
+    // Create the account folder and subfolders
+    fs.mkdirSync(accountDir, { recursive: true });
+    subfolders.forEach(subfolder => {
+      const subfolderPath = path.join(accountDir, subfolder);
+      fs.mkdirSync(subfolderPath);
+    });
+
+    // Respond with success
+    res.status(201).json({
+      message: `Account folder and subfolders created for account ID: ${accountId}`,
+      folders: [accountDir, ...subfolders.map(name => path.join(accountDir, name))]
+    });
+  } catch (error) {
+    console.error('Error creating folders:', error);
+    res.status(500).json({ message: "An error occurred while creating folders", error: error.message });
+  }
+};
+
+exports.createSubFolder = async (req, res) => {
+  try {
+    // Extract accountId and subFolderName from the request body
+    const { accountId, subFolderName } = req.body;
+
+    if (!accountId || !subFolderName) {
+      return res.status(400).json({ message: "Account ID and Subfolder name are required" });
+    }
+
+    // Define the base directory for the account
+    const baseDir = path.join(__dirname, '../uploads');
+    const accountDir = path.join(baseDir, accountId);
+
+    // Check if the account folder exists
+    if (!fs.existsSync(accountDir)) {
+      return res.status(404).json({ message: "Account folder not found" });
+    }
+
+    // Define the path for the new subfolder inside the account folder
+    const newSubfolderPath = path.join(accountDir, subFolderName);
+
+    // Check if the subfolder already exists
+    if (fs.existsSync(newSubfolderPath)) {
+      return res.status(400).json({ message: "Subfolder already exists" });
+    }
+
+    // Create the new subfolder
+    fs.mkdirSync(newSubfolderPath);
+
+    // Respond with success
+    res.status(201).json({
+      message: `New subfolder '${subFolderName}' created for account ID: ${accountId}`,
+      subfolder: newSubfolderPath
+    });
+  } catch (error) {
+    console.error('Error creating subfolder:', error);
+    res.status(500).json({ message: "An error occurred while creating the subfolder", error: error.message });
+  }
+};
+// Route to create a folder inside a subfolder of the account folder
+exports.createFolderInSubfolder= async (req, res) => {
+  try {
+    const { accountId, subFolderName, newFolderName } = req.body;
+
+    // Check if required fields are provided
+    if (!accountId || !subFolderName || !newFolderName) {
+      return res.status(400).json({ message: "Account ID, Subfolder Name, and New Folder Name are required" });
+    }
+
+    // Define the base directory for the account
+    const baseDir = path.join(__dirname, '../uploads');
+    const accountDir = path.join(baseDir, accountId);
+
+    // Check if the account folder exists
+    if (!fs.existsSync(accountDir)) {
+      return res.status(404).json({ message: "Account folder not found" });
+    }
+
+    // Define the path for the subfolder where we want to create the new folder
+    const subfolderPath = path.join(accountDir, subFolderName);
+
+    // Check if the subfolder exists
+    if (!fs.existsSync(subfolderPath)) {
+      return res.status(404).json({ message: "Subfolder not found" });
+    }
+
+    // Define the path for the new folder to be created inside the subfolder
+    const newFolderPath = path.join(subfolderPath, newFolderName);
+
+    // Check if the new folder already exists
+    if (fs.existsSync(newFolderPath)) {
+      return res.status(400).json({ message: `Folder '${newFolderName}' already exists in subfolder '${subFolderName}'` });
+    }
+
+    // Create the new folder inside the subfolder
+    fs.mkdirSync(newFolderPath);
+
+    // Respond with success
+    res.status(201).json({
+      message: `Folder '${newFolderName}' created successfully inside subfolder '${subFolderName}' in account ID: ${accountId}`,
+      folderPath: newFolderPath
+    });
+  } catch (error) {
+    console.error('Error creating folder:', error);
+    res.status(500).json({ message: "An error occurred while creating the folder", error: error.message });
+  }
+};
+
+// delete the subfolder
+exports.deleteSubFolder = async (req, res) => {
+  try {
+    const { accountId, subFolderName } = req.body;
+
+    if (!accountId || !subFolderName) {
+      return res.status(400).json({ message: "Account ID and Subfolder Name are required" });
+    }
+
+    // Define the base directory for the account
+    const baseDir = path.join(__dirname, '../uploads');
+    const accountDir = path.join(baseDir, accountId);
+
+    // Check if the account folder exists
+    if (!fs.existsSync(accountDir)) {
+      return res.status(404).json({ message: "Account folder not found" });
+    }
+
+    // Define the path for the subfolder to be deleted
+    const subfolderPath = path.join(accountDir, subFolderName);
+
+    // Check if the subfolder exists
+    if (!fs.existsSync(subfolderPath)) {
+      return res.status(404).json({ message: "Subfolder not found" });
+    }
+
+    // Delete the subfolder
+    fs.rmdirSync(subfolderPath, { recursive: true });
+
+    res.status(200).json({
+      message: `Subfolder '${subFolderName}' deleted successfully from account ID: ${accountId}`
+    });
+  } catch (error) {
+    console.error('Error deleting subfolder:', error);
+    res.status(500).json({ message: "An error occurred while deleting the subfolder", error: error.message });
+  }
+};
+
+exports.folderTemplate = async (req, res) => {
 
 try {
   const { accountId, foldertempId } = req.body;
@@ -374,9 +537,9 @@ try {
 
   // Define paths
   const baseDir = path.join(__dirname, '../uploads');
-  const templatesDir = path.resolve('D:/PMS-FINAL/AdminBackend/folder-template/uploads/FolderTemplates');
+  const templatesDir = path.resolve('D:/snp3-12-24/backend/folder-template/uploads/FolderTemplates');
   const targetAccountDir = path.join(baseDir, accountId);
-
+  // D:\snp3-12-24\backend\folder-template\uploads\FolderTemplates
   // Folder names to handle
   const foldersToHandle = [
       'FirmClient Uploaded Document',
@@ -452,9 +615,6 @@ try {
 }
 }
 
-
-
-
 // Fetch all clients for a specific account
 exports.getClientsByAccount = async (req, res) => {
   try {
@@ -468,44 +628,6 @@ exports.getClientsByAccount = async (req, res) => {
 };
 
 
-// exports.getFoldersByAccountId = async (req, res) => {
-//   try {
-//       const { accountId } = req.params;
-
-//       if (!accountId) {
-//           return res.status(400).json({ message: "Account ID is required" });
-//       }
-
-//       console.log("Fetching folders for Account ID:", accountId);
-
-//       // Define the account directory path
-//       const baseDir = path.join(__dirname, '../uploads');
-//       const accountDir = path.join(baseDir, accountId);
-
-//       // Check if the account directory exists
-//       if (!fs.existsSync(accountDir)) {
-//           return res.status(404).json({ message: "Account folder does not exist" });
-//       }
-
-//       // Read and filter directories within the account folder
-//       const items = fs.readdirSync(accountDir, { withFileTypes: true });
-//       const folders = items
-//           .filter((item) => item.isDirectory())
-//           .map((folder) => folder.name);
-
-//       res.status(200).json({
-//           message: "Folders fetched successfully",
-//           accountId,
-//           folders,
-//       });
-//   } catch (error) {
-//       console.error('Error in getFoldersByAccountId:', error);
-//       res.status(500).json({
-//           message: "An error occurred while fetching folders",
-//           error: error.message,
-//       });
-//   }
-// };
 exports.getFoldersAndFilesByAccountId = async (req, res) => {
   try {
       const { accountId } = req.params;

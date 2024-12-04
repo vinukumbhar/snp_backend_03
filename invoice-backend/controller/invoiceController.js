@@ -179,6 +179,56 @@ require('dotenv').config();
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 // const { constants } = require('buffer');
 
+
+
+
+ // Get the current date
+ const currentDate = new Date();
+ const lastDay = new Date(currentDate);
+ lastDay.setDate(lastDay.getDate() - 1); // Subtract 1 day to get the last day
+ const nextDay = new Date(currentDate);
+ nextDay.setDate(nextDay.getDate() + 1); // Add 1 day to get the next day
+
+ // Define options for formatting date
+ const options = {
+     weekday: 'long',          // Full name of the day of the week (e.g., "Monday")
+     day: '2-digit',          // Two-digit day of the month (01 through 31)
+     month: 'long',           // Full name of the month (e.g., "January")
+     year: 'numeric',         // Four-digit year (e.g., 2022)
+     week: 'numeric',         // ISO week of the year (1 through 53)
+     monthNumber: '2-digit',  // Two-digit month number (01 through 12)
+     quarter: 'numeric',      // Quarter of the year (1 through 4)
+ };
+
+ // Format the current date using options
+ const currentFullDate = currentDate.toLocaleDateString('en-US', options);
+ const currentDayNumber = currentDate.getDate();
+ const currentDayName = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
+ const currentWeek = currentDate.toLocaleDateString('en-US', { week: 'numeric' });
+ const currentMonthNumber = currentDate.getMonth() + 1; // Months are zero-based, so add 1
+ const currentMonthName = currentDate.toLocaleDateString('en-US', { month: 'long' });
+ const currentQuarter = Math.floor((currentDate.getMonth() + 3) / 3); // Calculate the quarter
+ const currentYear = currentDate.getFullYear();
+
+ // Format the last day using options
+ const lastDayFullDate = lastDay.toLocaleDateString('en-US', options);
+ const lastDayNumber = lastDay.getDate();
+ const lastDayName = lastDay.toLocaleDateString('en-US', { weekday: 'long' });
+ const lastWeek = lastDay.toLocaleDateString('en-US', { week: 'numeric' });
+ const lastMonthNumber = lastDay.getMonth() + 1; // Months are zero-based, so add 1
+ const lastMonthName = lastDay.toLocaleDateString('en-US', { month: 'long' });
+ const lastQuarter = Math.floor((lastDay.getMonth() + 3) / 3); // Calculate the quarter
+ const lastYear = lastDay.getFullYear();
+
+ // Format the next day using options
+ const nextDayFullDate = nextDay.toLocaleDateString('en-US', options);
+ const nextDayNumber = nextDay.getDate();
+ const nextDayName = nextDay.toLocaleDateString('en-US', { weekday: 'long' });
+ const nextWeek = nextDay.toLocaleDateString('en-US', { week: 'numeric' });
+ const nextMonthNumber = nextDay.getMonth() + 1; // Months are zero-based, so add 1
+ const nextMonthName = nextDay.toLocaleDateString('en-US', { month: 'long' });
+ const nextQuarter = Math.floor((nextDay.getMonth() + 3) / 3); // Calculate the quarter
+ const nextYear = nextDay.getFullYear();
 //get all Invoice
 const getInvoices = async (req, res) => {
   try {
@@ -463,53 +513,7 @@ const createInvoice = async (req, res) => {
           return res.status(404).json({ status: 404, message: "Account not found." });
       }
 
-      // Get the current date
-      const currentDate = new Date();
-      const lastDay = new Date(currentDate);
-      lastDay.setDate(lastDay.getDate() - 1); // Subtract 1 day to get the last day
-      const nextDay = new Date(currentDate);
-      nextDay.setDate(nextDay.getDate() + 1); // Add 1 day to get the next day
-
-      // Define options for formatting date
-      const options = {
-          weekday: 'long',          // Full name of the day of the week (e.g., "Monday")
-          day: '2-digit',          // Two-digit day of the month (01 through 31)
-          month: 'long',           // Full name of the month (e.g., "January")
-          year: 'numeric',         // Four-digit year (e.g., 2022)
-          week: 'numeric',         // ISO week of the year (1 through 53)
-          monthNumber: '2-digit',  // Two-digit month number (01 through 12)
-          quarter: 'numeric',      // Quarter of the year (1 through 4)
-      };
-
-      // Format the current date using options
-      const currentFullDate = currentDate.toLocaleDateString('en-US', options);
-      const currentDayNumber = currentDate.getDate();
-      const currentDayName = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
-      const currentWeek = currentDate.toLocaleDateString('en-US', { week: 'numeric' });
-      const currentMonthNumber = currentDate.getMonth() + 1; // Months are zero-based, so add 1
-      const currentMonthName = currentDate.toLocaleDateString('en-US', { month: 'long' });
-      const currentQuarter = Math.floor((currentDate.getMonth() + 3) / 3); // Calculate the quarter
-      const currentYear = currentDate.getFullYear();
-
-      // Format the last day using options
-      const lastDayFullDate = lastDay.toLocaleDateString('en-US', options);
-      const lastDayNumber = lastDay.getDate();
-      const lastDayName = lastDay.toLocaleDateString('en-US', { weekday: 'long' });
-      const lastWeek = lastDay.toLocaleDateString('en-US', { week: 'numeric' });
-      const lastMonthNumber = lastDay.getMonth() + 1; // Months are zero-based, so add 1
-      const lastMonthName = lastDay.toLocaleDateString('en-US', { month: 'long' });
-      const lastQuarter = Math.floor((lastDay.getMonth() + 3) / 3); // Calculate the quarter
-      const lastYear = lastDay.getFullYear();
-
-      // Format the next day using options
-      const nextDayFullDate = nextDay.toLocaleDateString('en-US', options);
-      const nextDayNumber = nextDay.getDate();
-      const nextDayName = nextDay.toLocaleDateString('en-US', { weekday: 'long' });
-      const nextWeek = nextDay.toLocaleDateString('en-US', { week: 'numeric' });
-      const nextMonthNumber = nextDay.getMonth() + 1; // Months are zero-based, so add 1
-      const nextMonthName = nextDay.toLocaleDateString('en-US', { month: 'long' });
-      const nextQuarter = Math.floor((nextDay.getMonth() + 3) / 3); // Calculate the quarter
-      const nextYear = nextDay.getFullYear();
+     
 
       // Filter valid contacts
       const validContacts = accountinv.contacts.filter(contact => contact.emailSync);
@@ -584,6 +588,7 @@ const createInvoice = async (req, res) => {
               NEXT_MONTH_NAME: nextMonthName,
               NEXT_QUARTER: nextQuarter,
               NEXT_YEAR: nextYear,
+              
           });
 
           const printContent = `
@@ -877,7 +882,78 @@ const getInvoiceListbyAccountid = async (req, res) => {
       res.status(500).json({ error: error.message });
   }
 };
+const getInvoiceforPrint = async (req, res) => {
+  const { id } = req.params;
 
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({ error: "Invalid Invoice ID" });
+  }
+
+  try {
+      const invoice = await Invoice.findById(id);
+   
+      const account = await Accounts.findById(invoice.account).populate("contacts");
+
+      const validContact = account.contacts.filter(contact => contact.emailSync);
+                 // Define placeholder values
+      const placeholderValues = {
+          ACCOUNT_NAME: account?.accountName || '',
+          FIRST_NAME: validContact[0]?.firstName || '',
+          MIDDLE_NAME: validContact[0]?.middleName || '',
+          LAST_NAME: validContact[0]?.lastName || '',
+          CONTACT_NAME: validContact[0]?.contactName || '',
+          COMPANY_NAME: validContact[0]?.companyName || '',
+          COUNTRY: validContact[0]?.country || '',
+          STREET_ADDRESS: validContact[0]?.streetAddress || '',
+          STATEPROVINCE: validContact[0]?.state || '',
+          PHONE_NUMBER: validContact[0]?.phoneNumbers || '',
+          ZIPPOSTALCODE: validContact[0]?.postalCode || '',
+          CITY: validContact[0]?.city || '',
+          CURRENT_DAY_FULL_DATE: currentDate.toLocaleDateString(),
+          CURRENT_DAY_NUMBER: currentDate.getDate(),
+          CURRENT_DAY_NAME: currentDate.toLocaleString('default', { weekday: 'long' }),
+          CURRENT_MONTH_NUMBER: currentDate.getMonth() + 1,
+          CURRENT_MONTH_NAME: currentDate.toLocaleString('default', { month: 'long' }),
+          CURRENT_YEAR: currentDate.getFullYear(),
+          LAST_DAY_FULL_DATE: lastDayFullDate,
+          LAST_DAY_NUMBER: lastDayNumber,
+          LAST_DAY_NAME: lastDayName,
+          LAST_WEEK: lastWeek,
+          LAST_MONTH_NUMBER: lastMonthNumber,
+          LAST_MONTH_NAME: lastMonthName,
+          LAST_QUARTER: lastQuarter,
+          LAST_YEAR: lastYear,
+          NEXT_DAY_FULL_DATE: nextDayFullDate,
+          NEXT_DAY_NUMBER: nextDayNumber,
+          NEXT_DAY_NAME: nextDayName,
+          NEXT_WEEK: nextWeek,
+          NEXT_MONTH_NUMBER: nextMonthNumber,
+          NEXT_MONTH_NAME: nextMonthName,
+          NEXT_QUARTER: nextQuarter,
+          NEXT_YEAR: nextYear,
+          // Add other dynamic placeholders as required
+      };
+
+      // Function to replace placeholders in text
+      const replacePlaceholders = (template, data) => {
+          return template.replace(/\[([\w\s]+)\]/g, (match, placeholder) => {
+              return data[placeholder.trim()] || '';
+          });
+      };
+
+      // Update each invoice's description with placeholders replaced
+      invoice.description = replacePlaceholders(invoice.description || '', placeholderValues);
+
+      if (!invoice) {
+          return res.status(404).json({ error: "No such Invoice" });
+      }
+
+      res.status(200).json({ message: "Invoice retrieved successfully", invoice });
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+      console.log(error.message)
+    }
+};
 module.exports = {
   createInvoice,
   getInvoices,
@@ -887,4 +963,5 @@ module.exports = {
   getInvoiceList,
   getInvoiceListbyid,
   getInvoiceListbyAccountid,
+  getInvoiceforPrint
 };

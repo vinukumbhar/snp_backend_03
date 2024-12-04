@@ -27,6 +27,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Use routes
 app.use('/api/files', fileRoutes);
 
+
 const port = process.env.PORT || 8002;
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)

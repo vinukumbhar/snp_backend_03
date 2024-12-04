@@ -377,6 +377,22 @@ const getProposalandElsListbyAccountid = async (req, res) => {
             CURRENT_MONTH_NUMBER: currentDate.getMonth() + 1,
             CURRENT_MONTH_NAME: currentDate.toLocaleString('default', { month: 'long' }),
             CURRENT_YEAR: currentDate.getFullYear(),
+            LAST_DAY_FULL_DATE: lastDayFullDate,
+            LAST_DAY_NUMBER: lastDayNumber,
+            LAST_DAY_NAME: lastDayName,
+            LAST_WEEK: lastWeek,
+            LAST_MONTH_NUMBER: lastMonthNumber,
+            LAST_MONTH_NAME: lastMonthName,
+            LAST_QUARTER: lastQuarter,
+            LAST_YEAR: lastYear,
+            NEXT_DAY_FULL_DATE: nextDayFullDate,
+            NEXT_DAY_NUMBER: nextDayNumber,
+            NEXT_DAY_NAME: nextDayName,
+            NEXT_WEEK: nextWeek,
+            NEXT_MONTH_NUMBER: nextMonthNumber,
+            NEXT_MONTH_NAME: nextMonthName,
+            NEXT_QUARTER: nextQuarter,
+            NEXT_YEAR: nextYear,
             // Add other dynamic placeholders as required
         };
 
@@ -1172,6 +1188,7 @@ const createProposalsAndElsAccounts = async (req, res) => {
                     NEXT_MONTH_NAME: nextMonthName,
                     NEXT_QUARTER: nextQuarter,
                     NEXT_YEAR: nextYear,
+
                 });
 
                 const transporter = nodemailer.createTransport({
@@ -1213,6 +1230,82 @@ const createProposalsAndElsAccounts = async (req, res) => {
         return res.status(500).json({ error: "Error creating ProposalesandelsAccountwise" });
     }
 };
+
+
+//Get a single ServiceTemplate
+const getProposalesAndElsAccountwisePrint = async (req, res) => {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(404).json({ error: "Invalid ProposalesAndEls Accountwise ID" });
+    }
+    try {
+        const proposalesandelsAccountwise = await ProposalesandelsAccountwise.findById(id);
+
+        const account = await Accounts.findById(proposalesandelsAccountwise.accountid).populate("contacts");
+
+        const validContact = account.contacts.filter(contact => contact.emailSync);
+        console.log(validContact)
+                   // Define placeholder values
+        const placeholderValues = {
+            ACCOUNT_NAME: account?.accountName || '',
+            FIRST_NAME: validContact[0]?.firstName || '',
+            MIDDLE_NAME: validContact[0]?.middleName || '',
+            LAST_NAME: validContact[0]?.lastName || '',
+            CONTACT_NAME: validContact[0]?.contactName || '',
+            COMPANY_NAME: validContact[0]?.companyName || '',
+            COUNTRY: validContact[0]?.country || '',
+            STREET_ADDRESS: validContact[0]?.streetAddress || '',
+            STATEPROVINCE: validContact[0]?.state || '',
+            PHONE_NUMBER: validContact[0]?.phoneNumbers || '',
+            ZIPPOSTALCODE: validContact[0]?.postalCode || '',
+            CITY: validContact[0]?.city || '',
+            CURRENT_DAY_FULL_DATE: currentDate.toLocaleDateString(),
+            CURRENT_DAY_NUMBER: currentDate.getDate(),
+            CURRENT_DAY_NAME: currentDate.toLocaleString('default', { weekday: 'long' }),
+            CURRENT_MONTH_NUMBER: currentDate.getMonth() + 1,
+            CURRENT_MONTH_NAME: currentDate.toLocaleString('default', { month: 'long' }),
+            CURRENT_YEAR: currentDate.getFullYear(),
+            LAST_DAY_FULL_DATE: lastDayFullDate,
+            LAST_DAY_NUMBER: lastDayNumber,
+            LAST_DAY_NAME: lastDayName,
+            LAST_WEEK: lastWeek,
+            LAST_MONTH_NUMBER: lastMonthNumber,
+            LAST_MONTH_NAME: lastMonthName,
+            LAST_QUARTER: lastQuarter,
+            LAST_YEAR: lastYear,
+            NEXT_DAY_FULL_DATE: nextDayFullDate,
+            NEXT_DAY_NUMBER: nextDayNumber,
+            NEXT_DAY_NAME: nextDayName,
+            NEXT_WEEK: nextWeek,
+            NEXT_MONTH_NUMBER: nextMonthNumber,
+            NEXT_MONTH_NAME: nextMonthName,
+            NEXT_QUARTER: nextQuarter,
+            NEXT_YEAR: nextYear,
+            // Add other dynamic placeholders as required
+        };
+  
+        // Function to replace placeholders in text
+        const replacePlaceholders = (template, data) => {
+            return template.replace(/\[([\w\s]+)\]/g, (match, placeholder) => {
+                return data[placeholder.trim()] || '';
+            });
+        };
+  
+        // Update each invoice's description with placeholders replaced
+        proposalesandelsAccountwise.proposalname = replacePlaceholders(proposalesandelsAccountwise.proposalname || '', placeholderValues);
+        const updatedcustommessageinemailtext = replacePlaceholders(inv.custommessageinemailtext || '', placeholderValues);
+        const updatedintroductiontext = replacePlaceholders(inv.introductiontext || '', placeholderValues);
+        const updatedtermasandconditions = replacePlaceholders(inv.termsandconditions || '', placeholderValues);
+        if (!proposalesandelsAccountwise) {
+            return res.status(404).json({ error: "No such ProposalesAndEls Accountwise" });
+        }
+
+        res.status(200).json({ message: "ProposalesAndEls Accountwise retrieved successfully", proposalesandelsAccountwise });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 module.exports = {
     createProposalsAndElsAccounts,
     getProposalesAndElsAccountswise,
@@ -1221,5 +1314,6 @@ module.exports = {
     updateProposalesandelsAccountwise,
     getProposalandElsListbyid,
     getProposalandElsListbyAccountid,
-    getProposalandElsList
+    getProposalandElsList,
+    getProposalesAndElsAccountwisePrint
 }
