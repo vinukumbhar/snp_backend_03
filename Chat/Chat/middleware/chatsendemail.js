@@ -72,17 +72,20 @@ console.log(account)
                         port: 587,
                         secure: false, // Use STARTTLS
                         auth: {
-                            user: "dipeeka.pote52@gmail.com",
-                            pass: "togt ljzg urar dlam",
+                            user: process.env.EMAIL,
+                            pass: process.env.EMAIL_PASSWORD,
+                        },
+                        tls: {
+                            rejectUnauthorized: false
                         },
                     });
 
                     const mailOptions = {
-                        from: 'dipeeka.pote52@gmail.com',
+                        from: process.env.EMAIL,
                         to: contact.email,
                         subject: `${account.accountName} sent you a secure chat`,
                         html: `
-                        <p>${username}</p>
+                        <p>${account.accountName}</p>
                         <p><b>You have a new secure chat ${chatTemplate.templatename} from ${username} </b></p>
                         <a href="${viewchatlink}" style="display: inline-block; padding: 10px 20px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;">
                         View Chat

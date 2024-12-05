@@ -32,7 +32,7 @@ const getClients = async (req, res) => {
   
   // POST create a new Client
   const createClient = async (req, res) => {
-    const { firstName, middleName, lastName, accountName, phoneNumber, email, password, cpassword } = req.body;
+    const { firstName, middleName, lastName, accountName, phoneNumber, email, password, cpassword,userid } = req.body;
   
     try {
       //check the email already exists
@@ -42,7 +42,7 @@ const getClients = async (req, res) => {
       }
   
       const client = await Client.create({
-        firstName, middleName, lastName, accountName, phoneNumber, email, password, cpassword});
+        firstName, middleName, lastName, accountName, phoneNumber, email, password, cpassword,userid});
       res.status(200).json({ message: "Client created successfully", client });
     } catch (error) {
       res.status(400).json({ error: error.message });

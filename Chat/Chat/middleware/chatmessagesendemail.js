@@ -5,7 +5,8 @@ const Account = require('../models/AccountModel.js');
 const Contact = require('../models/contactsModel.js');
 const ChatTemplate = require('../models/ChatTempModels.js')
 const User = require('../models/userModel.js')
-
+require('dotenv').config();
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 router.post('/securemessagechatsend', async (req, res) => {
 
@@ -72,13 +73,16 @@ router.post('/securemessagechatsend', async (req, res) => {
                         port: 587,
                         secure: false, // Use STARTTLS
                         auth: {
-                            user: "dipeeka.pote52@gmail.com",
-                            pass: "togt ljzg urar dlam",
+                            user: process.env.EMAIL,
+                            pass: process.env.EMAIL_PASSWORD,
+                        },
+                        tls: {
+                            rejectUnauthorized: false
                         },
                     });
 
                     const mailOptions = {
-                        from: 'dipeeka.pote52@gmail.com',
+                        from: process.env.EMAIL,
                         to: contact.email,
                         subject: `${account.accountName} sent you a secure chat`,
                         html: `

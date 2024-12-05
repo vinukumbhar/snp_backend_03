@@ -275,7 +275,25 @@ const getAccountsListById = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+const getAccountListByUserId = async (req, res) => {
+  const { id } = req.params; // Expecting the user ID to be passed as a URL parameter
 
+  try {
+      // Fetch accounts based on userid
+      const accounts = await Accounts.find({ userid: id }) // Changed to find accounts by userid
+          .populate({ path: 'tags', model: 'Tags' })
+          .populate({ path: 'teamMember', model: 'User' })
+          .populate({ path: 'contacts', model: 'Contacts' });
+
+      if (accounts.length === 0) {
+          return res.status(404).json({ message: "No accounts found for this user" }); // Handle case when no accounts are found
+      }
+
+      res.status(200).json({ message: "Accounts retrieved successfully", accounts });
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+};
 const getAccountsbyContactId = async (req, res) => {
   const { contactId } = req.params;
 
@@ -438,4 +456,5 @@ module.exports = {
   getAccountbyIdAll,
   getActiveAccountList,
   updateContactsForMultipleAccounts,
+  getAccountListByUserId
 };

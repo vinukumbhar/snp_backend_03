@@ -50,6 +50,10 @@ const clientSchema = new mongoose.Schema({
       },
       message: "Passwords do not match",
     },
+  },
+  userid:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
   }
 });
 
