@@ -1074,7 +1074,7 @@ const createProposalsAndElsAccounts = async (req, res) => {
             
 
             const account = await Accounts.findById(accountid).populate("contacts");
-            const proposalLink = "http://localhost:3000/accountsdash/organizers/6718e47e1b7d40bc7d33611e";
+            const proposalLink = `http://localhost:3000/updateProposals/${ProposalesandelsAccountwise._id}`;
             const validContacts = account.contacts.filter(contact => contact.emailSync);
 
             if (!account.contacts || account.contacts.length === 0) {

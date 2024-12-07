@@ -9,7 +9,7 @@ const User = require('../models/userModel.js')
 
 router.post('/securechatsend', async (req, res) => {
 
-    const { accountid, username, chattemplateid, viewchatlink } = req.body;
+    const { accountid, username, chattemplateid, viewchatlink,chatId } = req.body;
     console.log(req.body)
     const missingContactsAccounts = [];  // Array to store account names without eligible contacts
 
@@ -18,8 +18,10 @@ router.post('/securechatsend', async (req, res) => {
 
         // const teamMember = await User.findById(account.teamMembers)
 console.log(account)
+console.log(chatId)
         const chatTemplate = await ChatTemplate.findById(chattemplateid);
-       
+        const chatlink = `http://localhost:3000/updatechat/${chatId}`
+        console.log(chatlink)
         for (const contactId of account.contacts) {
             const contact = await Contact.findById(contactId);
             
@@ -87,7 +89,7 @@ console.log(account)
                         html: `
                         <p>${account.accountName}</p>
                         <p><b>You have a new secure chat ${chatTemplate.templatename} from ${username} </b></p>
-                        <a href="${viewchatlink}" style="display: inline-block; padding: 10px 20px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;">
+                        <a href="${chatlink}" style="display: inline-block; padding: 10px 20px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;">
                         View Chat
                         </a>
                     `,

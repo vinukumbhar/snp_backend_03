@@ -113,9 +113,9 @@ const getaccountcounttags = async (req, res) => {
     try {
         const accounts = await Accounts.find().populate('tags');
         const tags = await Tags.find();
-        if (!tags || tags.length === 0) {
-            return res.status(404).json({ error: "No tags found" });
-        }
+        // if (!tags || tags.length === 0) {
+        //     return res.status(404).json({ error: "No tags found" });
+        // }
         const tagCounts = [];
 
         for (const tag of tags) {

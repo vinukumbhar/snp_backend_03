@@ -10,7 +10,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 router.post('/securemessagechatsend', async (req, res) => {
 
-    const { accountid, username, chattemplateid, viewchatlink } = req.body;
+    const { accountid, username, chattemplateid, viewchatlink,chatId } = req.body;
     console.log(req.body)
     const missingContactsAccounts = [];  // Array to store account names without eligible contacts
 
@@ -20,7 +20,8 @@ router.post('/securemessagechatsend', async (req, res) => {
         // const teamMember = await User.findById(account.teamMembers)
 
         const chatTemplate = await ChatTemplate.findById(chattemplateid);
-       
+
+       const chatlink = `http://localhost:3000/updatechat/${chatId}`
         for (const contactId of account.contacts) {
             const contact = await Contact.findById(contactId);
             
@@ -88,7 +89,7 @@ router.post('/securemessagechatsend', async (req, res) => {
                         html: `
                         <p>${username}</p>
                         <p><b> ${username} sent a message to your secure chat  ${chatTemplate.templatename} </b></p>
-                        <a href="${viewchatlink}" style="display: inline-block; padding: 10px 20px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;">
+                        <a href="${chatlink}" style="display: inline-block; padding: 10px 20px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;">
                         View Chat
                         </a>
                     `,

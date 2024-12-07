@@ -98,13 +98,14 @@ const createOrganizerAccountWise = async (req, res) => {
 
       // Save the organizer account-wise data
       const newOrganizerAccountWise = new OrganizerAccountWise(req.body);
-      console.log(newOrganizerAccountWise)
+      
       await newOrganizerAccountWise.save();
 
       // Fetch account and associated contacts
       const account = await Accounts.findById(newOrganizerAccountWise.accountid).populate("contacts");
 
       const organizertemp = await OrganizerTemplate.findById(newOrganizerAccountWise.organizertemplateid);
+      console.log(organizertemp)
       const replacePlaceholders = (template, data) => {
           return template.replace(/\[([\w\s]+)\]/g, (match, placeholder) => {
               return data[placeholder.trim()] || '';
@@ -118,7 +119,7 @@ const createOrganizerAccountWise = async (req, res) => {
       }
 
       const missingContactsAccounts = [];
-      const organizerLink = "http://localhost:3000/accountsdash/organizers/6718e47e1b7d40bc7d33611e"
+      const organizerLink = `http://localhost:3000/organizers/update/${newOrganizerAccountWise._id}`;
 
       // for (const contactId of validContacts) {
       //     const contact = await Contacts.findById(contactId);
@@ -231,7 +232,7 @@ const createOrganizerAccountWise = async (req, res) => {
                   NEXT_QUARTER: nextQuarter,
                   NEXT_YEAR: nextYear,
               });
-
+console.log(organizerName)
               if (contact.login === true) {
                   const transporter = nodemailer.createTransport({
                       host: "smtp.gmail.com",
@@ -271,7 +272,38 @@ const createOrganizerAccountWise = async (req, res) => {
                       return result;
                   }
               } else {
-                  return null; // Skip if contact login is false
+                const transporter = nodemailer.createTransport({
+                  host: "smtp.gmail.com",
+                  port: 587,
+                  secure: false, // Use STARTTLS
+                  auth: {
+                    user: process.env.EMAIL,
+                    pass: process.env.EMAIL_PASSWORD,
+                },
+                tls: {
+                    rejectUnauthorized: false
+                },
+              });
+    
+              // const missingAccountsList = missingContactsAccounts.join(", ");
+              const mailOptions = {
+                  from: process.env.EMAIL,
+                  to: process.env.EMAIL,
+                  subject: "Unable to send Organizer to Contacts",
+                  html: `
+                      <p>The following accounts have no contacts who can  fill the organizer, so we couldn’t create organizer for them:</p>
+                    
+                      <p>Oraganizer Name:${organizerName}</p>
+                     
+                  `,
+              };
+    
+              try {
+                  await transporter.sendMail(mailOptions);
+                  console.log("Notification email sent to user about missing contacts");
+              } catch (error) {
+                  console.error("Failed to send notification email:", error.message);
+              }
               }
           } catch (error) {
               console.error(`Failed to process contact ${contactId}:`, error.message);
@@ -303,7 +335,7 @@ const createOrganizerAccountWise = async (req, res) => {
               to: process.env.EMAIL,
               subject: "Unable to send Organizer to Contacts",
               html: `
-                  <p>The following accounts have no contacts who can sign proposals, so we couldn’t create proposals for them:</p>
+                  <p>The following accounts have no contacts who can  fill the organizer, so we couldn’t create organizer for them:</p>
                   <p>${missingAccountsList}</p>
                   <p>Proposal name:</p>
                   <p>${organizerName}</p>

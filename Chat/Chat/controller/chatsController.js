@@ -58,8 +58,9 @@ const createChats = async (req, res) => {
     }
 
     try {
+       
         for (const accountid of accountids) {
-            await AccountwiseChat.create({
+            const newChats = await AccountwiseChat.create({
                 accountid,
                 chattemplateid,
                 templatename,
@@ -73,8 +74,9 @@ const createChats = async (req, res) => {
 
                 active
             });
+            return res.status(201).json({ message: "Chats created successfully", newChats });
         }
-        return res.status(201).json({ message: "Chats created successfully" });
+        
     } catch (error) {
         console.error("Error creating chats:", error);
         return res.status(500).json({ error: "Error creating chats" });
