@@ -6,11 +6,11 @@ const mongoose = require('mongoose');
 const clienttasksSchema = new mongoose.Schema({
     id: {
         type: String,
-        required: true
+        
     },
     text: {
         type: String,
-        required: true
+       
     },
     checked:{
         type: Boolean,

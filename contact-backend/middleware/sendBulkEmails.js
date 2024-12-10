@@ -4,7 +4,8 @@ const nodemailer = require("nodemailer");
 const Account = require("../models/AccountModel.js");
 const Contact = require("../models/contactsModel.js");
 const moment = require("moment");
-
+require('dotenv').config();
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 router.post("/sendBulkEmails", async (req, res) => {
   const { selectedAccounts, emailtemplateid, notificationemail, emailsubject, emailbody } = req.body;
   if (!emailtemplateid || !selectedAccounts) {
@@ -217,13 +218,16 @@ router.post("/sendBulkEmails", async (req, res) => {
           const transporter = nodemailer.createTransport({
             service: "gmail",
             auth: {
-              user: "rohitkumbhar7009@gmail.com",
-              pass: "vwjz zrbe rwbe dhnj",
-            },
+              user: process.env.EMAIL,
+              pass: process.env.EMAIL_PASSWORD,
+          },
+          tls: {
+            rejectUnauthorized: false
+        },
           });
 
           const mailOptions = {
-            from: "rohitkumbhar7009@gmail.com",
+            from: process.env.EMAIL,
             to: contact.email,
             subject: mailSubject,
             html: htmlPage,
@@ -237,7 +241,7 @@ router.post("/sendBulkEmails", async (req, res) => {
               if (emailsSent === totalEmails) {
                 // Send notification email after all bulk emails are sent
                 const notificationMailOptions = {
-                  from: "rohitkumbhar7009@gmail.com",
+                  from: process.env.EMAIL,
                   to: notificationemail,
                   subject: "Bulk Email Sending Complete",
                   text: "All bulk emails have been sent successfully.",
@@ -275,16 +279,19 @@ router.post("/sendBulkEmails", async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "rohitkumbhar7009@gmail.com",
-        pass: "vwjz zrbe rwbe dhnj",
-      },
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASSWORD,
+    },
+    tls: {
+      rejectUnauthorized: false
+  },
     });
     console.log(missingContacts.length);
     // Check if there are missing contacts
     if (missingContacts.length > 0) {
       // Send notification email after all bulk emails are sent
       const notificationMailOptions = {
-        from: "rohitkumbhar7009@gmail.com",
+        from: process.env.EMAIL,
         to: notificationemail,
         subject: "Bulk Email Sending Complete with Exception.",
         text: `All bulk emails have been sent successfully.`,
