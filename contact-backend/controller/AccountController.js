@@ -75,6 +75,25 @@ const getAccounts = async (req, res) => {
   }
 };
 
+
+const getAccountsIdAndName = async (req, res) => {
+  try {
+    const accounts = await Accounts.find({})
+      // .select("accountName")  // Only include the 'name' field
+     
+
+    // Map the accounts to only include id and name
+    const accountData = accounts.map(account => ({
+      _id: account._id,     // Include the account ID
+      accountName: account.accountName   // Include the account name
+    }));
+
+    res.status(200).json({ message: "Accounts retrieved successfully", accounts: accountData });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 //Get a single Account
 const getAccount = async (req, res) => {
   const { id } = req.params;
@@ -456,5 +475,6 @@ module.exports = {
   getAccountbyIdAll,
   getActiveAccountList,
   updateContactsForMultipleAccounts,
-  getAccountListByUserId
+  getAccountListByUserId,
+  getAccountsIdAndName
 };

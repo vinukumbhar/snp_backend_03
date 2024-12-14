@@ -82,7 +82,7 @@ const router = express.Router();
 const { upload } = require("../middleware/uploadfile");
 const { createAdmin, getAdmins, getAdmin, deleteAdmin, updateAdmin, updatePassword, getAdminByEmail } = require("../Controller/adminSignupController");
 const { createAccount, getAccount, getAccounts, updateAccount, deleteAccount, getAccountsList, getAccountsListById, getAccountListByUserId } = require("../Controller/accountDetailsController");
-const { createTeamMember, getTeamMembers, getTeamMember, deleteTeamMember, updateTeamMember, getTeamMemberList, updateTeamMemberPassword } = require("../Controller/teamMemberController");
+const { findTeamMemberByUserId,createTeamMember, getTeamMembers, getTeamMember, deleteTeamMember, updateTeamMember, getTeamMemberList, updateTeamMemberPassword } = require("../controller/teamMemberController");
 const { getClients, getClient, createClient, deleteClient, updateClient, getClientByEmail, updateclientPassword } = require("../Controller/clientSignupController");
 const { createNotification, getNotifications, getNotification, deleteNotification, updateNotification, getNotificationbyUser } = require("../Controller/adminNotificationController");
 
@@ -111,7 +111,7 @@ router.get("/accountdetails/accountdetailslist/listbyuserid/:id", getAccountList
 //*Team Member START******* *//
 router.get("/teammembers", getTeamMembers);
 router.get("/teammember/:id", getTeamMember);
-
+router.get("/teammemberbyuserid/:userid", findTeamMemberByUserId);
 router.patch("/teammember/:id", upload.single("ProfilePicture"), updateTeamMember);
 router.post("/teammember", upload.single("ProfilePicture"), createTeamMember);
 

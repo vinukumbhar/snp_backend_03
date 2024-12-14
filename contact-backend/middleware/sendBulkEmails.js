@@ -220,10 +220,10 @@ router.post("/sendBulkEmails", async (req, res) => {
             auth: {
               user: process.env.EMAIL,
               pass: process.env.EMAIL_PASSWORD,
-          },
-          tls: {
-            rejectUnauthorized: false
-        },
+            },
+            tls: {
+              rejectUnauthorized: false
+            },
           });
 
           const mailOptions = {
@@ -245,7 +245,7 @@ router.post("/sendBulkEmails", async (req, res) => {
                   to: notificationemail,
                   subject: "Bulk Email Sending Complete",
                   text: "All bulk emails have been sent successfully.",
-                  html: `<p>All bulk emails have been sent successfully.</p>`,
+                  html: "All bulk emails have been sent successfully.",
                 };
                 await transporter.sendMail(notificationMailOptions);
                 console.log("Email sent:", info.response);
@@ -272,6 +272,42 @@ router.post("/sendBulkEmails", async (req, res) => {
             }
           }
         }
+        else {
+          console.log("ABCD")
+
+          const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 587,
+            secure: false, // Use TLS
+            auth: {
+              user: process.env.EMAIL,
+              pass: process.env.EMAIL_PASSWORD,
+            },
+            tls: {
+              rejectUnauthorized: false
+            },
+          });
+
+          try {
+            const notificationMailOption = {
+              from: process.env.EMAIL,
+              to: notificationemail,
+              subject: "Bulk Email Sending.",
+              text: "Any of Contact not have EmailSync true.",
+              html: "Any of Contact not have EmailSync true.",
+            };
+
+            const info = await transporter.sendMail(notificationMailOption);
+
+            // Use info.response to log the result
+            console.log("Email sent:", info.response);
+
+          } catch (error) {
+            console.error("Error sending email:", error);
+            throw error; // Throw error to trigger retry mechanism
+          };
+
+        }
       }
     }
 
@@ -281,10 +317,10 @@ router.post("/sendBulkEmails", async (req, res) => {
       auth: {
         user: process.env.EMAIL,
         pass: process.env.EMAIL_PASSWORD,
-    },
-    tls: {
-      rejectUnauthorized: false
-  },
+      },
+      tls: {
+        rejectUnauthorized: false
+      },
     });
     console.log(missingContacts.length);
     // Check if there are missing contacts

@@ -243,6 +243,25 @@ const updateTeamMemberPassword = async (req, res) => {
 };
 
 
+const findTeamMemberByUserId = async (req, res) => {
+  try {
+    const { userid } = req.params;  // Get the userid from URL parameter
+
+    // Find the team member with the matching userid
+    const teammember = await TeamMember.findOne({ userid });
+
+    if (!teammember) {
+      return res.status(404).json({ message: "Team member not found" });
+    }
+
+    // Return the found team member
+    res.status(200).json({message: "TeamMembers retrieved successfully",teammember});
+  } catch (error) {
+    console.error("Error finding team member:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
     createTeamMember,
     getTeamMembers,
@@ -251,4 +270,5 @@ module.exports = {
     updateTeamMember,
     getTeamMemberList,
     updateTeamMemberPassword,
+    findTeamMemberByUserId
 }

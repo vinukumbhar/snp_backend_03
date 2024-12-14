@@ -12,7 +12,24 @@ const getAllContacts = async (req, res) => {
     res.status(500).json({ message: "Error fetching contacts", error: error.message });
   }
 };
+const getContactsIdAndName = async (req, res) => {
+  try {
+    const contacts = await Contacts.find({})
+      // .select("accountName")  // Only include the 'name' field
+     
 
+    // Map the accounts to only include id and name
+    const contactData = contacts.map(contact => ({
+      _id: contact._id,     // Include the account ID
+      contactName: contact.contactName,   // Include the account namec
+     email:contact.email
+    }));
+
+    res.status(200).json({ message: "Accounts retrieved successfully", contacts: contactData });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 // Get single contact
 const getSingleContact = async (req, res) => {
   const { id } = req.params;
@@ -146,6 +163,7 @@ module.exports = {
   updateContact,
   getContactsList,
   getContactsByAccountId,
+  getContactsIdAndName
 };
 
 // Create new contact

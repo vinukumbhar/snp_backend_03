@@ -1,11 +1,12 @@
 const express = require("express");
 const router = express.Router();
 
-const { createContact, getAllContacts, getSingleContact, deleteContact, updateContact, getContactsList, getContactsByAccountId } = require("../controller/contactController");
+const {getContactsIdAndName, createContact, getAllContacts, getSingleContact, deleteContact, updateContact, getContactsList, getContactsByAccountId } = require("../controller/contactController");
 
 // get all contacts
 router.get("/", getAllContacts);
-
+// get all contacts
+router.get("/nameandid", getContactsIdAndName);
 // get single contact
 router.get("/:id", getSingleContact);
 
