@@ -246,7 +246,10 @@ const updateTeamMemberPassword = async (req, res) => {
 const findTeamMemberByUserId = async (req, res) => {
   try {
     const { userid } = req.params;  // Get the userid from URL parameter
-
+// Check if userid is provided and valid
+if (!userid || !mongoose.Types.ObjectId.isValid(userid)) {
+  return res.status(400).json({ message: "Invalid or missing userid" });
+}
     // Find the team member with the matching userid
     const teammember = await TeamMember.findOne({ userid });
 

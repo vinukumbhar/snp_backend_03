@@ -190,10 +190,10 @@ const updateAccount = async (req, res) => {
 
   try {
     // Extract data from the request body
-    const { clientType, accountName, tags, teamMember, companyName, country, streetAddress, city, state, postalCode, contacts, active } = req.body;
+    const { clientType, accountName, tags, teamMember, companyName, country, streetAddress, city, state, postalCode, contacts, userid,active } = req.body;
 
     // Find and update the account information
-    const updatedAccount = await Accounts.findOneAndUpdate({ _id: id }, { clientType, accountName, tags, teamMember, contacts, active }, { new: true });
+    const updatedAccount = await Accounts.findOneAndUpdate({ _id: id }, { clientType, accountName, tags, teamMember, contacts,userid, active }, { new: true });
 
     if (!updatedAccount) {
       return res.status(404).json({ error: "No such Account" });
