@@ -13,8 +13,8 @@ app.use(express.json());
 app.use(cors());
 // Use the chat routes
 app.use('/chats', chatRoutes);
-app.use('/', chatsendemail);
-app.use('/', chatmessagesendemail);
+app.use('/chatsend', chatsendemail);
+app.use('/chatmsg', chatmessagesendemail);
 
  //Cors Polycy 
 app.use((req, res, next) => {
@@ -29,7 +29,7 @@ app.use((req, res, next) => {
 dbconnect()
 
 // Start the server
-const port = process.env.PORT || 9050;
+const port = process.env.PORT || 8010;
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });

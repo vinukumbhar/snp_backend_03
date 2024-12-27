@@ -17,5 +17,5 @@ app.use(express.json());
 app.use('/automations', automationRoutes);
 
 // Server setup
-const PORT = process.env.PORT || 8003;
+const PORT = process.env.PORT || 8011;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

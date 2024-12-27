@@ -26,11 +26,11 @@ app.use("/assignbulktags", assignbulktags);
 
 //! sendBulkEmails Routes
 const sendBulkEmails = require("./middleware/sendBulkEmails");
-app.use("/", sendBulkEmails);
+app.use("/sendemails", sendBulkEmails);
 
 
 const  editloginnotifyemailsync = require("./middleware/editloginnotifyemailsync")
-app.use('/', editloginnotifyemailsync)
+app.use('/editloginnotifyemail', editloginnotifyemailsync)
 
 //Cors Polycy 
 app.use((req, res, next) => {
@@ -46,8 +46,8 @@ dbconnect()
 
 
 app.use("/manageteammember", manageTeamMember);
-app.use('/', AssignTags)
-const port = process.env.PORT || 7000;
+app.use('/assigntags', AssignTags)
+const port = process.env.PORT || 8004;
 
 app.listen(port, ()=>{
     console.log(`connection is live at port no. ${port}`);

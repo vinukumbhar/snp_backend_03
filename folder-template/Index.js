@@ -15,7 +15,7 @@ app.use(express.json());
 // database connect
 dbconnect()
 
-app.use('/common', folderTemplateRoutes)
+app.use('/foldertemp', folderTemplateRoutes)
 
 app.get("/allFolders/:id", async (req, res) => {
   try {
@@ -73,7 +73,7 @@ app.post('/uploadFolder', upload.single('folder'), async (req, res) => {
 });
 
 
-const port = process.env.PORT || 8001;
+const port = process.env.PORT || 8005;
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
