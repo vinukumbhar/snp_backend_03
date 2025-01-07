@@ -148,7 +148,12 @@ const adminSchema = new mongoose.Schema({
   userid:{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-  }
+  },
+  profilePicture: {
+    type: String, // This can store the file path or URL of the profile picture
+   
+    },
+  
 });
 
 // Hash the password before saving

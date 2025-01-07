@@ -78,20 +78,22 @@
 
 const express = require("express");
 const router = express.Router();
-
 const { upload } = require("../middleware/uploadfile");
-const { createAdmin, getAdmins, getAdmin, deleteAdmin, updateAdmin, updatePassword, getAdminByEmail } = require("../Controller/adminSignupController");
+const{uploadimg}=require("../middleware/clientuploadfile");
+const { createAdmin, getAdmins, getAdmin,getAdminByUserid, deleteAdmin, updateAdmin, updatePassword, getAdminByEmail } = require("../controller/adminSignupController");
 const { createAccount, getAccount, getAccounts, updateAccount, deleteAccount, getAccountsList, getAccountsListById, getAccountListByUserId } = require("../Controller/accountDetailsController");
 const { findTeamMemberByUserId,createTeamMember, getTeamMembers, getTeamMember, deleteTeamMember, updateTeamMember, getTeamMemberList, updateTeamMemberPassword } = require("../controller/teamMemberController");
-const { getClients, getClient, createClient, deleteClient, updateClient, getClientByEmail, updateclientPassword } = require("../Controller/clientSignupController");
+const { getClients, getClient, createClient, deleteClient, updateClient, getClientByEmail, updateclientPassword,getClientByUserId ,updateClientByUserId } = require("../controller/clientSignupController");
 const { createNotification, getNotifications, getNotification, deleteNotification, updateNotification, getNotificationbyUser } = require("../Controller/adminNotificationController");
 
 //ADMIN SIGNUP START******************** */
 router.get("/adminsignup", getAdmins);
+router.get("/adminsignup/:userid" , getAdminByUserid);
 router.get("/adminsignup/:id", getAdmin);
 router.post("/adminsignup", createAdmin);
 router.delete("/adminsignup/:id", deleteAdmin);
-router.patch("/adminsignup/:id", updateAdmin);
+// router.patch("/adminsignup/:id", updateAdmin);
+router.patch("/adminsignup/:id" , upload.single("ProfilePicture"), updateAdmin);
 router.get("/adminsignup/adminbyemail/:email", getAdminByEmail);
 router.patch("/adminsignup/updatepassword", updatePassword);
 
@@ -128,9 +130,12 @@ router.get("/clientsignup", getClients);
 router.get("/clientsignup/:id", getClient);
 router.post("/clientsignup", createClient);
 router.delete("/clientsignup/:id", deleteClient);
-router.patch("/clientsignup/:id", updateClient);
+// router.patch("/clientsignup/:id", updateClient);
+router.patch("/clientsignup/:id",uploadimg.single("ProfilePicture"),  updateClient);
 router.get("/clientsignup/clientbyemail/:email", getClientByEmail);
 router.patch("/clientsignup/updateclientPassword", updateclientPassword);
+router.patch("/client/:userid",  updateClientByUserId);
+router.get("/client/:userid" , getClientByUserId);
 
 //*client SIGNUP END******* */
 

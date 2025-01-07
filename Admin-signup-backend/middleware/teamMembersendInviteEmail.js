@@ -34,7 +34,7 @@ router.post("/teammembersavedemail", async (req, res) => {
 
         const mailSubject = `${user.username} has invited you to join PMS.`
 
-        const loginlink = `${url}/${teammember._id}/${result.token}`
+        const loginlink = `${url}${teammember._id}/${result.token}`
 
         console.log(loginlink)
         // HTML content for the email body

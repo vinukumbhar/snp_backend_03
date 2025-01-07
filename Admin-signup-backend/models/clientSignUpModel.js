@@ -26,7 +26,7 @@ const clientSchema = new mongoose.Schema({
   },
   phoneNumber: {
     type: String,
-    required: true,
+    // required: true,
     min: 1000000000, // Minimum 10-digit number
     max: 9999999999, // Maximum 10-digit number
   },
@@ -54,7 +54,10 @@ const clientSchema = new mongoose.Schema({
   userid:{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-  }
+  },
+  profilePicture: {
+    type: String, 
+    },
 });
 
 // Hash the password before saving

@@ -29,10 +29,36 @@ const getAdmins = async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   };
+
+    // GET a  Admin by userid
+    const getAdminByUserid = async (req, res) => {
+      const { userid } = req.params;
+      try {
+          const admin = await Admin.findOne({ userid });
+  
+          if (!admin) {
+              return res.status(404).json({
+                  message: 'Admin not found',
+              });
+          }
+  
+         
+          res.status(200).json({
+              message: 'Admin retrieved successfully',
+              admin,
+          });
+      } catch (error) {
+          console.error('Error retrieving admin:', error);
+          res.status(500).json({
+              message: 'An error occurred while retrieving the admin',
+              error: error.message,
+          });
+      }
+    };
   
   // POST create a new Admin
   const createAdmin = async (req, res) => {
-    const { firstName, middleName, lastName, phoneNumber, email, password, cpassword, firmName, firmEmail, streetAddress, city, state, postalCode, country, firmPhoneNumber, website, firmSize, referenceFrom, services, role, firmURL, currency, language,userid } = req.body;
+    const { firstName, middleName, lastName, phoneNumber, email, password, cpassword, firmName, firmEmail, streetAddress, city, state, postalCode, country, firmPhoneNumber, website, firmSize, referenceFrom, services, role, firmURL, currency, language,userid,profilePicture } = req.body;
   
     try {
       //check the email already exists
@@ -65,7 +91,9 @@ const getAdmins = async (req, res) => {
         firmURL,
         currency,
         language,
-        userid
+        userid,
+        profilePicture,
+        getAdminByUserid
       });
       res.status(200).json({ message: "Admin created successfully", admin });
     } catch (error) {
@@ -103,8 +131,17 @@ const getAdmins = async (req, res) => {
     }
   
     try {
+      // Prepare the update object from the request body
+    let updateData = { ...req.body };
+
+     // If a file is uploaded, update the profile picture path
+     if (req.file) {
+      updateData.profilePicture = req.file.path; // Store the file path
+    }
+
       const updatedAdmin = await Admin.findOneAndUpdate(
         { _id: id },
+        updateData,
         { ...req.body },
         { new: true } // This option ensures that the updated document is returned
       );
@@ -118,7 +155,6 @@ const getAdmins = async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   };
-  
 
 // UPDATE a password 
 const updatePassword = async (req, res) => {
@@ -173,6 +209,7 @@ module.exports = {
     deleteAdmin,
     updateAdmin,
     updatePassword,
-    getAdminByEmail
+    getAdminByEmail,
+    getAdminByUserid
 }
 
