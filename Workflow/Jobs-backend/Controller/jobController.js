@@ -2,9 +2,64 @@ const Job = require("../Models/JobModel");
 const Pipeline = require("../Models/pipelineTemplateModel");
 const mongoose = require("mongoose");
 const Accounts = require("../Models/AccountModel");
+const Contacts = require("../Models/contactsModel")
 const User = require("../Models/userModel");
 const Tags = require("../Models/tagsModel");
 const ClientFacingjobStatus = require("../Models/clientfacingjobstatusesModel.js");
+
+
+const currentDate = new Date();
+const lastDay = new Date(currentDate);
+lastDay.setDate(lastDay.getDate() - 1); // Subtract 1 day to get the last day
+const nextDay = new Date(currentDate);
+nextDay.setDate(nextDay.getDate() + 1); // Add 1 day to get the next day
+
+// Define options for formatting date
+const options = {
+    weekday: 'long',          // Full name of the day of the week (e.g., "Monday")
+    day: '2-digit',          // Two-digit day of the month (01 through 31)
+    month: 'long',           // Full name of the month (e.g., "January")
+    year: 'numeric',         // Four-digit year (e.g., 2022)
+    week: 'numeric',         // ISO week of the year (1 through 53)
+    monthNumber: '2-digit',  // Two-digit month number (01 through 12)
+    quarter: 'numeric',      // Quarter of the year (1 through 4)
+};
+
+// Format the current date using options
+const currentFullDate = currentDate.toLocaleDateString('en-US', options);
+const currentDayNumber = currentDate.getDate();
+const currentDayName = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
+const currentWeek = currentDate.toLocaleDateString('en-US', { week: 'numeric' });
+const currentMonthNumber = currentDate.getMonth() + 1; // Months are zero-based, so add 1
+const currentMonthName = currentDate.toLocaleDateString('en-US', { month: 'long' });
+const currentQuarter = Math.floor((currentDate.getMonth() + 3) / 3); // Calculate the quarter
+const currentYear = currentDate.getFullYear();
+
+// Format the last day using options
+const lastDayFullDate = lastDay.toLocaleDateString('en-US', options);
+const lastDayNumber = lastDay.getDate();
+const lastDayName = lastDay.toLocaleDateString('en-US', { weekday: 'long' });
+const lastWeek = lastDay.toLocaleDateString('en-US', { week: 'numeric' });
+const lastMonthNumber = lastDay.getMonth() + 1; // Months are zero-based, so add 1
+const lastMonthName = lastDay.toLocaleDateString('en-US', { month: 'long' });
+const lastQuarter = Math.floor((lastDay.getMonth() + 3) / 3); // Calculate the quarter
+const lastYear = lastDay.getFullYear();
+
+// Format the next day using options
+const nextDayFullDate = nextDay.toLocaleDateString('en-US', options);
+const nextDayNumber = nextDay.getDate();
+const nextDayName = nextDay.toLocaleDateString('en-US', { weekday: 'long' });
+const nextWeek = nextDay.toLocaleDateString('en-US', { week: 'numeric' });
+const nextMonthNumber = nextDay.getMonth() + 1; // Months are zero-based, so add 1
+const nextMonthName = nextDay.toLocaleDateString('en-US', { month: 'long' });
+const nextQuarter = Math.floor((nextDay.getMonth() + 3) / 3); // Calculate the quarter
+const nextYear = nextDay.getFullYear();
+
+const replacePlaceholders = (template, data) => {
+  return template.replace(/\[([\w\s]+)\]/g, (match, placeholder) => {
+    return data[placeholder.trim()] || "";
+  });
+};
 //get all JobTemplate
 const getJobs = async (req, res) => {
   try {
@@ -39,25 +94,37 @@ const getJob = async (req, res) => {
 
 //POST a new JobTemplate
 const createJob = async (req, res) => {
-  const { accounts, pipeline, stageid, templatename, jobname, addShortCode, jobassignees, priority, description, absolutedates, startsin, startsinduration, duein, dueinduration, startdate, enddate, comments, showinclientportal, jobnameforclient, clientfacingstatus, clientfacingDescription, active } = req.body;
+  const {
+    accounts,
+    pipeline,
+    stageid,
+    templatename,
+    jobname,
+    addShortCode,
+    jobassignees,
+    priority,
+    description,
+    absolutedates,
+    startsin,
+    startsinduration,
+    duein,
+    dueinduration,
+    startdate,
+    enddate,
+    comments,
+    showinclientportal,
+    jobnameforclient,
+    clientfacingstatus,
+    clientfacingDescription,
+    active,
+  } = req.body;
 
   try {
-    // Check if a task template with similar properties already exists
-
-    // const existingJob = await Job.findOne({
-    //     jobname
-    // });
-
-    // if (existingJob) {
-    //     return res.status(400).json({ error: "Job already exists" });
-    // }
-
     // Find the pipeline associated with the job
     const jobPipeline = await Pipeline.findById(pipeline);
-
     // Get the ID of the first stage in the pipeline
-    const defaultStageId = jobPipeline.stages.length > 0 ? jobPipeline.stages[0]._id : null;
-
+    const defaultStageId =
+      jobPipeline.stages.length > 0 ? jobPipeline.stages[0]._id : null;
     // Use the provided stageid or defaultStageId if not provided
     const selectedStageId = stageid || defaultStageId;
 
@@ -123,7 +190,11 @@ const updateJob = async (req, res) => {
   }
 
   try {
-    const updatedJob = await Job.findOneAndUpdate({ _id: id }, { ...req.body }, { new: true });
+    const updatedJob = await Job.findOneAndUpdate(
+      { _id: id },
+      { ...req.body },
+      { new: true }
+    );
 
     if (!updatedJob) {
       return res.status(404).json({ error: "No such Job" });
@@ -139,7 +210,11 @@ const getJobList = async (req, res) => {
   try {
     const jobs = await Job.find()
       .populate({ path: "accounts", model: "Accounts" })
-      .populate({ path: "pipeline", model: "pipeline", populate: { path: "stages", model: "stage" } })
+      .populate({
+        path: "pipeline",
+        model: "pipeline",
+        populate: { path: "stages", model: "stage" },
+      })
       .populate({ path: "jobassignees", model: "User" })
       .populate({ path: "clientfacingstatus", model: "ClientFacingjobStatus" });
 
@@ -154,59 +229,136 @@ const getJobList = async (req, res) => {
         continue;
       }
 
-      const jobAssigneeNames = job.jobassignees.map((assignee) => assignee.username);
+      const jobAssigneeNames = job.jobassignees.map(
+        (assignee) => assignee.username
+      );
 
       const accountsname = job.accounts.map((account) => account.accountName);
       const accountId = job.accounts.map((account) => account._id);
 
+     
+      // Fetch account and associated contacts
+      const account = await Accounts.findById(
+        accountId
+      ).populate("contacts");
+
+      const validContacts = account.contacts.filter((contact) => contact.login);
+      if (validContacts.length === 0) {
+        return res
+          .status(400)
+          .json({
+            status: 400,
+            message: "No contacts with emailSync enabled.",
+          });
+      }
       let stageNames = null;
 
       if (Array.isArray(job.stageid)) {
         // Iterate over each stage ID and find the corresponding stage name
         stageNames = [];
         for (const stageId of job.stageid) {
-          const matchedStage = pipeline.stages.find((stage) => stage._id.equals(stageId));
+          const matchedStage = pipeline.stages.find((stage) =>
+            stage._id.equals(stageId)
+          );
           if (matchedStage) {
             stageNames.push(matchedStage.name);
           }
         }
       } else {
         // If job.stageid is not an array, convert it to an array containing a single element
-        const matchedStage = pipeline.stages.find((stage) => stage._id.equals(job.stageid));
+        const matchedStage = pipeline.stages.find((stage) =>
+          stage._id.equals(job.stageid)
+        );
         if (matchedStage) {
           stageNames = [matchedStage.name];
         }
       }
       const clientFacingStatus = job.clientfacingstatus
         ? {
-          statusId: job.clientfacingstatus._id,
-          statusName: job.clientfacingstatus.clientfacingName,
-          statusColor: job.clientfacingstatus.clientfacingColour,
-          // description: job.clientfacingstatus.description,
-          // Include other fields from clientfacingstatus as needed
-        }
+            statusId: job.clientfacingstatus._id,
+            statusName: job.clientfacingstatus.clientfacingName,
+            statusColor: job.clientfacingstatus.clientfacingColour,
+            // description: job.clientfacingstatus.description,
+            // Include other fields from clientfacingstatus as needed
+          }
         : null;
-      jobList.push({
-        id: job._id,
-        Name: job.jobname,
-        JobAssignee: jobAssigneeNames,
-        Pipeline: pipeline ? pipeline.pipelineName : null,
-        Stage: stageNames,
-        Account: accountsname,
-        AccountId: accountId,
-        ClientFacingStatus: clientFacingStatus,
-        StartDate: job.startdate,
-        DueDate: job.enddate,
-        Priority: job.priority,
-        Description: job.description,
-        StartsIn: job.startsin ? `${job.startsin} ${job.startsinduration}` : null,
-        DueIn: jobs.duein ? `${jobs.duein} ${jobs.dueinduration}` : null,
-        createdAt: job.createdAt,
-        updatedAt: job.updatedAt,
-      });
+
+        const emailPromises = validContacts.map(async (contactId) => {
+          const contact = await Contacts.findById(contactId);
+          const placeholderData = {
+            ACCOUNT_NAME: accountsname.join(", "),
+            FIRST_NAME: contact.firstName,
+            MIDDLE_NAME: contact.middleName,
+            LAST_NAME: contact.lastName,
+            CONTACT_NAME: contact.contactName,
+            COMPANY_NAME: contact.companyName,
+            COUNTRY: contact.country,
+            STREET_ADDRESS: contact.streetAddress,
+            STATEPROVINCE: contact.state,
+            PHONE_NUMBER: contact.phoneNumbers,
+            ZIPPOSTALCODE: contact.postalCode,
+            CITY: contact.city,
+            CURRENT_DAY_FULL_DATE: currentFullDate,
+            CURRENT_DAY_NUMBER: currentDayNumber,
+            CURRENT_DAY_NAME: currentDayName,
+            CURRENT_WEEK: currentWeek,
+            CURRENT_MONTH_NUMBER: currentMonthNumber,
+            CURRENT_MONTH_NAME: currentMonthName,
+            CURRENT_QUARTER: currentQuarter,
+            CURRENT_YEAR: currentYear,
+            LAST_DAY_FULL_DATE: lastDayFullDate,
+            LAST_DAY_NUMBER: lastDayNumber,
+            LAST_DAY_NAME: lastDayName,
+            LAST_WEEK: lastWeek,
+            LAST_MONTH_NUMBER: lastMonthNumber,
+            LAST_MONTH_NAME: lastMonthName,
+            LAST_QUARTER: lastQuarter,
+            LAST_YEAR: lastYear,
+            NEXT_DAY_FULL_DATE: nextDayFullDate,
+            NEXT_DAY_NUMBER: nextDayNumber,
+            NEXT_DAY_NAME: nextDayName,
+            NEXT_WEEK: nextWeek,
+            NEXT_MONTH_NUMBER: nextMonthNumber,
+            NEXT_MONTH_NAME: nextMonthName,
+            NEXT_QUARTER: nextQuarter,
+            NEXT_YEAR: nextYear,
+          };
+    
+          // Replace placeholders in jobname and description
+          const jobName = replacePlaceholders(job.jobname, placeholderData);
+          const jobDescription = replacePlaceholders(
+            job.description,
+            placeholderData
+          );
+    
+          jobList.push({
+            id: job._id,
+            Name: jobName,
+            JobAssignee: jobAssigneeNames,
+            Pipeline: pipeline ? pipeline.pipelineName : null,
+            Stage: stageNames,
+            Account: accountsname,
+            AccountId: accountId,
+            ClientFacingStatus: clientFacingStatus,
+            StartDate: job.startdate,
+            DueDate: job.enddate,
+            Priority: job.priority,
+            Description: jobDescription,
+            StartsIn: job.startsin
+              ? `${job.startsin} ${job.startsinduration}`
+              : null,
+            DueIn: jobs.duein ? `${jobs.duein} ${jobs.dueinduration}` : null,
+            createdAt: job.createdAt,
+            updatedAt: job.updatedAt,
+          });
+        })
+      // Data for placeholder replacement
+      await Promise.all(emailPromises);
     }
 
-    res.status(200).json({ message: "JobTemplate retrieved successfully", jobList });
+    res
+      .status(200)
+      .json({ message: "JobTemplate retrieved successfully", jobList });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -217,7 +369,11 @@ const getActiveJobList = async (req, res) => {
     const { isActive } = req.params;
     const jobs = await Job.find({ active: isActive })
       .populate({ path: "accounts", model: "Accounts" })
-      .populate({ path: "pipeline", model: "pipeline", populate: { path: "stages", model: "stage" } })
+      .populate({
+        path: "pipeline",
+        model: "pipeline",
+        populate: { path: "stages", model: "stage" },
+      })
       .populate({ path: "jobassignees", model: "User" })
       .populate({ path: "clientfacingstatus", model: "ClientFacingjobStatus" });
     const jobList = [];
@@ -231,64 +387,225 @@ const getActiveJobList = async (req, res) => {
         continue;
       }
 
-      const jobAssigneeNames = job.jobassignees.map((assignee) => assignee.username);
+      const jobAssigneeNames = job.jobassignees.map(
+        (assignee) => assignee.username
+      );
 
       const accountsname = job.accounts.map((account) => account.accountName);
       const accountId = job.accounts.map((account) => account._id);
 
+      // Fetch account and associated contacts
+      const account = await Accounts.findById(
+        accountId
+      ).populate("contacts");
+
+      const validContacts = account.contacts.filter((contact) => contact.login);
+      if (validContacts.length === 0) {
+        return res
+          .status(400)
+          .json({
+            status: 400,
+            message: "No contacts with login enabled.",
+          });
+      }
       let stageNames = null;
 
       if (Array.isArray(job.stageid)) {
         // Iterate over each stage ID and find the corresponding stage name
         stageNames = [];
         for (const stageId of job.stageid) {
-          const matchedStage = pipeline.stages.find((stage) => stage._id.equals(stageId));
+          const matchedStage = pipeline.stages.find((stage) =>
+            stage._id.equals(stageId)
+          );
           if (matchedStage) {
             stageNames.push(matchedStage.name);
           }
         }
       } else {
         // If job.stageid is not an array, convert it to an array containing a single element
-        const matchedStage = pipeline.stages.find((stage) => stage._id.equals(job.stageid));
+        const matchedStage = pipeline.stages.find((stage) =>
+          stage._id.equals(job.stageid)
+        );
         if (matchedStage) {
           stageNames = [matchedStage.name];
         }
       }
       const clientFacingStatus = job.clientfacingstatus
         ? {
-          statusId: job.clientfacingstatus._id,
-          statusName: job.clientfacingstatus.clientfacingName,
-          statusColor: job.clientfacingstatus.clientfacingColour,
-          // description: job.clientfacingstatus.description,
-          // Include other fields from clientfacingstatus as needed
-        }
+            statusId: job.clientfacingstatus._id,
+            statusName: job.clientfacingstatus.clientfacingName,
+            statusColor: job.clientfacingstatus.clientfacingColour,
+            // description: job.clientfacingstatus.description,
+            // Include other fields from clientfacingstatus as needed
+          }
         : null;
-      jobList.push({
-        id: job._id,
-        Name: job.jobname,
-        JobAssignee: jobAssigneeNames,
-        Pipeline: pipeline ? pipeline.pipelineName : null,
-        Stage: stageNames,
-        Account: accountsname,
-        AccountId: accountId,
-        ClientFacingStatus: clientFacingStatus,
-        StartDate: job.startdate,
-        DueDate: job.enddate,
-        Priority: job.priority,
-        Description: job.description,
-        StartsIn: job.startsin ? `${job.startsin} ${job.startsinduration}` : null,
-        DueIn: jobs.duein ? `${jobs.duein} ${jobs.dueinduration}` : null,
-        createdAt: job.createdAt,
-        updatedAt: job.updatedAt,
-      });
+        const emailPromises = validContacts.map(async (contactId) => {
+          const contact = await Contacts.findById(contactId);
+          const placeholderData = {
+            ACCOUNT_NAME: accountsname.join(", "),
+            FIRST_NAME: contact.firstName,
+            MIDDLE_NAME: contact.middleName,
+            LAST_NAME: contact.lastName,
+            CONTACT_NAME: contact.contactName,
+            COMPANY_NAME: contact.companyName,
+            COUNTRY: contact.country,
+            STREET_ADDRESS: contact.streetAddress,
+            STATEPROVINCE: contact.state,
+            PHONE_NUMBER: contact.phoneNumbers,
+            ZIPPOSTALCODE: contact.postalCode,
+            CITY: contact.city,
+            CURRENT_DAY_FULL_DATE: currentFullDate,
+            CURRENT_DAY_NUMBER: currentDayNumber,
+            CURRENT_DAY_NAME: currentDayName,
+            CURRENT_WEEK: currentWeek,
+            CURRENT_MONTH_NUMBER: currentMonthNumber,
+            CURRENT_MONTH_NAME: currentMonthName,
+            CURRENT_QUARTER: currentQuarter,
+            CURRENT_YEAR: currentYear,
+            LAST_DAY_FULL_DATE: lastDayFullDate,
+            LAST_DAY_NUMBER: lastDayNumber,
+            LAST_DAY_NAME: lastDayName,
+            LAST_WEEK: lastWeek,
+            LAST_MONTH_NUMBER: lastMonthNumber,
+            LAST_MONTH_NAME: lastMonthName,
+            LAST_QUARTER: lastQuarter,
+            LAST_YEAR: lastYear,
+            NEXT_DAY_FULL_DATE: nextDayFullDate,
+            NEXT_DAY_NUMBER: nextDayNumber,
+            NEXT_DAY_NAME: nextDayName,
+            NEXT_WEEK: nextWeek,
+            NEXT_MONTH_NUMBER: nextMonthNumber,
+            NEXT_MONTH_NAME: nextMonthName,
+            NEXT_QUARTER: nextQuarter,
+            NEXT_YEAR: nextYear,
+          };
+    
+          // Replace placeholders in jobname and description
+          const jobName = replacePlaceholders(job.jobname, placeholderData);
+          const jobDescription = replacePlaceholders(
+            job.description,
+            placeholderData
+          );
+    
+          jobList.push({
+            id: job._id,
+            Name: jobName,
+            JobAssignee: jobAssigneeNames,
+            Pipeline: pipeline ? pipeline.pipelineName : null,
+            Stage: stageNames,
+            Account: accountsname,
+            AccountId: accountId,
+            ClientFacingStatus: clientFacingStatus,
+            StartDate: job.startdate,
+            DueDate: job.enddate,
+            Priority: job.priority,
+            Description: jobDescription,
+            StartsIn: job.startsin
+              ? `${job.startsin} ${job.startsinduration}`
+              : null,
+            DueIn: jobs.duein ? `${jobs.duein} ${jobs.dueinduration}` : null,
+            createdAt: job.createdAt,
+            updatedAt: job.updatedAt,
+          });
+        })
+      // Data for placeholder replacement
+      await Promise.all(emailPromises);
     }
-
-    res.status(200).json({ message: "JobTemplate retrieved successfully", jobList });
+   
+    res
+      .status(200)
+      .json({ message: "JobTemplate retrieved successfully", jobList });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
+// const getActiveJobListbyAccountId = async (req, res) => {
+//   try {
+//     const { isActive, accountid } = req.params;
+
+//     // Fetch jobs filtered by isActive and accountid
+//     const jobs = await Job.find({ active: isActive, accounts: accountid })
+//       .populate({ path: "accounts", model: "Accounts" })
+//       .populate({
+//         path: "pipeline",
+//         model: "pipeline",
+//         populate: { path: "stages", model: "Stage" },
+//       })
+//       .populate({ path: "jobassignees", model: "User" })
+//       .populate({ path: "clientfacingstatus", model: "ClientFacingjobStatus" });
+
+//     // Transform job data into the desired structure
+//     const jobList = jobs.map((job) => {
+//       // Extract pipeline and stages
+//       const pipeline = job.pipeline;
+//       const stageNames = Array.isArray(job.stageid)
+//         ? job.stageid
+//             .map((stageId) => {
+//               const matchedStage = pipeline?.stages?.find((stage) =>
+//                 stage._id.equals(stageId)
+//               );
+//               return matchedStage ? matchedStage.name : null;
+//             })
+//             .filter(Boolean)
+//         : job.stageid
+//         ? [
+//             pipeline?.stages?.find((stage) => stage._id.equals(job.stageid))
+//               ?.name || null,
+//           ]
+//         : null;
+
+//       // Extract job assignee names and account names
+//       const jobAssigneeNames = job.jobassignees.map(
+//         (assignee) => assignee.username
+//       );
+//       const accountsname = job.accounts.map((account) => account.accountName);
+//       const accountId = job.accounts.map((account) => account._id);
+
+
+      
+
+      
+//       // Extract client-facing status
+//       const clientFacingStatus = job.clientfacingstatus
+//         ? {
+//             statusId: job.clientfacingstatus._id,
+//             statusName: job.clientfacingstatus.clientfacingName,
+//             statusColor: job.clientfacingstatus.clientfacingColour,
+//           }
+//         : null;
+
+//       // Construct the job object
+//       return {
+//         id: job._id,
+//         Name: job.jobname,
+//         JobAssignee: jobAssigneeNames,
+//         Pipeline: pipeline?.pipelineName || null,
+//         PipelineId: pipeline?._id,
+//         Stage: stageNames,
+//         Account: accountsname,
+//         AccountId: accountId,
+//         ClientFacingStatus: clientFacingStatus,
+//         StartDate: job.startdate,
+//         DueDate: job.enddate,
+//         Priority: job.priority,
+//         Description: job.description,
+//         StartsIn: job.startsin
+//           ? `${job.startsin} ${job.startsinduration}`
+//           : null,
+//         DueIn: job.duein ? `${job.duein} ${job.dueinduration}` : null,
+//         createdAt: job.createdAt,
+//         updatedAt: job.updatedAt,
+//       };
+//     });
+
+//     res
+//       .status(200)
+//       .json({ message: "JobTemplate retrieved successfully", jobList });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
 
 const getActiveJobListbyAccountId = async (req, res) => {
   try {
@@ -305,58 +622,131 @@ const getActiveJobListbyAccountId = async (req, res) => {
       .populate({ path: "jobassignees", model: "User" })
       .populate({ path: "clientfacingstatus", model: "ClientFacingjobStatus" });
 
-    // Transform job data into the desired structure
-    const jobList = jobs.map((job) => {
+    const jobList = [];
+
+    for (const job of jobs) {
       // Extract pipeline and stages
       const pipeline = job.pipeline;
       const stageNames = Array.isArray(job.stageid)
-        ? job.stageid.map((stageId) => {
-          const matchedStage = pipeline?.stages?.find((stage) =>
-            stage._id.equals(stageId)
-          );
-          return matchedStage ? matchedStage.name : null;
-        }).filter(Boolean)
+        ? job.stageid
+            .map((stageId) => {
+              const matchedStage = pipeline?.stages?.find((stage) =>
+                stage._id.equals(stageId)
+              );
+              return matchedStage ? matchedStage.name : null;
+            })
+            .filter(Boolean)
         : job.stageid
-          ? [pipeline?.stages?.find((stage) => stage._id.equals(job.stageid))?.name || null]
-          : null;
+        ? [
+            pipeline?.stages?.find((stage) => stage._id.equals(job.stageid))
+              ?.name || null,
+          ]
+        : null;
 
       // Extract job assignee names and account names
-      const jobAssigneeNames = job.jobassignees.map((assignee) => assignee.username);
+      const jobAssigneeNames = job.jobassignees.map(
+        (assignee) => assignee.username
+      );
       const accountsname = job.accounts.map((account) => account.accountName);
       const accountId = job.accounts.map((account) => account._id);
+
+      // Fetch account and associated contacts
+      const account = await Accounts.findById(accountId).populate("contacts");
+      const validContacts = account.contacts.filter((contact) => contact.login);
+
+      if (validContacts.length === 0) {
+        return res
+          .status(400)
+          .json({ status: 400, message: "No contacts with login enabled." });
+      }
 
       // Extract client-facing status
       const clientFacingStatus = job.clientfacingstatus
         ? {
-          statusId: job.clientfacingstatus._id,
-          statusName: job.clientfacingstatus.clientfacingName,
-          statusColor: job.clientfacingstatus.clientfacingColour,
-        }
+            statusId: job.clientfacingstatus._id,
+            statusName: job.clientfacingstatus.clientfacingName,
+            statusColor: job.clientfacingstatus.clientfacingColour,
+          }
         : null;
 
-      // Construct the job object
-      return {
-        id: job._id,
-        Name: job.jobname,
-        JobAssignee: jobAssigneeNames,
-        Pipeline: pipeline?.pipelineName || null,
-        PipelineId: pipeline?._id,
-        Stage: stageNames,
-        Account: accountsname,
-        AccountId: accountId,
-        ClientFacingStatus: clientFacingStatus,
-        StartDate: job.startdate,
-        DueDate: job.enddate,
-        Priority: job.priority,
-        Description: job.description,
-        StartsIn: job.startsin ? `${job.startsin} ${job.startsinduration}` : null,
-        DueIn: job.duein ? `${job.duein} ${job.dueinduration}` : null,
-        createdAt: job.createdAt,
-        updatedAt: job.updatedAt,
-      };
-    });
+      // Data for placeholder replacement
+      const emailPromises = validContacts.map(async (contactId) => {
+        const contact = await Contacts.findById(contactId);
+        const placeholderData = {
+          ACCOUNT_NAME: accountsname.join(", "),
+          FIRST_NAME: contact.firstName,
+          MIDDLE_NAME: contact.middleName,
+          LAST_NAME: contact.lastName,
+          CONTACT_NAME: contact.contactName,
+          COMPANY_NAME: contact.companyName,
+          COUNTRY: contact.country,
+          STREET_ADDRESS: contact.streetAddress,
+          STATEPROVINCE: contact.state,
+          PHONE_NUMBER: contact.phoneNumbers,
+          ZIPPOSTALCODE: contact.postalCode,
+          CITY: contact.city,
+          CURRENT_DAY_FULL_DATE: currentFullDate,
+          CURRENT_DAY_NUMBER: currentDayNumber,
+          CURRENT_DAY_NAME: currentDayName,
+          CURRENT_WEEK: currentWeek,
+          CURRENT_MONTH_NUMBER: currentMonthNumber,
+          CURRENT_MONTH_NAME: currentMonthName,
+          CURRENT_QUARTER: currentQuarter,
+          CURRENT_YEAR: currentYear,
+          LAST_DAY_FULL_DATE: lastDayFullDate,
+          LAST_DAY_NUMBER: lastDayNumber,
+          LAST_DAY_NAME: lastDayName,
+          LAST_WEEK: lastWeek,
+          LAST_MONTH_NUMBER: lastMonthNumber,
+          LAST_MONTH_NAME: lastMonthName,
+          LAST_QUARTER: lastQuarter,
+          LAST_YEAR: lastYear,
+          NEXT_DAY_FULL_DATE: nextDayFullDate,
+          NEXT_DAY_NUMBER: nextDayNumber,
+          NEXT_DAY_NAME: nextDayName,
+          NEXT_WEEK: nextWeek,
+          NEXT_MONTH_NUMBER: nextMonthNumber,
+          NEXT_MONTH_NAME: nextMonthName,
+          NEXT_QUARTER: nextQuarter,
+          NEXT_YEAR: nextYear,
+        };
 
-    res.status(200).json({ message: "JobTemplate retrieved successfully", jobList });
+        // Replace placeholders in jobname and description
+        const jobName = replacePlaceholders(job.jobname, placeholderData);
+        const jobDescription = replacePlaceholders(
+          job.description,
+          placeholderData
+        );
+
+        jobList.push({
+          id: job._id,
+          Name: jobName,
+          JobAssignee: jobAssigneeNames,
+          Pipeline: pipeline?.pipelineName || null,
+          PipelineId: pipeline?._id,
+          Stage: stageNames,
+          Account: accountsname,
+          AccountId: accountId,
+          ClientFacingStatus: clientFacingStatus,
+          StartDate: job.startdate,
+          DueDate: job.enddate,
+          Priority: job.priority,
+          Description: jobDescription,
+          StartsIn: job.startsin
+            ? `${job.startsin} ${job.startsinduration}`
+            : null,
+          DueIn: job.duein ? `${job.duein} ${job.dueinduration}` : null,
+          createdAt: job.createdAt,
+          updatedAt: job.updatedAt,
+        });
+      });
+
+      await Promise.all(emailPromises);
+    }
+
+    res
+      .status(200)
+      .json({ message: "JobTemplate retrieved successfully", jobList });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -375,7 +765,11 @@ const getJobListbyid = async (req, res) => {
           model: "Tags",
         },
       })
-      .populate({ path: "pipeline", model: "pipeline", populate: { path: "stages", model: "stage" } })
+      .populate({
+        path: "pipeline",
+        model: "pipeline",
+        populate: { path: "stages", model: "stage" },
+      })
       .populate({ path: "jobassignees", model: "User" })
       .populate({ path: "clientfacingstatus", model: "ClientFacingjobStatus" });
     const pipeline = await Pipeline.findById(jobs.pipeline);
@@ -385,13 +779,17 @@ const getJobListbyid = async (req, res) => {
     if (Array.isArray(jobs.stageid)) {
       stageNames = [];
       for (const stageId of jobs.stageid) {
-        const matchedStage = pipeline.stages.find((stage) => stage._id.equals(stageId));
+        const matchedStage = pipeline.stages.find((stage) =>
+          stage._id.equals(stageId)
+        );
         if (matchedStage) {
           stageNames.push({ name: matchedStage.name, _id: matchedStage._id });
         }
       }
     } else {
-      const matchedStage = pipeline.stages.find((stage) => stage._id.equals(jobs.stageid));
+      const matchedStage = pipeline.stages.find((stage) =>
+        stage._id.equals(jobs.stageid)
+      );
       if (matchedStage) {
         stageNames = [{ name: matchedStage.name, _id: matchedStage._id }];
       }
@@ -409,7 +807,9 @@ const getJobListbyid = async (req, res) => {
       Account: jobs.accounts,
       StartDate: jobs.startdate,
       DueDate: jobs.enddate,
-      StartsIn: jobs.startsin ? `${jobs.startsin} ${jobs.startsinduration}` : null,
+      StartsIn: jobs.startsin
+        ? `${jobs.startsin} ${jobs.startsinduration}`
+        : null,
       DueIn: jobs.duein ? `${jobs.duein} ${jobs.dueinduration}` : null,
       Priority: jobs.priority,
       ClientFacingStatus: jobs.clientfacingstatus,
@@ -435,13 +835,19 @@ const updatestgeidtojob = async (req, res) => {
   }
 
   try {
-    const updatedJob = await Job.findOneAndUpdate({ _id: id }, { ...req.body }, { new: true });
+    const updatedJob = await Job.findOneAndUpdate(
+      { _id: id },
+      { ...req.body },
+      { new: true }
+    );
 
     if (!updatedJob) {
       return res.status(404).json({ error: "No such Job" });
     }
 
-    res.status(200).json({ message: "Stage Id Updated successfully", updatedJob });
+    res
+      .status(200)
+      .json({ message: "Stage Id Updated successfully", updatedJob });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -457,5 +863,5 @@ module.exports = {
   getJobListbyid,
   updatestgeidtojob,
   getActiveJobList,
-  getActiveJobListbyAccountId
+  getActiveJobListbyAccountId,
 };
