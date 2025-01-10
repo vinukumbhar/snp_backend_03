@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-
+const path = require("path");
 const dbconnect = require("./database/connectDb");
 const app = express();
 require("dotenv").config();
@@ -54,6 +54,8 @@ app.use("/", teammembersavedemail);
 const emailsync = require("../../backend/Admin-signup-backend/middleware/emailsync");
 app.use("/", emailsync);
 
+// app.use("/uploads", express.static("middleware/uploads"));
+// app.use('/uploads', express.static(path.join(__dirname, 'middleware/uploads')));
 app.use("/uploads", express.static("middleware/uploads"));
 
 // firmsettinga

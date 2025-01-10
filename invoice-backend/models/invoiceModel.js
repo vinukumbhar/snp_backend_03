@@ -46,6 +46,7 @@ const summarySchema = new mongoose.Schema({
 const invoiceSchema = new mongoose.Schema({
     account: {
         type: mongoose.Schema.Types.ObjectId,
+        // type: Array,
         ref: 'Accounts',
     },
     invoicenumber: {

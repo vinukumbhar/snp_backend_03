@@ -1,7 +1,7 @@
 const Admin = require('../models/adminSignupModel')
 const mongoose = require('mongoose')
 const bcrypt = require("bcryptjs")
-
+const path = require("path");
 // GET all Admins
 const getAdmins = async (req, res) => {
     try {
@@ -58,7 +58,7 @@ const getAdmins = async (req, res) => {
   
   // POST create a new Admin
   const createAdmin = async (req, res) => {
-    const { firstName, middleName, lastName, phoneNumber, email, password, cpassword, firmName, firmEmail, streetAddress, city, state, postalCode, country, firmPhoneNumber, website, firmSize, referenceFrom, services, role, firmURL, currency, language,userid,profilePicture } = req.body;
+    const { firstName, middleName, lastName, phoneNumber, email, password, cpassword, firmName, firmEmail, streetAddress, city, state, postalCode, country, firmPhoneNumber, website, firmSize, referenceFrom, services, role, firmURL, currency, language,userid, } = req.body;
   
     try {
       //check the email already exists
@@ -92,8 +92,7 @@ const getAdmins = async (req, res) => {
         currency,
         language,
         userid,
-        profilePicture,
-        getAdminByUserid
+       
       });
       res.status(200).json({ message: "Admin created successfully", admin });
     } catch (error) {
@@ -201,6 +200,29 @@ const getAdminByEmail = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+
+// const getAdminByEmail = async (req, res) => {
+//   const { email } = req.params;
+
+//   try {
+//       // Find the admin by email
+//       const admin = await Admin.findOne({ email });
+
+//       if (!admin) {
+//           return res.status(404).json({ error: "No such Admin" });
+//       }
+
+//       // Update the profilePicture field to include the public URL
+//       if (admin.profilePicture) {
+//           admin.profilePicture = `/middleware/uploads/${path.basename(admin.profilePicture)}`; // Ensure correct relative URL
+//       }
+
+//       res.status(200).json({ message: "Admin retrieved successfully", admin });
+//   } catch (error) {
+//       res.status(500).json({ error: error.message });
+//   }
+// };
 
 module.exports = {
     createAdmin,
