@@ -112,7 +112,7 @@ router.post("/usersavedemail", async (req, res) => {
       const mailOptions = {
         from: process.env.EMAIL,
         to: email,
-        subject: "Verify your account",
+        subject: "Your Account has been created successfully.",
         html: htmlPage,
       };
 

@@ -78,6 +78,7 @@
 
 const express = require("express");
 const router = express.Router();
+
 const { upload } = require("../middleware/uploadfile");
 const{uploadimg}=require("../middleware/clientuploadfile");
 const { createAdmin, getAdmins, getAdmin,getAdminByUserid, deleteAdmin, updateAdmin, updatePassword, getAdminByEmail } = require("../controller/adminSignupController");

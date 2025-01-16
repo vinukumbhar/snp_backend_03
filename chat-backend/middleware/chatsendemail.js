@@ -20,7 +20,7 @@ router.post('/securechatsend', async (req, res) => {
 console.log(account)
 console.log(chatId)
         const chatTemplate = await ChatTemplate.findById(chattemplateid);
-        const chatlink = `http://localhost:3000/updatechat/${chatId}`
+        const chatlink = `http://localhost:3001/updatechat/${chatId}`
         console.log(chatlink)
         for (const contactId of account.contacts) {
             const contact = await Contact.findById(contactId);

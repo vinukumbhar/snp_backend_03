@@ -54,9 +54,10 @@ app.use("/", teammembersavedemail);
 const emailsync = require("../../backend/Admin-signup-backend/middleware/emailsync");
 app.use("/", emailsync);
 
+app.use("/uploads", express.static("middleware/uploads"));
+// app.use('/uploads', express.static(path.join(__dirname, 'middleware/uploads')));
 // app.use("/uploads", express.static("middleware/uploads"));
 // app.use('/uploads', express.static(path.join(__dirname, 'middleware/uploads')));
-app.use("/uploads", express.static("middleware/uploads"));
 
 // firmsettinga
 const firmsetting = require("./routes/firmsettingRoutes");

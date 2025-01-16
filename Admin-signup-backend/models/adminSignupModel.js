@@ -35,7 +35,8 @@ const adminSchema = new mongoose.Schema({
     unique: true, // Ensure email is unique
     trim: true,
     lowercase: true,
-    match: [/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/, "Please fill a valid email address"], // Email format validation
+    match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Please fill a valid email address"],
+    // match: [/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/, "Please fill a valid email address"], // Email format validation
   },
   password: {
     type: String,
@@ -151,7 +152,7 @@ const adminSchema = new mongoose.Schema({
   },
   profilePicture: {
     type: String, // This can store the file path or URL of the profile picture
-   
+    required: false, // Not required, can be optional
     },
   
 });

@@ -156,6 +156,10 @@ const organizerAccountWiseSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    issubmited:{
+      type: Boolean,
+      default: false
+    },
 
 }, { timestamps: true });
 

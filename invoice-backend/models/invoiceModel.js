@@ -20,6 +20,7 @@ const lineItemsSchema = new mongoose.Schema({
     },
     tax: {
         type: Boolean,
+        default:false
     }
 });
 
@@ -74,13 +75,16 @@ const invoiceSchema = new mongoose.Schema({
     },
     payInvoicewithcredits: {
         type: Boolean,
+        default:false
     },
 
     emailinvoicetoclient: {
         type: Boolean,
+        default:false
     },
     reminders: {
         type: Boolean,
+        default:false
     },
     daysuntilnextreminder: {
         type: Number,
@@ -91,10 +95,12 @@ const invoiceSchema = new mongoose.Schema({
     },
     scheduleinvoice: {
         type: Boolean,
+        default:false
     },
   
     scheduleinvoicedate: {
         type: Date,
+        // default: Date.now,
     },
 
     scheduleinvoicetime: {

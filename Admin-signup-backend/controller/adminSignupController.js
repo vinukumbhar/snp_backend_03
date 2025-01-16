@@ -154,7 +154,30 @@ const getAdmins = async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   };
-
+  // UPDATE a Admin
+  // const updateAdmin = async (req, res) => {
+  //   const { id } = req.params;
+  // console.log(req.params)
+  //   if (!mongoose.Types.ObjectId.isValid(id)) {
+  //     return res.status(404).json({ error: "Invalid Admin ID" });
+  //   }
+  
+  //   try {
+  //     const updatedAdmin = await Admin.findOneAndUpdate(
+  //       { _id: id },
+  //       { ...req.body },
+  //       { new: true } // This option ensures that the updated document is returned
+  //     );
+  
+  //     if (!updatedAdmin) {
+  //       return res.status(404).json({ error: "No such Admin" });
+  //     }
+  
+  //     res.status(200).json({ message: "Admin updated successfully", admin: updatedAdmin });
+  //   } catch (error) {
+  //     res.status(500).json({ error: error.message });
+  //   }
+  // };
 // UPDATE a password 
 const updatePassword = async (req, res) => {
     const { email, password, cpassword } = req.body;
