@@ -59,11 +59,11 @@ const contactSchema = new mongoose.Schema({
     country: {
         name: {
             type: String,
-            required: true
+            // required: true
         },
         code: {
             type: String,
-            required: true
+            // required: true
         }
     },
     

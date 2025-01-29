@@ -6,7 +6,7 @@ const User = require("../models/userModel");
 const companyAddress = require("../models/companyAddressModel");
 const fs = require("fs");
 const fsPromises = require("fs").promises;
-
+const FolderTemplate = require("../models/folderTemplate")
 // POST a new account
 const createAccount = async (req, res) => {
   try {
@@ -122,7 +122,7 @@ const getAccountbyIdAll = async (req, res) => {
     return res.status(404).json({ error: "Invalid Account ID" });
   }
   try {
-    const account = await Accounts.findById(id).populate({ path: "tags", model: "Tags" }).populate({ path: "teamMember", model: "User" }).populate({ path: "contacts", model: "Contacts" }).populate({ path: "companyAddress", model: "companyAddress" });
+    const account = await Accounts.findById(id).populate({ path: "tags", model: "Tags" }).populate({ path: "teamMember", model: "User" }).populate({ path: "contacts", model: "Contacts" }).populate({ path: "companyAddress", model: "companyAddress" }).populate({path:"foldertemplate", model:"FolderTemplate"});
 
     if (!account) {
       return res.status(404).json({ error: "No such Account" });
@@ -392,13 +392,13 @@ const getActiveAccountList = async (req, res) => {
     const { isActive } = req.params;
 
     // const teamMembers = await TeamMember.find({})
-    const accounts = await Accounts.find({ active: isActive }).populate({ path: "tags", model: "Tags" }).populate({ path: "teamMember", model: "User" }).populate({ path: "contacts", model: "Contacts" });
+    const accounts = await Accounts.find({ active: isActive }).populate({ path: "tags", model: "Tags" }).populate({ path: "teamMember", model: "User" }).populate({ path: "contacts", model: "Contacts" }).sort({ createdAt: -1 });
 
     const accountlist = accounts.map((account) => {
       return {
         id: account._id,
         Name: account.accountName,
-        Follow: "",
+        Follow: account.contacts.map((contact) => contact.email).join(', '),
         Type: account.clientType,
         Invoices: "",
         Credits: "",

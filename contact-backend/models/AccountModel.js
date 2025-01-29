@@ -25,7 +25,7 @@ const accountSchema = new mongoose.Schema(
         type: Array,
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        required: [true, "Team members are required"],
+        // required: [true, "Team members are required"],
       },
     ],
 

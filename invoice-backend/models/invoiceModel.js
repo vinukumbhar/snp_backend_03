@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const AutoIncrement = require("mongoose-sequence")(mongoose);
 // Define the lineItems Schema 
 const lineItemsSchema = new mongoose.Schema({
     productorService: {
@@ -52,6 +52,7 @@ const invoiceSchema = new mongoose.Schema({
     },
     invoicenumber: {
         type: Number,
+        unique: true
     },
     invoicedate: {
         type: Date,
@@ -116,6 +117,10 @@ const invoiceSchema = new mongoose.Schema({
     },
 
 }, { timestamps: true });
+
+
+// Apply the AutoIncrement plugin to the `invoicenumber` field
+invoiceSchema.plugin(AutoIncrement, { inc_field: "invoicenumber" });
 
 const Invoice = mongoose.model('Invoice', invoiceSchema);
 module.exports = Invoice;

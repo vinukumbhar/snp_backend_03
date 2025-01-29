@@ -327,22 +327,24 @@ const createInvoice = async (req, res) => {
   } = req.body;
 
   try {
-      // Generate the next invoice number
-      const lastInvoice = await Invoice.findOne().sort({ invoicenumber: -1 }).select("invoicenumber");
-      const invoicenumber = lastInvoice ? lastInvoice.invoicenumber + 1 : 1;
+      // // Generate the next invoice number
+      // const lastInvoice = await Invoice.findOne().sort({ invoicenumber: -1 }).select("invoicenumber");
+      // const invoicenumber = lastInvoice ? lastInvoice.invoicenumber + 1 : 1;
 
-      // Check if the invoice already exists (redundant with autoincrement but kept for safety)
-      const existingInvoice = await Invoice.findOne({ invoicenumber });
-      if (existingInvoice) {
-          return res.status(409).json({ message: "Invoice already exists" });
-      }
+      // // Check if the invoice already exists (redundant with autoincrement but kept for safety)
+      // const existingInvoice = await Invoice.findOne({ invoicenumber });
+      // if (existingInvoice) {
+      //     return res.status(409).json({ message: "Invoice already exists" ,existingInvoice});
+      // }
 
       // Create a new invoice
       const newInvoice = await Invoice.create({
-          account, invoicenumber, invoicedate, description, invoicetemplate, paymentMethod, teammember, emailinvoicetoclient,
+          account, invoicedate, description, invoicetemplate, paymentMethod, teammember, emailinvoicetoclient,
           reminders, daysuntilnextreminder, numberOfreminder, scheduleinvoice, scheduleinvoicedate, scheduleinvoicetime,
           payInvoicewithcredits, lineItems, summary, active
       });
+
+      console.log(newInvoice)
 
       const accountinv = await Accounts.findById(account).populate("contacts");
       if (!accountinv) {
@@ -377,7 +379,7 @@ const createInvoice = async (req, res) => {
       }
 
       // Generate PDF for the invoice
-      const pdfPath = path.join(invoicesDir, `invoice_${invoicenumber}.pdf`);
+      const pdfPath = path.join(invoicesDir, `invoice_${newInvoice.invoicenumber}.pdf`);
 
       console.log("PDF successfully written to:", pdfPath);
       const replacePlaceholders = (template, data) => {
@@ -525,8 +527,8 @@ const createInvoice = async (req, res) => {
               // html: printContent, // HTML content of the email
               attachments: [
                   {
-                      filename: `invoice_${invoicenumber}.pdf`, // Filename for the attachment
-                      path: pdfPath // Path to the PDF file
+                      filename: `invoice_${newInvoice.invoicenumber}.pdf`, // Filename for the attachment
+                      path: pdfPath // Path to the P.DF file
                   }
               ]
           };

@@ -10,11 +10,11 @@ const companyAddressSchema = new mongoose.Schema({
     country: {
         name: {
             type: String,
-            required: true
+            // required: true
         },
         code: {
             type: String,
-            required: true
+            // required: true
         }
     },
     
@@ -32,7 +32,7 @@ const companyAddressSchema = new mongoose.Schema({
     },
     postalCode: {
         type: Number,
-        required: [true, 'Postal code is required'],
+        // required: [true, 'Postal code is required'],
     },
     companyId: {
         type: mongoose.Schema.Types.ObjectId,
