@@ -116,7 +116,7 @@ const createOrganizerAccountWise = async (req, res) => {
     const newOrganizerAccountWise = new OrganizerAccountWise(req.body);
 
     await newOrganizerAccountWise.save();
-
+    console.log(newOrganizerAccountWise);
     // Fetch account and associated contacts
     const account = await Accounts.findById(
       newOrganizerAccountWise.accountid
@@ -125,13 +125,13 @@ const createOrganizerAccountWise = async (req, res) => {
     const organizertemp = await OrganizerTemplate.findById(
       newOrganizerAccountWise.organizertemplateid
     );
-    console.log(organizertemp);
+    // console.log(organizertemp);
     const replacePlaceholders = (template, data) => {
       return template.replace(/\[([\w\s]+)\]/g, (match, placeholder) => {
         return data[placeholder.trim()] || "";
       });
     };
-
+ console.log(account);
     const validContacts = account.contacts.filter(
       (contact) => contact.emailSync
     );
@@ -211,7 +211,7 @@ const createOrganizerAccountWise = async (req, res) => {
     //     console.log('Notification email sent to user about missing contacts');
     // }
     // Get the current date
-
+    console.log(validContacts);
     const emailPromises = validContacts.map(async (contactId) => {
       try {
         const contact = await Contacts.findById(contactId);
@@ -253,7 +253,7 @@ const createOrganizerAccountWise = async (req, res) => {
           NEXT_QUARTER: nextQuarter,
           NEXT_YEAR: nextYear,
         });
-        console.log(organizerName);
+        // console.log(organizerName);
         if (contact.login === true) {
           const transporter = nodemailer.createTransport({
             host: "smtp.gmail.com",
@@ -289,7 +289,7 @@ const createOrganizerAccountWise = async (req, res) => {
 
             // Send the email
             const result = await transporter.sendMail(mailOptions);
-            console.log(`Email sent to ${contact.email}`);
+            // console.log(`Email sent to ${contact.email}`);
             return result;
           }
         } else {

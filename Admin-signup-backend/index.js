@@ -4,14 +4,57 @@ const cors = require("cors");
 const path = require("path");
 const dbconnect = require("./database/connectDb");
 const app = express();
-require("dotenv").config();
 
+const fs = require('fs');
+require("dotenv").config();
+const multer = require('multer');
 app.use(express.json());
 
 app.use(cors());
 
 // database connect
 dbconnect();
+
+// Serve static files from the 'uploads' folder
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+
+// Multer setup for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); // Ensure the 'uploads' directory exists
+  },
+  filename: (req, file, cb) => {
+    cb(null, `avatar_${Date.now()}${path.extname(file.originalname)}`);
+  },
+});
+
+const upload = multer({ storage });
+
+// Route to upload the cropped image
+app.post('/userprofilepic', upload.single('image'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+  res.status(200).json({ imageUrl: `/uploads/${req.file.filename}` }); // Return URL path for image
+});
+
+// Route to retrieve the last uploaded image
+app.get('/lastimage', (req, res) => {
+  const uploadsDir = path.join(__dirname, 'uploads');
+  fs.readdir(uploadsDir, (err, files) => {
+    if (err) return res.status(500).json({ error: 'Unable to fetch files' });
+
+    const avatarFiles = files.filter(file => file.startsWith('avatar_'));
+    if (avatarFiles.length === 0) {
+      return res.status(404).json({ error: 'No image found' });
+    }
+
+    // Return the latest uploaded file
+    avatarFiles.sort((a, b) => fs.statSync(path.join(uploadsDir, b)).mtime - fs.statSync(path.join(uploadsDir, a)).mtime);
+    res.status(200).json({ imageUrl: `http://127.0.0.1:${PORT}/uploads/${avatarFiles[0]}` }); // Return the path for the latest image
+  });
+});
 
 //! Common Routes
 const userRoutes = require("./routes/userRoute");
