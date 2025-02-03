@@ -7,6 +7,10 @@ const companyAddress = require("../models/companyAddressModel");
 const fs = require("fs");
 const fsPromises = require("fs").promises;
 const FolderTemplate = require("../models/folderTemplate")
+const Invoice = require("../models/invoiceModel")
+const Organizer = require("../models/organizerAccountwiseModel")
+const Proposal = require("../models/proposalAccountwiseModel")
+const Chat = require("../models/chatsModel")
 // POST a new account
 const createAccount = async (req, res) => {
   try {
@@ -387,34 +391,99 @@ const removeContactFromAccount = async (req, res) => {
 };
 
 //get all Account List
+// const getActiveAccountList = async (req, res) => {
+//   try {
+//     const { isActive } = req.params;
+
+//     // const teamMembers = await TeamMember.find({})
+//     const accounts = await Accounts.find({ active: isActive }).populate({ path: "tags", model: "Tags" }).populate({ path: "teamMember", model: "User" }).populate({ path: "contacts", model: "Contacts" }).sort({ createdAt: -1 });
+
+//     const accountlist = accounts.map((account) => {
+//       return {
+//         id: account._id,
+//         Name: account.accountName,
+//         Follow: account.contacts.map((contact) => contact.email).join(', '),
+//         Type: account.clientType,
+//         Invoices: "",
+//         Credits: "",
+//         Tasks: "",
+//         Team: account.teamMember,
+//         Tags: account.tags,
+//         Proposals: "",
+//         Unreadchats: "",
+//         Pendingorganizers: "",
+//         Pendingsignatures: "",
+//         Lastlogin: "",
+//         Contacts: account.contacts,
+//       };
+//     });
+
+//     //sort({ createdAt: -1 });
+//     res.status(200).json({ message: "Accounts retrieved successfully", accountlist });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
 const getActiveAccountList = async (req, res) => {
   try {
     const { isActive } = req.params;
 
-    // const teamMembers = await TeamMember.find({})
-    const accounts = await Accounts.find({ active: isActive }).populate({ path: "tags", model: "Tags" }).populate({ path: "teamMember", model: "User" }).populate({ path: "contacts", model: "Contacts" }).sort({ createdAt: -1 });
+    // Fetch accounts with related data
+    const accounts = await Accounts.find({ active: isActive })
+      .populate({ path: "tags", model: "Tags" })
+      .populate({ path: "teamMember", model: "User" })
+      .populate({ path: "contacts", model: "Contacts" })
+      .sort({ createdAt: -1 });
 
-    const accountlist = accounts.map((account) => {
-      return {
-        id: account._id,
-        Name: account.accountName,
-        Follow: account.contacts.map((contact) => contact.email).join(', '),
-        Type: account.clientType,
-        Invoices: "",
-        Credits: "",
-        Tasks: "",
-        Team: account.teamMember,
-        Tags: account.tags,
-        Proposals: "",
-        Unreadchats: "",
-        Pendingorganizers: "",
-        Pendingsignatures: "",
-        Lastlogin: "",
-        Contacts: account.contacts,
-      };
-    });
+    // Fetch invoices and calculate total invoice amount for each account
+    const accountlist = await Promise.all(
+      accounts.map(async (account) => {
+        const invoices = await Invoice.find({ account: account._id });
 
-    //sort({ createdAt: -1 });
+        // Calculate total invoice amount
+        const totalInvoiceAmount = invoices.reduce((sum, invoice) => {
+          return sum + (invoice.summary?.total || 0);
+        }, 0);
+
+        // Format amount with currency symbol ($)
+        const formattedInvoiceAmount = new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD",
+        }).format(totalInvoiceAmount);
+
+        // Fetch pending organizers where issubmited is false
+        const pendingOrganizers = await Organizer.find({
+          accountid: account._id, // Directly use the ObjectId
+          issubmited: false,
+        });
+        
+         // Fetch number of proposals for this account
+         const proposalCount = await Proposal.countDocuments({ accountid: account._id });
+
+       // Fetch number of unread chats for this account
+       const chatCount = await Chat.countDocuments({ accountid: account._id });
+        //  console.log(chatCount)
+        // console.log("hhh",pendingOrganizers)
+        return {
+          id: account._id,
+          Name: account.accountName,
+          Follow: account.contacts.map((contact) => contact.email).join(", "),
+          Type: account.clientType,
+          Invoices: formattedInvoiceAmount, // Add total invoice amount
+          Credits: "",
+          Tasks: "",
+          Team: account.teamMember,
+          Tags: account.tags,
+          Proposals: proposalCount,
+          Unreadchats: chatCount,
+          Pendingorganizers: pendingOrganizers.length,
+          Pendingsignatures: "",
+          Lastlogin: "",
+          Contacts: account.contacts,
+        };
+      })
+    );
+
     res.status(200).json({ message: "Accounts retrieved successfully", accountlist });
   } catch (error) {
     res.status(500).json({ error: error.message });
