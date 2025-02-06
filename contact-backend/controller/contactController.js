@@ -110,7 +110,7 @@ const updateContact = async (req, res) => {
 // Get contacts list
 const getContactsList = async (req, res) => {
   try {
-    const contacts = await Contacts.find({}).populate({ path: "tags", model: "Tags" }); // Ensure correct model name
+    const contacts = await Contacts.find({}).populate({ path: "tags", model: "Tags" }).sort({ createdAt: -1 }); // Ensure correct model name
     const contactlist = contacts.map((contact) => {
       return {
         id: contact._id,

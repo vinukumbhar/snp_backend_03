@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 //get all ServiceTemplate
 const getServiceTemplates = async (req, res) => {
     try {
-        const serviceTemplate = await ServiceTemplate.find({}).sort({ createdAt: -1 });
+        const serviceTemplate = await ServiceTemplate.find({}).sort({ createdAt: -1 }).populate({ path: 'category', model: 'Category' });;
         res.status(200).json({ message: "ServiceTemplate retrieved successfully", serviceTemplate });
 
     } catch (error) {

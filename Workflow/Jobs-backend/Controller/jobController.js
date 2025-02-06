@@ -542,7 +542,7 @@ const getActiveJobList = async (req, res) => {
         populate: { path: "stages", model: "stage" },
       })
       .populate({ path: "jobassignees", model: "User" })
-      .populate({ path: "clientfacingstatus", model: "ClientFacingjobStatus" });
+      .populate({ path: "clientfacingstatus", model: "ClientFacingjobStatus" }).sort({ createdAt: -1 });
     const jobList = [];
 
     for (const job of jobs) {

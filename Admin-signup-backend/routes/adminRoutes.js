@@ -123,6 +123,7 @@ router.delete("/teammember/:id", deleteTeamMember);
 // router.patch('/teammember/:id',  updateTeamMember)
 router.get("/teammember/teammemberlist/list/:value", getTeamMemberList);
 router.patch("/teammember/updateTeamMemberPassword", updateTeamMemberPassword);
+// getTeamMemberByUserId
 
 //*Team Member END******* */
 
