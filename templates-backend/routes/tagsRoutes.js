@@ -1,6 +1,6 @@
 const express = require ('express');
 const router = express.Router();
-const {getAllTags,getSingleTag,createTag,deleteTags,updateTags,getaccountcounttags} = require('../controller/tagController')
+const {getTagByName,getAllTags,getSingleTag,createTag,deleteTags,updateTags,getaccountcounttags} = require('../controller/tagController')
 
 // gets all tags
 router.get('/', getAllTags)
@@ -19,6 +19,9 @@ router.patch('/:id', updateTags)
 
 // get single tag
 router.get('/accountcountoftag/account', getaccountcounttags)
+// get tag by name
+router.get("/tags", getTagByName);
+
 
 
 module.exports = router

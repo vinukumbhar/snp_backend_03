@@ -112,7 +112,7 @@ const updateTags = async (req, res) => {
 const getaccountcounttags = async (req, res) => {
     try {
         const accounts = await Accounts.find().populate('tags');
-        const tags = await Tags.find();
+        const tags = await Tags.find().sort({ createdAt: -1 });
         // if (!tags || tags.length === 0) {
         //     return res.status(404).json({ error: "No tags found" });
         // }
@@ -144,7 +144,20 @@ const getaccountcounttags = async (req, res) => {
         return res.status(500).json({ error: "Internal server error" });
     }
 };
-
+const getTagByName = async (req, res) => {
+    try {
+      const { tagName } = req.query;
+      const tag = await Tags.findOne({ tagName });
+  
+      if (!tag) {
+        return res.status(404).json({ error: "Tag not found" });
+      }
+  
+      res.status(200).json(tag);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
 
 module.exports = {
     getAllTags,
@@ -152,5 +165,6 @@ module.exports = {
     createTag,
     deleteTags,
     updateTags,
-    getaccountcounttags
+    getaccountcounttags,
+    getTagByName
 }

@@ -22,20 +22,6 @@ const createAccount = async (req, res) => {
     newAccount = await Accounts.create({ clientType, accountName, tags, teamMember, contacts, description,foldertemplate,userid,active });
 
 
-
-
-
-
-    // const accountIdFolder = `uploads/accountsFolder/${newAccount._id}`;
-    // if (!fs.existsSync(accountIdFolder)) {
-    //   fs.mkdirSync(accountIdFolder, { recursive: true });
-      
-     
-    // }
-
-
-
-
     if (clientType === "Company") {
       const { companyName, country, streetAddress, city, state, postalCode,foldertemplate, active } = req.body;
 
