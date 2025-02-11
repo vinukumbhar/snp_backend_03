@@ -44,22 +44,42 @@ const getSingleTag = async (req,res)=>{
 
 
 //create new contact
-const createTag = async (req, res) => {
-    const { tagName,tagColour,active} = req.body
-    try {
-         const existingTag = await Tags.findOne({ tagName });
+// const createTag = async (req, res) => {
+//     const { tagName,tagColour,active} = req.body
+//     try {
+//          const existingTag = await Tags.findOne({ tagName });
 
- if (existingTag) {
-            return res.status(200).json({message: "Tag with this TagName already exists" });
+//  if (existingTag) {
+//             return res.status(200).json({message: "Tag with this TagName already exists" });
+//         }
+
+//         const newTag = await Tags.create({ tagName,tagColour,active })
+//         res.status(200).json({ message: "Tag created successfully", tags: newTag });
+//     }
+//     catch (error) {
+//         res.status(400).json({ error: error.message })
+//     }
+// }
+
+
+const createTag = async (req, res) => {
+    const { tagName, tagColour, active } = req.body;
+    try {
+        const existingTag = await Tags.findOne({ tagName });
+
+        if (existingTag) {
+            return res.status(200).json({
+                message: "Tag with this TagName already exists",
+                tags: existingTag // Send existing tag data
+            });
         }
 
-        const newTag = await Tags.create({ tagName,tagColour,active })
+        const newTag = await Tags.create({ tagName, tagColour, active });
         res.status(200).json({ message: "Tag created successfully", tags: newTag });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
     }
-    catch (error) {
-        res.status(400).json({ error: error.message })
-    }
-}
+};
 
 // delte tags
 const deleteTags = async(req, res)=>{
@@ -144,21 +164,51 @@ const getaccountcounttags = async (req, res) => {
         return res.status(500).json({ error: "Internal server error" });
     }
 };
-const getTagByName = async (req, res) => {
-    try {
-      const { tagName } = req.query;
-      const tag = await Tags.findOne({ tagName });
-  
-      if (!tag) {
-        return res.status(404).json({ error: "Tag not found" });
-      }
-  
-      res.status(200).json(tag);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
+// Function to find tags by tagName
+// const findTagsByName = async (req, res) => {
+//     try {
+//         const { tagName } = req.query;
+//         if (!tagName) {
+//             return res.status(400).json({ message: "tagName is required" });
+//         }
 
+//         // Find tags with case-insensitive matching
+//         const tags = await Tags.find({ tagName: { $regex: new RegExp(tagName, "i") } });
+
+//         if (tags.length === 0) {
+//             return res.status(404).json({ message: "No tags found" });
+//         }
+
+//         res.json(tags);
+//     } catch (error) {
+//         res.status(500).json({ message: "Server error", error: error.message });
+//     }
+// };
+
+const findTagsByName = async (req, res) => {
+    try {
+        let { tagName } = req.query;
+        if (!tagName) {
+            return res.status(400).json({ message: "tagName is required" });
+        }
+
+        tagName = tagName.trim(); // Remove leading/trailing spaces
+
+        console.log("Searching for tag:", tagName); // Debug log
+
+        // Case-insensitive search
+        const tags = await Tags.find({ tagName: { $regex: `^${tagName}$`, $options: "i" } });
+
+        if (tags.length === 0) {
+            return res.status(404).json({ message: "No such tag found" });
+        }
+
+        res.json(tags);
+    } catch (error) {
+        console.error("Error finding tag:", error); // Log error
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
 module.exports = {
     getAllTags,
     getSingleTag,
@@ -166,5 +216,5 @@ module.exports = {
     deleteTags,
     updateTags,
     getaccountcounttags,
-    getTagByName
+    findTagsByName
 }
