@@ -127,7 +127,7 @@ const getEmailTemplateList = async (req, res) => {
 
 const createEmailTemplate = async (req, res) => {
     const { templatename, from, emailsubject, emailbody, active } = req.body;
-    const files = req.files; // Assuming req.files contains file information
+    const files = req.files || []; // Assuming req.files contains file information
 
     try {
         const existingTemplate = await EmailTemplate.findOne({ templatename });
@@ -148,7 +148,7 @@ const createEmailTemplate = async (req, res) => {
             emailsubject,
             emailbody,
             active,
-            files: fileDetails // Assign the array of file objects
+           fileDetails // Assign the array of file objects
         });
 
         return res.status(201).json({ message: "EmailTemplate created successfully", newEmailTemplate });
