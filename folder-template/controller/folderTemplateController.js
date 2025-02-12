@@ -64,7 +64,7 @@ const createFolderTemplate = async (req, res) => {
 // get all folder
 const getFolders = async (req, res) => {
   try {
-    const folderTemplates = await FolderTemplate.find();
+    const folderTemplates = await FolderTemplate.find().sort({ createdAt: -1 });
     res.status(200).json({ message: "Folder Templates retrieved successfully", folderTemplates });
   } catch (error) {
     console.error(error);
