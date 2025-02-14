@@ -636,7 +636,7 @@ exports.getFoldersAndFilesByAccountId = async (req, res) => {
           return res.status(400).json({ message: "Account ID is required" });
       }
 
-      console.log("Fetching files and folders for Account ID:", accountId);
+      // console.log("Fetching files and folders for Account ID:", accountId);
 
       // Define the account directory path
       const baseDir = path.join(__dirname, '../uploads');

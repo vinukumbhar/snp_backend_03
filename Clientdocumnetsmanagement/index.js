@@ -36,7 +36,7 @@ app.get("/createnewFolder", async (req, res) => {
 
     // Resolve the full path safely
     const fullPath = path.resolve(__dirname, folderPath, folderName);
-console.log(fullPath)
+// console.log(fullPath)
     // Create the folder (recursive: true allows nested folder creation)
     await fs.mkdir(fullPath, { recursive: true });
 
@@ -68,12 +68,12 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Create an API endpoint to upload files
-app.post("/uploadfile", upload.single("file"), (req, res) => {
+app.post("/uploaddocuments", upload.single("file"), (req, res) => {
   // Extract path from the form data
   let targetPath = req.body.destinationPath;
   // Replace all occurrences of '//' with '/'
   targetPath = targetPath.replace(/\/\//g, "/");
-
+console.log(targetPath)
   if (!targetPath) {
     return res
       .status(400)
