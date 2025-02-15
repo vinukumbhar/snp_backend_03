@@ -1,0 +1,6 @@
+Consultant_ID,Name,Email,Phone,Company,Experience_Years,Clients_Count,Registration_Date
+TC001,John Doe,john.doe@example.com,9876543210,JD Tax Solutions,10,150,2015-06-15
+TC002,Alice Smith,alice.smith@example.com,9876543211,Smith Tax Advisory,8,120,2017-09-22
+TC003,Robert Brown,robert.brown@example.com,9876543212,Brown & Co.,12,180,2013-03-10
+TC004,Emily Johnson,emily.johnson@example.com,9876543213,Johnson Tax Experts,6,90,2019-11-05
+TC005,Michael Lee,michael.lee@example.com,9876543214,Lee Financial Services,15,250,2010-01-25

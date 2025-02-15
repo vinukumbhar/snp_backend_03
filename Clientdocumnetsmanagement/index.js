@@ -8,6 +8,7 @@ const path = require("path");
 const fs = require("fs").promises;
 const multer = require("multer");
 const fileRoutes = require('./routes/organizerFileRoutes')
+const docManagementRoutes = require('./routes/DocManagementRouter')
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -20,14 +21,14 @@ app.use('/clientdocs', clientRoutes);
 
 app.use('/clientlist/documents', doclistRoutes)
 
-
+app.use('/docmanagement', docManagementRoutes)
 
 // API to create a folder
 app.get("/createnewFolder", async (req, res) => {
   try {
     const folderName = req.query.foldername; // Folder name
     const folderPath = req.query.path; // Path
-
+console.log(folderPath)
     if (!folderName || !folderPath) {
       return res
         .status(400)
@@ -74,6 +75,7 @@ app.post("/uploaddocuments", upload.single("file"), (req, res) => {
   // Replace all occurrences of '//' with '/'
   targetPath = targetPath.replace(/\/\//g, "/");
 console.log(targetPath)
+
   if (!targetPath) {
     return res
       .status(400)
@@ -83,6 +85,8 @@ console.log(targetPath)
   if (!req.file) {
     return res.status(400).send({ message: "No file uploaded." });
   }
+
+  console.log("Uploaded file name:", req.file.filename);
   res.status(200).send({
     message: "File uploaded successfully!",
     filePath: `/uploads/${req.file.filename}`,
