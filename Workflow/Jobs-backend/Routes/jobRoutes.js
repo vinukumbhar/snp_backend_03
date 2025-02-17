@@ -1,7 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { getActiveJobList, createJob, getJobs, getJob, deleteJob, updateJob, getJobList, getJobListbyid, updatestgeidtojob, getActiveJobListbyAccountId } = require("../Controller/jobController");
+const {   getActiveJobCount ,
+    getInactiveJobCount  ,getJobsCount,getActiveJobList, createJob, getJobs, getJob, deleteJob, updateJob, getJobList, getJobListbyid, updatestgeidtojob, getActiveJobListbyAccountId } = require("../Controller/jobController");
 router.get("/job", getJobs);
+router.get("/jobscount", getJobsCount);
+router.get("/activejobcounts",getActiveJobCount);
+router.get("/inactivejobcounts",getInactiveJobCount)
 router.get("/job/:id", getJob);
 router.post("/newjob", createJob);
 router.delete("/job/:id", deleteJob);

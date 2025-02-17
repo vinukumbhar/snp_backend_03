@@ -323,7 +323,7 @@ const createInvoice = async (req, res) => {
   const {
       account, invoicedate, description, invoicetemplate, paymentMethod, teammember, emailinvoicetoclient,
       reminders, daysuntilnextreminder, numberOfreminder, scheduleinvoice, scheduleinvoicedate, scheduleinvoicetime,
-      payInvoicewithcredits, lineItems, summary, active
+      payInvoicewithcredits, lineItems, summary, active,paidAmount,invoiceStatus,balanceDueAmount
   } = req.body;
 
   try {
@@ -341,7 +341,7 @@ const createInvoice = async (req, res) => {
       const newInvoice = await Invoice.create({
           account, invoicedate, description, invoicetemplate, paymentMethod, teammember, emailinvoicetoclient,
           reminders, daysuntilnextreminder, numberOfreminder, scheduleinvoice, scheduleinvoicedate, scheduleinvoicetime,
-          payInvoicewithcredits, lineItems, summary, active
+          payInvoicewithcredits, lineItems, summary, active,paidAmount,invoiceStatus,balanceDueAmount
       });
 
       console.log(newInvoice)
@@ -593,6 +593,31 @@ const updateInvoice = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+// Update invoice by invoiceStatus
+const updateInvoiceByStatus = async (req, res) => {
+  const { invoicenumber } = req.params;
+  const { invoiceStatus } = req.body;
+
+  if (!invoiceStatus) {
+    return res.status(400).json({ error: "Invoice status is required." });
+  }
+
+  try {
+    const updatedInvoice = await Invoice.findOneAndUpdate(
+      { invoicenumber },
+      { invoiceStatus },
+      { new: true }
+    );
+
+    if (!updatedInvoice) {
+      return res.status(404).json({ error: "No such Invoice" });
+    }
+
+    res.status(200).json({ message: "Invoice status updated successfully", updatedInvoice });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 //Get a single InvoiceList List
 const getInvoiceList = async (req, res) => {
@@ -798,6 +823,7 @@ module.exports = {
   getInvoice,
   deleteInvoice,
   updateInvoice,
+  updateInvoiceByStatus,
   getInvoiceList,
   getInvoiceListbyid,
   getInvoiceListbyAccountid,

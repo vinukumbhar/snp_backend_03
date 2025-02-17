@@ -70,6 +70,39 @@ const getJobs = async (req, res) => {
   }
 };
 
+
+// Get job count
+const getJobsCount = async (req, res) => {
+  try {
+    const jobCount = await Job.countDocuments(); // Get count of all jobs
+    res.status(200).json({ message: "Job count retrieved successfully", count: jobCount });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get count of active jobs
+const getActiveJobCount = async (req, res) => {
+  try {
+    const activeJobCount = await Job.countDocuments({ active: true }); // Count active jobs
+    res.status(200).json({ message: "Active job count retrieved successfully", count: activeJobCount });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+// Get count of inactive jobs
+const getInactiveJobCount = async (req, res) => {
+  try {
+    const inactiveJobCount = await Job.countDocuments({ active: false }); // Count inactive jobs
+    res.status(200).json({ message: "Inactive job count retrieved successfully", count: inactiveJobCount });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
 //Get a single JobTemplate
 const getJob = async (req, res) => {
   const { id } = req.params;
@@ -1466,6 +1499,9 @@ const updatestgeidtojob = async (req, res) => {
 };
 
 module.exports = {
+  getActiveJobCount ,
+  getInactiveJobCount  ,
+  getJobsCount,
   createJob,
   getJobs,
   getJob,
