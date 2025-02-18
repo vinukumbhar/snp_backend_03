@@ -75,6 +75,46 @@ const getInvoices = async (req, res) => {
   }
 };
 
+const getInvoiceSummary = async (req, res) => {
+  try {
+    const summary = await Invoice.aggregate([
+      {
+        $group: {
+          _id: "$invoiceStatus",
+          totalAmount: { $sum: "$summary.total" },
+          paidAmount: { $sum: { $ifNull: ["$paidAmount", 0] } },
+          balanceDueAmount: { 
+            $sum: { 
+              $subtract: ["$summary.total", { $ifNull: ["$paidAmount", 0] }] 
+            }
+          }
+        }
+      }
+    ]);
+
+    res.status(200).json({ message: "Invoice summary retrieved", summary });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getInvoiceCountByStatus = async (req, res) => {
+  try {
+    const invoiceCounts = await Invoice.aggregate([
+      {
+        $group: {
+          _id: "$invoiceStatus",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    res.status(200).json({ message: "Invoice count retrieved successfully", invoiceCounts });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 //Get a single Invoice
 const getInvoice = async (req, res) => {
   const { id } = req.params;
@@ -96,6 +136,18 @@ const getInvoice = async (req, res) => {
     console.log(error.message);
   }
 };
+
+
+// Get job count
+const getInvoicesCount = async (req, res) => {
+  try {
+    const invoiceCount = await Invoice.countDocuments(); // Get count of all jobs
+    res.status(200).json({ message: "Job count retrieved successfully", count: invoiceCount });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 
 //POST a new Invoice
 // const createInvoice = async (req, res) => {
@@ -818,9 +870,12 @@ const getInvoiceforPrint = async (req, res) => {
     }
 };
 module.exports = {
+  getInvoiceCountByStatus,
+  getInvoiceSummary,
   createInvoice,
   getInvoices,
   getInvoice,
+  getInvoicesCount,
   deleteInvoice,
   updateInvoice,
   updateInvoiceByStatus,
