@@ -763,10 +763,18 @@ const getActiveJobList = async (req, res) => {
       const accountsname = job.accounts.map((account) => account.accountName);
       const accountId = job.accounts.map((account) => account._id);
 
-      const account = await Accounts.findById(accountId).populate("contacts");
+      // const account = await Accounts.findById(accountId).populate("contacts");
 
-      // Filter only contacts that have login access
-      const validContacts = account.contacts.filter((contact) => contact.login);
+      // // Filter only contacts that have login access
+      // const validContacts = account.contacts.filter((contact) => contact.login);
+         // const account = await Accounts.findById(accountId).populate("contacts");
+         const account = await Accounts.find({ _id: { $in: accountId } }).populate("contacts");
+         // Filter only contacts that have login access
+         // const validContacts = account.contacts.filter((contact) => contact.login);
+    // Collect valid contacts
+    const validContacts = account.flatMap((account) => 
+     account.contacts ? account.contacts.filter((contact) => contact.login) : []
+   );
 
       let stageNames = null;
       if (Array.isArray(job.stageid)) {
