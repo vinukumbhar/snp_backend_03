@@ -36,7 +36,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { createUser, getUsers, getUser, deleteUser, updateUser, adminSignup, getUserByEmail, updateUserPassword, updateLoginStatus, getUserListbyId, getUsersByRoles, getVerifyUserbyPassword } = require("../Controller/userController");
+const { updateUserPasswordwithoutAut,createUser, getUsers, getUser, deleteUser, updateUser, adminSignup, getUserByEmail, updateUserPassword, updateLoginStatus, getUserListbyId, getUsersByRoles, getVerifyUserbyPassword } = require("../Controller/userController");
 const { validateToken, logout, cleanupBlacklist } = require("../middleware/authJwt");
 const { generatetoken } = require("../controller/loginController");
 const { adminLogin } = require("../controller/loginController");
@@ -68,6 +68,8 @@ router.get("/resetpassword/verifytoken", validateToken, (req, res) => {
   res.json({ message: "Access granted", user: req.user });
 });
 router.patch("/user/password/updateuserpassword/", updateUserPassword);
+// updateUserPasswordwithoutAut
+router.patch("/user/password/updateuserpasswordwithoutauth/", updateUserPasswordwithoutAut);
 router.get("/user/userlist/list/:id", getUserListbyId);
 router.get("/users/roles", getUsersByRoles);
 // router.post("/user/verifyuser/verifybyemail/verifybypassword", getVerifyUserbyPassword)

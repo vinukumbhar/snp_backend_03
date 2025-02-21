@@ -84,6 +84,8 @@ const getAccountsIdAndName = async (req, res) => {
   }
 };
 
+
+
 //Get a single Account
 const getAccount = async (req, res) => {
   const { id } = req.params;
@@ -103,6 +105,27 @@ const getAccount = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// Get a single Account
+const getAccountsUserId = async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ error: "Invalid Account ID" });
+  }
+  try {
+    const account = await Accounts.findById(id).select("_id accountName userid");
+
+    if (!account) {
+      return res.status(404).json({ error: "No such Account" });
+    }
+
+    res.status(200).json({ message: "Account retrieved successfully", account });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 
 //Get a single Account
 const getAccountbyIdAll = async (req, res) => {
@@ -476,6 +499,65 @@ const getActiveAccountList = async (req, res) => {
   }
 };
 
+
+
+// gets accounts by teammember
+const getAccountsByTeamMember = async (req, res) => {
+  try {
+    const { userid, isActive } = req.params;
+
+    // Fetch accounts linked to the specified team member and activity status
+    const accounts = await Accounts.find({ teamMember: userid, active: isActive })
+      .populate({ path: "tags", model: "Tags" })
+      .populate({ path: "teamMember", model: "User" })
+      .populate({ path: "contacts", model: "Contacts" })
+      .sort({ createdAt: -1 });
+
+    // Process account details
+    const accountList = await Promise.all(
+      accounts.map(async (account) => {
+        const invoices = await Invoice.find({ account: account._id });
+        const totalInvoiceAmount = invoices.reduce((sum, invoice) => sum + (invoice.summary?.total || 0), 0);
+        const formattedInvoiceAmount = new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD",
+        }).format(totalInvoiceAmount);
+
+        const pendingOrganizers = await Organizer.countDocuments({
+          accountid: account._id,
+          issubmited: false,
+        });
+
+        const proposalCount = await Proposal.countDocuments({ accountid: account._id });
+        const chatCount = await Chat.countDocuments({ accountid: account._id });
+
+        return {
+          id: account._id,
+          Name: account.accountName,
+          Follow: account.contacts.map((contact) => contact.email).join(", "),
+          Type: account.clientType,
+          Invoices: formattedInvoiceAmount,
+          Credits: "",
+          Tasks: "",
+          Team: account.teamMember,
+          Tags: account.tags,
+          Proposals: proposalCount,
+          Unreadchats: chatCount,
+          Pendingorganizers: pendingOrganizers,
+          Pendingsignatures: "",
+          Lastlogin: "",
+          Contacts: account.contacts,
+        };
+      })
+    );
+
+    res.status(200).json({ message: "Accounts retrieved successfully", accountList });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
 const updateContactsForMultipleAccounts = async (req, res) => {
   const { accountIds } = req.body;
 
@@ -531,5 +613,7 @@ module.exports = {
   getActiveAccountList,
   updateContactsForMultipleAccounts,
   getAccountListByUserId,
-  getAccountsIdAndName
+  getAccountsIdAndName,
+  getAccountsUserId,
+  getAccountsByTeamMember
 };
