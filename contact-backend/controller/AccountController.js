@@ -504,17 +504,17 @@ const getActiveAccountList = async (req, res) => {
 // gets accounts by teammember
 const getAccountsByTeamMember = async (req, res) => {
   try {
-    const { userid, isActive } = req.params;
+    const { userid } = req.params;
 
     // Fetch accounts linked to the specified team member and activity status
-    const accounts = await Accounts.find({ teamMember: userid, active: isActive })
+    const accounts = await Accounts.find({ teamMember: userid })
       .populate({ path: "tags", model: "Tags" })
       .populate({ path: "teamMember", model: "User" })
       .populate({ path: "contacts", model: "Contacts" })
       .sort({ createdAt: -1 });
 
     // Process account details
-    const accountList = await Promise.all(
+    const accountlist = await Promise.all(
       accounts.map(async (account) => {
         const invoices = await Invoice.find({ account: account._id });
         const totalInvoiceAmount = invoices.reduce((sum, invoice) => sum + (invoice.summary?.total || 0), 0);
@@ -551,7 +551,7 @@ const getAccountsByTeamMember = async (req, res) => {
       })
     );
 
-    res.status(200).json({ message: "Accounts retrieved successfully", accountList });
+    res.status(200).json({ message: "Accounts retrieved successfully", accountlist });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
