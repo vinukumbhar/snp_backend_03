@@ -54,9 +54,9 @@ const getSingleContact = async (req, res) => {
 const createContact = async (req, res) => {
   const contacts = req.body;
 
-  if (!Array.isArray(contacts) || contacts.some((contact) => !contact.firstName || !contact.lastName || !contact.email)) {
-    return res.status(400).json({ error: "Each contact must have first name, last name, and email" });
-  }
+  // if (!Array.isArray(contacts) || contacts.some((contact) => !contact.firstName || !contact.lastName || !contact.email)) {
+  //   return res.status(400).json({ error: "Each contact must have first name, last name, and email" });
+  // }
 
   try {
     const newContacts = await Promise.all(contacts.map((contact) => Contacts.create(contact)));

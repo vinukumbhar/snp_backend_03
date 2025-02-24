@@ -1,5 +1,5 @@
 const Pipeline = require('../models/pipelineTemplateModel');
-
+const Job = require('../models/JobModel')
 const mongoose = require("mongoose");
 
 //get all Pipelines
@@ -10,6 +10,51 @@ const getPipelines = async (req, res) => {
 
     } catch (error) {
         res.status(500).json({ error: error.message })
+    }
+};
+
+const getPipelinesWithActiveJobsCount = async (req, res) => {
+    try {
+      // Fetch all pipelines
+      const pipelines = await Pipeline.find();
+  
+      // Fetch active jobs count for each pipeline
+      const pipelinesWithJobCount = await Promise.all(
+        pipelines.map(async (pipeline) => {
+          const activeJobsCount = await Job.countDocuments({
+            pipeline: pipeline._id,
+            active: true,
+          });
+          return {
+            ...pipeline.toObject(),
+            activeJobsCount,
+          };
+        })
+      );
+  
+      res.status(200).json({ success: true, data: pipelinesWithJobCount });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  };
+  
+  
+//get all Pipelines
+const getPipelinesByUserId = async (req, res) => {
+    try {
+        const { userid } = req.params;
+
+        // Fetch pipelines belonging to the given user
+        const pipeline = await Pipeline.find({ availableto: userid }).sort({ createdAt: -1 });
+
+        if (!pipeline.length) {
+            return res.status(404).json({ message: "No pipelines found for this user" });
+        }
+
+        res.status(200).json({ message: "Pipelines retrieved successfully", pipeline });
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 };
 
@@ -129,5 +174,7 @@ module.exports = {
     updatePipeline,
     deletePipeline,
     getPipelineTemplateList,
+    getPipelinesByUserId,
+    getPipelinesWithActiveJobsCount
 }
 

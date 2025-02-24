@@ -11,47 +11,13 @@ const stageSchema = new mongoose.Schema({
   automations: [
 
   ],
-  // automations: [
-  //   {
-  //     action: {
-  //       type: String,
-  //     },
-  //     conditions: [
-  //       {
-  //         type: Array,
-  //         type: mongoose.Schema.Types.ObjectId,
-  //         ref: "tag",
-  //       },
-  //     ],
-
-  //     templates: {
-  //       label: {
-  //         type: String,
-  //       },
-  //       value: {
-  //         type: mongoose.Schema.Types.ObjectId,
-  //       },
-  //     },
-  //   },
-  // ],
+  
   automove: {
     type: Boolean,
   },
 });
 
-// type: {
-//   type: String,
-// },
-// template: {
-//   type: String,
-// },
-// conditionTags: [
-//   {
-//     type: Array,
-//     type: mongoose.Schema.Types.ObjectId,
-//     ref: "tag",
-//   },
-// ],
+
 const pipelineSchema = new mongoose.Schema(
   {
     pipelineName: {

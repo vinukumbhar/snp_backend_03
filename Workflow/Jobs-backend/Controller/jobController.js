@@ -877,8 +877,147 @@ const getActiveJobList = async (req, res) => {
   }
 };
 
+// jobassignees
+const getActiveJobListByUserid = async (req, res) => {
+  try {
+    const { userid,isActive } = req.params;
+    const jobs = await Job.find({ jobassignees:userid,active: isActive })
+      .populate({ path: "accounts", model: "Accounts" })
+      .populate({
+        path: "pipeline",
+        model: "pipeline",
+        populate: { path: "stages", model: "stage" },
+      })
+      .populate({ path: "jobassignees", model: "User" })
+      .populate({ path: "clientfacingstatus", model: "ClientFacingjobStatus" })
+      .sort({ createdAt: -1 });
 
+    const jobList = [];
 
+    for (const job of jobs) {
+      const pipeline = await Pipeline.findById(job.pipeline);
+      if (!pipeline) continue;
+
+      const jobAssigneeNames = job.jobassignees.map(
+        (assignee) => assignee.username
+      );
+
+      const accountsname = job.accounts.map((account) => account.accountName);
+      const accountId = job.accounts.map((account) => account._id);
+
+      // const account = await Accounts.findById(accountId).populate("contacts");
+
+      // // Filter only contacts that have login access
+      // const validContacts = account.contacts.filter((contact) => contact.login);
+         // const account = await Accounts.findById(accountId).populate("contacts");
+         const account = await Accounts.find({ _id: { $in: accountId } }).populate("contacts");
+         // Filter only contacts that have login access
+         // const validContacts = account.contacts.filter((contact) => contact.login);
+    // Collect valid contacts
+    const validContacts = account.flatMap((account) => 
+     account.contacts ? account.contacts.filter((contact) => contact.login) : []
+   );
+
+      let stageNames = null;
+      if (Array.isArray(job.stageid)) {
+        stageNames = job.stageid
+          .map((stageId) =>
+            pipeline.stages.find((stage) => stage._id.equals(stageId))
+          )
+          .filter(Boolean)
+          .map((stage) => stage.name);
+      } else {
+        const matchedStage = pipeline.stages.find((stage) =>
+          stage._id.equals(job.stageid)
+        );
+        stageNames = matchedStage ? [matchedStage.name] : null;
+      }
+
+      const clientFacingStatus = job.clientfacingstatus
+        ? {
+            statusId: job.clientfacingstatus._id,
+            statusName: job.clientfacingstatus.clientfacingName,
+            statusColor: job.clientfacingstatus.clientfacingColour,
+          }
+        : null;
+
+      const commonPlaceholders = {
+        ACCOUNT_NAME: accountsname.join(", "),
+        CURRENT_DAY_FULL_DATE: currentFullDate,
+        CURRENT_DAY_NUMBER: currentDayNumber,
+        CURRENT_DAY_NAME: currentDayName,
+        CURRENT_WEEK: currentWeek,
+        CURRENT_MONTH_NUMBER: currentMonthNumber,
+        CURRENT_MONTH_NAME: currentMonthName,
+        CURRENT_QUARTER: currentQuarter,
+        CURRENT_YEAR: currentYear,
+        LAST_DAY_FULL_DATE: lastDayFullDate,
+        LAST_DAY_NUMBER: lastDayNumber,
+        LAST_DAY_NAME: lastDayName,
+        LAST_WEEK: lastWeek,
+        LAST_MONTH_NUMBER: lastMonthNumber,
+        LAST_MONTH_NAME: lastMonthName,
+        LAST_QUARTER: lastQuarter,
+        LAST_YEAR: lastYear,
+        NEXT_DAY_FULL_DATE: nextDayFullDate,
+        NEXT_DAY_NUMBER: nextDayNumber,
+        NEXT_DAY_NAME: nextDayName,
+        NEXT_WEEK: nextWeek,
+        NEXT_MONTH_NUMBER: nextMonthNumber,
+        NEXT_MONTH_NAME: nextMonthName,
+        NEXT_QUARTER: nextQuarter,
+        NEXT_YEAR: nextYear,
+      };
+
+      let placeholderData = { ...commonPlaceholders };
+
+      if (validContacts.length > 0) {
+        // Pick the first valid contact to use for placeholders
+        const firstContact = await Contacts.findById(validContacts[0]._id);
+        placeholderData = {
+          ...commonPlaceholders,
+          FIRST_NAME: firstContact?.firstName || "",
+          MIDDLE_NAME: firstContact?.middleName || "",
+          LAST_NAME: firstContact?.lastName || "",
+          CONTACT_NAME: firstContact?.contactName || "",
+          COMPANY_NAME: firstContact?.companyName || "",
+          COUNTRY: firstContact?.country || "",
+          STREET_ADDRESS: firstContact?.streetAddress || "",
+          STATEPROVINCE: firstContact?.state || "",
+          PHONE_NUMBER: firstContact?.phoneNumbers || "",
+          ZIPPOSTALCODE: firstContact?.postalCode || "",
+          CITY: firstContact?.city || "",
+        };
+      }
+
+      const jobName = replacePlaceholders(job.jobname, placeholderData);
+      const jobDescription = replacePlaceholders(job.description, placeholderData);
+
+      jobList.push({
+        id: job._id,
+        Name: jobName,
+        JobAssignee: jobAssigneeNames,
+        Pipeline: pipeline ? pipeline.pipelineName : null,
+        Stage: stageNames,
+        Account: accountsname,
+        AccountId: accountId,
+        ClientFacingStatus: clientFacingStatus,
+        StartDate: job.startdate,
+        DueDate: job.enddate,
+        Priority: job.priority,
+        Description: jobDescription,
+        StartsIn: job.startsin ? `${job.startsin} ${job.startsinduration}` : null,
+        DueIn: job.duein ? `${job.duein} ${job.dueinduration}` : null,
+        createdAt: job.createdAt,
+        updatedAt: job.updatedAt,
+      });
+    }
+
+    res.status(200).json({ message: "JobTemplate retrieved successfully", jobList });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 // const getActiveJobList = async (req, res) => {
 //   try {
@@ -1273,8 +1412,11 @@ const getActiveJobListbyAccountId = async (req, res) => {
   try {
     const { isActive, accountid } = req.params;
 
+     // Convert accountid string into an array
+     const accountIdsArray = accountid.split(",");
+
     // Fetch jobs filtered by isActive and accountid
-    const jobs = await Job.find({ active: isActive, accounts: accountid })
+    const jobs = await Job.find({ active: isActive,  accounts: { $in: accountIdsArray }, })
       .populate({ path: "accounts", model: "Accounts" })
       .populate({
         path: "pipeline",
@@ -1505,7 +1647,28 @@ const updatestgeidtojob = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+const getPipelinesFromJobList = async (req, res) => {
+  try {
+    const { userid, isActive } = req.params;
+    const jobs = await Job.find({ jobassignees: userid, active: isActive })
+      .populate({ path: "pipeline", model: "pipeline" })
+      .sort({ createdAt: -1 });
 
+    const pipeline = jobs.reduce((acc, job) => {
+      if (job.pipeline && !acc.some((p) => p.id.equals(job.pipeline._id))) {
+        acc.push({
+          _id: job.pipeline._id,
+          pipelineName: job.pipeline.pipelineName,
+        });
+      }
+      return acc;
+    }, []);
+
+    res.status(200).json({ message: "Pipelines retrieved successfully", pipeline });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 module.exports = {
   getActiveJobCount ,
   getInactiveJobCount  ,
@@ -1520,4 +1683,6 @@ module.exports = {
   updatestgeidtojob,
   getActiveJobList,
   getActiveJobListbyAccountId,
+  getActiveJobListByUserid,
+  getPipelinesFromJobList
 };

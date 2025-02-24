@@ -504,10 +504,10 @@ const getActiveAccountList = async (req, res) => {
 // gets accounts by teammember
 const getAccountsByTeamMember = async (req, res) => {
   try {
-    const { userid } = req.params;
+    const { userid,isActive } = req.params;
 
     // Fetch accounts linked to the specified team member and activity status
-    const accounts = await Accounts.find({ teamMember: userid })
+    const accounts = await Accounts.find({ teamMember: userid,active:isActive })
       .populate({ path: "tags", model: "Tags" })
       .populate({ path: "teamMember", model: "User" })
       .populate({ path: "contacts", model: "Contacts" })

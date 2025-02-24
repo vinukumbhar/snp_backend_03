@@ -26,10 +26,19 @@ const contactSchema = new mongoose.Schema({
         type: Number
     },
     email: {
+        // type: String,
+        // validate: {
+        //     validator: (value) => /\S+@\S+\.\S+/.test(value),
+        //     message: 'Invalid email format',
+        // },
         type: String,
+        // trim: true,
         validate: {
-            validator: (value) => /\S+@\S+\.\S+/.test(value),
-            message: 'Invalid email format',
+            validator: function (value) {
+                // Allow empty email (optional) or validate proper email format
+                return !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+            },
+            message: "Invalid email format",
         },
     },
     login: {

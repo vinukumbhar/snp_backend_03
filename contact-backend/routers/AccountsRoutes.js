@@ -26,7 +26,7 @@ router.delete("/accountdetails/removecontactfromaccount/:accountId/:contactId", 
 router.get("/accountdetails/getAccountbyIdAll/:id", getAccountbyIdAll);
 router.get("/account/accountdetailslist/:isActive", getActiveAccountList);
 // getAccountsByTeamMember
-router.get("/getaccounts/:userid", getAccountsByTeamMember);
+router.get("/getaccounts/:userid/:isActive", getAccountsByTeamMember);
 router.post("/accounts/update-contacts", updateContactsForMultipleAccounts);
 
 module.exports = router;
