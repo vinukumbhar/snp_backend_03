@@ -62,10 +62,32 @@ const getSingleTag = async (req,res)=>{
 // }
 
 
+// const createTag = async (req, res) => {
+//     const { tagName, tagColour, active } = req.body;
+//     try {
+//         const existingTag = await Tags.findOne({ tagName });
+
+//         if (existingTag) {
+//             return res.status(200).json({
+//                 message: "Tag with this TagName already exists",
+//                 tags: existingTag // Send existing tag data
+//             });
+//         }
+
+//         const newTag = await Tags.create({ tagName, tagColour, active });
+//         res.status(200).json({ message: "Tag created successfully", tags: newTag });
+//     } catch (error) {
+//         res.status(400).json({ error: error.message });
+//     }
+// };
 const createTag = async (req, res) => {
-    const { tagName, tagColour, active } = req.body;
+    let { tagName, tagColour, active } = req.body;
     try {
-        const existingTag = await Tags.findOne({ tagName });
+        // Normalize the tag name (convert to lowercase and trim spaces)
+        const normalizedTagName = tagName.trim().toLowerCase();
+
+        // Check if a tag with the same normalized name exists
+        const existingTag = await Tags.findOne({ tagName: new RegExp(`^${normalizedTagName}$`, 'i') });
 
         if (existingTag) {
             return res.status(200).json({
@@ -74,7 +96,8 @@ const createTag = async (req, res) => {
             });
         }
 
-        const newTag = await Tags.create({ tagName, tagColour, active });
+        // Store the tag name in lowercase for consistency
+        const newTag = await Tags.create({ tagName: normalizedTagName, tagColour, active });
         res.status(200).json({ message: "Tag created successfully", tags: newTag });
     } catch (error) {
         res.status(400).json({ error: error.message });
