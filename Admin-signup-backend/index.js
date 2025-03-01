@@ -99,6 +99,7 @@ const teammembersavedemail = require("../Admin-signup-backend/middleware/teamMem
 app.use("/", teammembersavedemail);
 
 const emailsync = require("../Admin-signup-backend/middleware/emailsync");
+// ../Admin-signup-backend/middleware/emailsync
 app.use("/", emailsync);
 
 app.use("/uploads", express.static("middleware/uploads"));
