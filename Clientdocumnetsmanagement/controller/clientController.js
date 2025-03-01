@@ -537,7 +537,8 @@ try {
 
   // Define paths
   const baseDir = path.join(__dirname, '../uploads');
-  const templatesDir = path.resolve('D:/snp3-12-24/backend/folder-template/uploads/FolderTemplates');
+  // const templatesDir = path.resolve('D:/snp3-12-24/backend/folder-template/uploads/FolderTemplates');
+  const templatesDir = path.join(__dirname, '..', '..', 'folder-template', 'uploads', 'FolderTemplates');
   const targetAccountDir = path.join(baseDir, accountId);
   // D:\snp3-12-24\backend\folder-template\uploads\FolderTemplates
   // Folder names to handle
