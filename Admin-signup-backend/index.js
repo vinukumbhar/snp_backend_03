@@ -110,7 +110,7 @@ app.use("/uploads", express.static("middleware/uploads"));
 const firmsetting = require("./routes/firmsettingRoutes");
 app.use("/", firmsetting);
 
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`connection is live at port no. ${PORT}`);
 });
