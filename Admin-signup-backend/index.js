@@ -62,20 +62,20 @@ app.use("/common", userRoutes);
 
 //! otp
 // const otpController = require("../../backend/Admin-signup-backend/middleware/otpController");
-const otpController = require("../../snp_backend_01/Admin-signup-backend/middleware/otpController");
+const otpController = require("../Admin-signup-backend/middleware/otpController");
 app.use("/", otpController);
 // snp_backend_01
 // !client
 // const clientsignupOTPmail = require("../../backend/Admin-signup-backend/middleware/clientsignupOTPmail");
-const clientsignupOTPmail = require("../../snp_backend_01/Admin-signup-backend/middleware/clientsignupOTPmail");
+const clientsignupOTPmail = require("../Admin-signup-backend/middleware/clientsignupOTPmail");
 app.use("/", clientsignupOTPmail);
 // ! admin
 // const adminRoutes = require("../../backend/Admin-signup-backend/routes/adminRoutes");
-const adminRoutes = require("../../snp_backend_01/Admin-signup-backend/routes/adminRoutes");
+const adminRoutes = require("../Admin-signup-backend/routes/adminRoutes");
 app.use("/admin", adminRoutes);
 
 // const usersavedemail = require("../../backend/Admin-signup-backend/middleware/usersavedemail");
-const usersavedemail = require("../../snp_backend_01/Admin-signup-backend/middleware/usersavedemail");
+const usersavedemail = require("../Admin-signup-backend/middleware/usersavedemail");
 app.use("/", usersavedemail);
 
 //! resetpassword
@@ -83,22 +83,22 @@ const resetpassword = require("./controller/resetPasswordController");
 app.use("/", resetpassword);
 
 //! resetpassword
-const teammemberpasswordupdate = require("../../snp_backend_01/Admin-signup-backend/middleware/teammemberpasswordupdate");
+const teammemberpasswordupdate = require("../Admin-signup-backend/middleware/teammemberpasswordupdate");
 app.use("/", teammemberpasswordupdate);
 
 //!  Routes
-const passwordupdateemail = require("../../snp_backend_01/Admin-signup-backend/middleware/passwordupdatemail");
+const passwordupdateemail = require("../Admin-signup-backend/middleware/passwordupdatemail");
 app.use("/", passwordupdateemail);
 
 //! EmailTemplate Routes
-const clientsavedemail = require("../../snp_backend_01/Admin-signup-backend/middleware/clientsavedEmail");
+const clientsavedemail = require("../Admin-signup-backend/middleware/clientsavedEmail");
 app.use("/", clientsavedemail);
 
 //! EmailTemplate Routes
-const teammembersavedemail = require("../../snp_backend_01/Admin-signup-backend/middleware/teamMembersendInviteEmail");
+const teammembersavedemail = require("../Admin-signup-backend/middleware/teamMembersendInviteEmail");
 app.use("/", teammembersavedemail);
 
-const emailsync = require("../../snp_backend_01/Admin-signup-backend/middleware/emailsync");
+const emailsync = require("../Admin-signup-backend/middleware/emailsync");
 app.use("/", emailsync);
 
 app.use("/uploads", express.static("middleware/uploads"));
