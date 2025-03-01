@@ -52,7 +52,7 @@ app.get('/lastimage', (req, res) => {
 
     // Return the latest uploaded file
     avatarFiles.sort((a, b) => fs.statSync(path.join(uploadsDir, b)).mtime - fs.statSync(path.join(uploadsDir, a)).mtime);
-    // res.status(200).json({ imageUrl: `http://127.0.0.1:${PORT}/uploads/${avatarFiles[0]}` }); // Return the path for the latest image
+    res.status(200).json({ imageUrl: `http://127.0.0.1:${PORT}/uploads/${avatarFiles[0]}` }); // Return the path for the latest image
   });
 });
 
