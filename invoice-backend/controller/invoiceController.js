@@ -150,74 +150,80 @@ const getInvoicesCount = async (req, res) => {
 
 
 //POST a new Invoice
-// const createInvoice = async (req, res) => {
-//   const { account, invoicenumber, invoicedate, description, invoicetemplate, paymentMethod, teammember, emailinvoicetoclient, reminders, daysuntilnextreminder, numberOfreminder, scheduleinvoice, scheduleinvoicedate, scheduleinvoicetime, payInvoicewithcredits, lineItems, summary, active } = req.body;
+const createInvoice = async (req, res) => {
+  const { account, invoicenumber, invoicedate, description, invoicetemplate, paymentMethod, teammember, emailinvoicetoclient, reminders, daysuntilnextreminder, numberOfreminder, scheduleinvoice, scheduleinvoicedate, scheduleinvoicetime, payInvoicewithcredits, lineItems, summary, active } = req.body;
 
-//   try {
-//     const existingInvoice = await Invoice.findOne({
-//       invoicenumber,
-//     });
+  try {
+    const existingInvoice = await Invoice.findOne({
+      invoicenumber,
+    });
 
-//     if (existingInvoice) {
-//       return res.status(201).json({ message: "Invoice already exists" });
-//     }
-//     const newInvoice = await Invoice.create({
-//       account,
-//       invoicenumber,
-//       invoicedate,
-//       description,
-//       invoicetemplate,
-//       paymentMethod,
-//       teammember,
-//       emailinvoicetoclient,
-//       reminders,
-//       daysuntilnextreminder,
-//       numberOfreminder,
-//       scheduleinvoice,
-//       scheduleinvoicedate,
-//       scheduleinvoicetime,
-//       payInvoicewithcredits,
-//       lineItems,
-//       summary,
-//       active,
-//     });
+    if (existingInvoice) {
+      return res.status(201).json({ message: "Invoice already exists" });
+    }
+    const newInvoice = await Invoice.create({
+      account,
+      invoicenumber,
+      invoicedate,
+      description,
+      invoicetemplate,
+      paymentMethod,
+      teammember,
+      emailinvoicetoclient,
+      reminders,
+      daysuntilnextreminder,
+      numberOfreminder,
+      scheduleinvoice,
+      scheduleinvoicedate,
+      scheduleinvoicetime,
+      payInvoicewithcredits,
+      lineItems,
+      summary,
+      active,
+    });
 
-//     return res.status(201).json({ message: "Invoice created successfully", newInvoice });
-//   } catch (error) {
-//     console.error("Error creating Invoice:", error);
-//     return res.status(500).json({ error: "Error creating Invoice", error });
-//   }
-// };
+    return res.status(201).json({ message: "Invoice created successfully", newInvoice });
+  } catch (error) {
+    console.error("Error creating Invoice:", error);
+    return res.status(500).json({ error: "Error creating Invoice", error });
+  }
+};
+
+// sends email
 
 // const createInvoice = async (req, res) => {
 //   const {
 //       account, invoicedate, description, invoicetemplate, paymentMethod, teammember, emailinvoicetoclient,
 //       reminders, daysuntilnextreminder, numberOfreminder, scheduleinvoice, scheduleinvoicedate, scheduleinvoicetime,
-//       payInvoicewithcredits, lineItems, summary, active
+//       payInvoicewithcredits, lineItems, summary, active,paidAmount,invoiceStatus,balanceDueAmount
 //   } = req.body;
 
 //   try {
-//       // Generate the next invoice number
-//       const lastInvoice = await Invoice.findOne().sort({ invoicenumber: -1 }).select("invoicenumber");
-//       const invoicenumber = lastInvoice ? lastInvoice.invoicenumber + 1 : 1;
+//       // // Generate the next invoice number
+//       // const lastInvoice = await Invoice.findOne().sort({ invoicenumber: -1 }).select("invoicenumber");
+//       // const invoicenumber = lastInvoice ? lastInvoice.invoicenumber + 1 : 1;
 
-//       // Check if the invoice already exists (redundant with autoincrement but kept for safety)
-//       const existingInvoice = await Invoice.findOne({ invoicenumber });
-//       if (existingInvoice) {
-//           return res.status(409).json({ message: "Invoice already exists" });
-//       }
+//       // // Check if the invoice already exists (redundant with autoincrement but kept for safety)
+//       // const existingInvoice = await Invoice.findOne({ invoicenumber });
+//       // if (existingInvoice) {
+//       //     return res.status(409).json({ message: "Invoice already exists" ,existingInvoice});
+//       // }
 
 //       // Create a new invoice
 //       const newInvoice = await Invoice.create({
-//           account, invoicenumber, invoicedate, description, invoicetemplate, paymentMethod, teammember, emailinvoicetoclient,
+//           account, invoicedate, description, invoicetemplate, paymentMethod, teammember, emailinvoicetoclient,
 //           reminders, daysuntilnextreminder, numberOfreminder, scheduleinvoice, scheduleinvoicedate, scheduleinvoicetime,
-//           payInvoicewithcredits, lineItems, summary, active
+//           payInvoicewithcredits, lineItems, summary, active,paidAmount,invoiceStatus,balanceDueAmount
 //       });
+
+//       console.log(newInvoice)
 
 //       const accountinv = await Accounts.findById(account).populate("contacts");
 //       if (!accountinv) {
 //           return res.status(404).json({ status: 404, message: "Account not found." });
 //       }
+
+     
 
 //       // Filter valid contacts
 //       const validContacts = accountinv.contacts.filter(contact => contact.emailSync);
@@ -232,10 +238,10 @@ const getInvoicesCount = async (req, res) => {
 //           auth: {
 //             user: process.env.EMAIL,
 //             pass: process.env.EMAIL_PASSWORD,
-//           },
-//           tls: {
-//             rejectUnauthorized: false // Only for development
-//           },
+//         },
+//         tls: {
+//             rejectUnauthorized: false
+//         },
 //       });
 
 //       // Ensure the invoices directory exists
@@ -245,110 +251,158 @@ const getInvoicesCount = async (req, res) => {
 //       }
 
 //       // Generate PDF for the invoice
-//       const pdfPath = path.join(invoicesDir, `invoice_${invoicenumber}.pdf`);
-     
-     
-     
-//       const printContent = `
-//       <html>
-//       <head>
-//           <style>
-//               body {
-//                   font-family: Arial, sans-serif;
-//                   padding: 35px;
-//               }
-//               h1 {
-//                   color: #333;
-//               }
-//               p {
-//                   color: #555;
-//               }
-//               table {
-//                   width: 100%;
-//                   border-collapse: collapse;
-//                   margin-top: 20px;
-//               }
-//               th, td {
-//                   border: 1px solid #ddd;
-//                   padding: 8px;
-//                   text-align: left;
-//               }
-//               th {
-//                   background-color: #f2f2f2;
-//               }
-//               .summary-table {
-//                   width: 50%;
-//                   margin-left: auto;
-//                   margin-top: 20px;
-//               }
-//               .total-row td {
-//                   font-weight: bold;
-//               }
-//           </style>
-//       </head>
-//       <body>
-//           <h1>Invoice Number #${newInvoice.invoicenumber}</h1>
-//           <p><strong>Date:</strong> ${new Date(newInvoice.invoicedate).toLocaleDateString()}</p>
-//           <p><strong>${accountinv.accountName}</strong></p>
-//           <p><strong>Description:</strong> ${newInvoice.description}</p>
-//           <table>
-//               <thead>
-//                   <tr>
-//                       <th>Product/Service</th>
-//                       <th>Rate</th>
-//                       <th>Quantity</th>
-//                       <th>Amount</th>
-//                   </tr>
-//               </thead>
-//               <tbody>
-//                   ${newInvoice.lineItems
-//           .map(item => `
-//                           <tr>
-//                               <td>${item.productorService}</td>
-//                               <td>$${item.rate}</td>
-//                               <td>${item.quantity}</td>
-//                               <td>$${item.amount}</td>
-//                           </tr>
-//                       `)
-//           .join("")}
-//               </tbody>
-//           </table>
-//           <table class="summary-table">
-//               <tr>
-//                   <td><strong>Subtotal</strong></td>
-//                   <td>$${newInvoice.summary.subtotal.toFixed(2)}</td>
-//               </tr>
-//               <tr>
-//                   <td><strong>Tax</strong></td>
-//                   <td>$${newInvoice.summary.taxTotal.toFixed(2)}</td>
-//               </tr>
-//               <tr class="total-row">
-//                   <td><strong>Total</strong></td>
-//                   <td>$${newInvoice.summary.total.toFixed(2)}</td>
-//               </tr>
-//           </table>
-//       </body>
-//       </html>
-//   `;
+//       const pdfPath = path.join(invoicesDir, `invoice_${newInvoice.invoicenumber}.pdf`);
 
-//   // Generate PDF with Puppeteer
-//   const browser = await puppeteer.launch();
-//   const page = await browser.newPage();
-//   await page.setContent(printContent, { waitUntil: "networkidle0" });
-//   await page.pdf({ path: pdfPath, format: "A4" });
-//   await browser.close();
-
-//   console.log("PDF successfully written to:", pdfPath);
-
-//       console.log("Starting email sending process...");
+//       console.log("PDF successfully written to:", pdfPath);
+//       const replacePlaceholders = (template, data) => {
+//         return template.replace(/\[([\w\s]+)\]/g, (match, placeholder) => {
+//             return data[placeholder.trim()] || '';
+//         });
+//     };
 //       const emailPromises = validContacts.map(async (contact) => {
+
+//           const newdescription = replacePlaceholders(description, {
+//               ACCOUNT_NAME: accountinv.accountName,
+//               FIRST_NAME: contact.firstName,
+//               MIDDLE_NAME: contact.middleName,
+//               LAST_NAME: contact.lastName,
+//               CONTACT_NAME: contact.contactName,
+//               COMPANY_NAME: contact.companyName,
+//               COUNTRY: contact.country,
+//               STREET_ADDRESS: contact.streetAddress,
+//               STATEPROVINCE: contact.state,
+//               PHONE_NUMBER: contact.phoneNumbers,
+//               ZIPPOSTALCODE: contact.postalCode,
+//               CITY: contact.city,
+//               CURRENT_DAY_FULL_DATE: currentFullDate,
+//               CURRENT_DAY_NUMBER: currentDayNumber,
+//               CURRENT_DAY_NAME: currentDayName,
+//               CURRENT_WEEK: currentWeek,
+//               CURRENT_MONTH_NUMBER: currentMonthNumber,
+//               CURRENT_MONTH_NAME: currentMonthName,
+//               CURRENT_QUARTER: currentQuarter,
+//               CURRENT_YEAR: currentYear,
+//               LAST_DAY_FULL_DATE: lastDayFullDate,
+//               LAST_DAY_NUMBER: lastDayNumber,
+//               LAST_DAY_NAME: lastDayName,
+//               LAST_WEEK: lastWeek,
+//               LAST_MONTH_NUMBER: lastMonthNumber,
+//               LAST_MONTH_NAME: lastMonthName,
+//               LAST_QUARTER: lastQuarter,
+//               LAST_YEAR: lastYear,
+//               NEXT_DAY_FULL_DATE: nextDayFullDate,
+//               NEXT_DAY_NUMBER: nextDayNumber,
+//               NEXT_DAY_NAME: nextDayName,
+//               NEXT_WEEK: nextWeek,
+//               NEXT_MONTH_NUMBER: nextMonthNumber,
+//               NEXT_MONTH_NAME: nextMonthName,
+//               NEXT_QUARTER: nextQuarter,
+//               NEXT_YEAR: nextYear,
+              
+//           });
+
+//           const printContent = `
+//           <html>
+//           <head>
+//               <style>
+//                   body {
+//                       font-family: Arial, sans-serif;
+//                       padding: 35px;
+//                   }
+//                   h1 {
+//                       color: #333;
+//                   }
+//                   p {
+//                       color: #555;
+//                   }
+//                   table {
+//                       width: 100%;
+//                       border-collapse: collapse;
+//                       margin-top: 20px;
+//                   }
+//                   th, td {
+//                       border: 1px solid #ddd;
+//                       padding: 8px;
+//                       text-align: left;
+//                   }
+//                   th {
+//                       background-color: #f2f2f2;
+//                   }
+//                   .summary-table {
+//                       width: 50%;
+//                       margin-left: auto;
+//                       margin-top: 20px;
+//                   }
+//                   .total-row td {
+//                       font-weight: bold;
+//                   }
+//               </style>
+//           </head>
+//           <body>
+//               <h1>Invoice Number #${newInvoice.invoicenumber}</h1>
+//               <p><strong>Date:</strong> ${new Date(newInvoice.invoicedate).toLocaleDateString()}</p>
+//               <p><strong>${accountinv.accountName}</strong></p>
+//               <p><strong>Description:</strong> ${newdescription}</p>
+//               <table>
+//                   <thead>
+//                       <tr>
+//                           <th>Product/Service</th>
+//                           <th>Rate</th>
+//                           <th>Quantity</th>
+//                           <th>Amount</th>
+//                       </tr>
+//                   </thead>
+//                   <tbody>
+//                       ${newInvoice.lineItems
+//                   .map(item => `
+//                               <tr>
+//                                   <td>${item.productorService}</td>
+//                                   <td>$${item.rate}</td>
+//                                   <td>${item.quantity}</td>
+//                                   <td>$${item.amount}</td>
+//                               </tr>
+//                           `)
+//                   .join("")}
+//                   </tbody>
+//               </table>
+//               <table class="summary-table">
+//                   <tr>
+//                       <td><strong>Subtotal</strong></td>
+//                       <td>$${newInvoice.summary.subtotal.toFixed(2)}</td>
+//                   </tr>
+//                   <tr>
+//                       <td><strong>Tax</strong></td>
+//                       <td>$${newInvoice.summary.taxTotal.toFixed(2)}</td>
+//                   </tr>
+//                   <tr class="total-row">
+//                       <td><strong>Total</strong></td>
+//                       <td>$${newInvoice.summary.total.toFixed(2)}</td>
+//                   </tr>
+//               </table>
+//           </body>
+//           </html>
+//       `;
+
+//           // Generate PDF with Puppeteer
+//           const browser = await puppeteer.launch();
+//           const page = await browser.newPage();
+//           await page.setContent(printContent, { waitUntil: "networkidle0" });
+//           await page.pdf({ path: pdfPath, format: "A4" });
+//           await browser.close();
+
 //           console.log(`Preparing to send email to: ${contact.email}`);
 //           const mailOptions = {
-//               from: process.env.EMAIL,
-//               to: contact.email,
-//               subject: "Invoice Created",
-//               text: `Dear ${accountinv.accountName},\n\nYour invoice has been created.\n\nBest regards,`,
-//               attachments: [{ filename: `invoice_${invoicenumber}.pdf`, path: pdfPath }],
+//               from: process.env.EMAIL, // Sender's email
+//               to: contact.email, // Recipient's email
+//               subject: "Invoice Created", // Subject of the email
+//               text: `Dear ${accountinv.accountName},\n\nYour invoice has been created.\n\nBest regards,`, // Plain text content
+//               // html: printContent, // HTML content of the email
+//               attachments: [
+//                   {
+//                       filename: `invoice_${newInvoice.invoicenumber}.pdf`, // Filename for the attachment
+//                       path: pdfPath // Path to the P.DF file
+//                   }
+//               ]
 //           };
 
 //           try {
@@ -370,240 +424,6 @@ const getInvoicesCount = async (req, res) => {
 //       return res.status(500).json({ error: "Error creating Invoice", details: error.message });
 //   }
 // };
-
-const createInvoice = async (req, res) => {
-  const {
-      account, invoicedate, description, invoicetemplate, paymentMethod, teammember, emailinvoicetoclient,
-      reminders, daysuntilnextreminder, numberOfreminder, scheduleinvoice, scheduleinvoicedate, scheduleinvoicetime,
-      payInvoicewithcredits, lineItems, summary, active,paidAmount,invoiceStatus,balanceDueAmount
-  } = req.body;
-
-  try {
-      // // Generate the next invoice number
-      // const lastInvoice = await Invoice.findOne().sort({ invoicenumber: -1 }).select("invoicenumber");
-      // const invoicenumber = lastInvoice ? lastInvoice.invoicenumber + 1 : 1;
-
-      // // Check if the invoice already exists (redundant with autoincrement but kept for safety)
-      // const existingInvoice = await Invoice.findOne({ invoicenumber });
-      // if (existingInvoice) {
-      //     return res.status(409).json({ message: "Invoice already exists" ,existingInvoice});
-      // }
-
-      // Create a new invoice
-      const newInvoice = await Invoice.create({
-          account, invoicedate, description, invoicetemplate, paymentMethod, teammember, emailinvoicetoclient,
-          reminders, daysuntilnextreminder, numberOfreminder, scheduleinvoice, scheduleinvoicedate, scheduleinvoicetime,
-          payInvoicewithcredits, lineItems, summary, active,paidAmount,invoiceStatus,balanceDueAmount
-      });
-
-      console.log(newInvoice)
-
-      const accountinv = await Accounts.findById(account).populate("contacts");
-      if (!accountinv) {
-          return res.status(404).json({ status: 404, message: "Account not found." });
-      }
-
-     
-
-      // Filter valid contacts
-      const validContacts = accountinv.contacts.filter(contact => contact.emailSync);
-      if (validContacts.length === 0) {
-          return res.status(400).json({ status: 400, message: "No contacts with emailSync enabled." });
-      }
-
-      const transporter = nodemailer.createTransport({
-          host: "smtp.gmail.com",
-          port: 587,
-          secure: false, // Use STARTTLS
-          auth: {
-            user: process.env.EMAIL,
-            pass: process.env.EMAIL_PASSWORD,
-        },
-        tls: {
-            rejectUnauthorized: false
-        },
-      });
-
-      // Ensure the invoices directory exists
-      const invoicesDir = path.resolve(__dirname, "invoices");
-      if (!fs.existsSync(invoicesDir)) {
-          fs.mkdirSync(invoicesDir, { recursive: true });
-      }
-
-      // Generate PDF for the invoice
-      const pdfPath = path.join(invoicesDir, `invoice_${newInvoice.invoicenumber}.pdf`);
-
-      console.log("PDF successfully written to:", pdfPath);
-      const replacePlaceholders = (template, data) => {
-        return template.replace(/\[([\w\s]+)\]/g, (match, placeholder) => {
-            return data[placeholder.trim()] || '';
-        });
-    };
-      const emailPromises = validContacts.map(async (contact) => {
-
-          const newdescription = replacePlaceholders(description, {
-              ACCOUNT_NAME: accountinv.accountName,
-              FIRST_NAME: contact.firstName,
-              MIDDLE_NAME: contact.middleName,
-              LAST_NAME: contact.lastName,
-              CONTACT_NAME: contact.contactName,
-              COMPANY_NAME: contact.companyName,
-              COUNTRY: contact.country,
-              STREET_ADDRESS: contact.streetAddress,
-              STATEPROVINCE: contact.state,
-              PHONE_NUMBER: contact.phoneNumbers,
-              ZIPPOSTALCODE: contact.postalCode,
-              CITY: contact.city,
-              CURRENT_DAY_FULL_DATE: currentFullDate,
-              CURRENT_DAY_NUMBER: currentDayNumber,
-              CURRENT_DAY_NAME: currentDayName,
-              CURRENT_WEEK: currentWeek,
-              CURRENT_MONTH_NUMBER: currentMonthNumber,
-              CURRENT_MONTH_NAME: currentMonthName,
-              CURRENT_QUARTER: currentQuarter,
-              CURRENT_YEAR: currentYear,
-              LAST_DAY_FULL_DATE: lastDayFullDate,
-              LAST_DAY_NUMBER: lastDayNumber,
-              LAST_DAY_NAME: lastDayName,
-              LAST_WEEK: lastWeek,
-              LAST_MONTH_NUMBER: lastMonthNumber,
-              LAST_MONTH_NAME: lastMonthName,
-              LAST_QUARTER: lastQuarter,
-              LAST_YEAR: lastYear,
-              NEXT_DAY_FULL_DATE: nextDayFullDate,
-              NEXT_DAY_NUMBER: nextDayNumber,
-              NEXT_DAY_NAME: nextDayName,
-              NEXT_WEEK: nextWeek,
-              NEXT_MONTH_NUMBER: nextMonthNumber,
-              NEXT_MONTH_NAME: nextMonthName,
-              NEXT_QUARTER: nextQuarter,
-              NEXT_YEAR: nextYear,
-              
-          });
-
-          const printContent = `
-          <html>
-          <head>
-              <style>
-                  body {
-                      font-family: Arial, sans-serif;
-                      padding: 35px;
-                  }
-                  h1 {
-                      color: #333;
-                  }
-                  p {
-                      color: #555;
-                  }
-                  table {
-                      width: 100%;
-                      border-collapse: collapse;
-                      margin-top: 20px;
-                  }
-                  th, td {
-                      border: 1px solid #ddd;
-                      padding: 8px;
-                      text-align: left;
-                  }
-                  th {
-                      background-color: #f2f2f2;
-                  }
-                  .summary-table {
-                      width: 50%;
-                      margin-left: auto;
-                      margin-top: 20px;
-                  }
-                  .total-row td {
-                      font-weight: bold;
-                  }
-              </style>
-          </head>
-          <body>
-              <h1>Invoice Number #${newInvoice.invoicenumber}</h1>
-              <p><strong>Date:</strong> ${new Date(newInvoice.invoicedate).toLocaleDateString()}</p>
-              <p><strong>${accountinv.accountName}</strong></p>
-              <p><strong>Description:</strong> ${newdescription}</p>
-              <table>
-                  <thead>
-                      <tr>
-                          <th>Product/Service</th>
-                          <th>Rate</th>
-                          <th>Quantity</th>
-                          <th>Amount</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      ${newInvoice.lineItems
-                  .map(item => `
-                              <tr>
-                                  <td>${item.productorService}</td>
-                                  <td>$${item.rate}</td>
-                                  <td>${item.quantity}</td>
-                                  <td>$${item.amount}</td>
-                              </tr>
-                          `)
-                  .join("")}
-                  </tbody>
-              </table>
-              <table class="summary-table">
-                  <tr>
-                      <td><strong>Subtotal</strong></td>
-                      <td>$${newInvoice.summary.subtotal.toFixed(2)}</td>
-                  </tr>
-                  <tr>
-                      <td><strong>Tax</strong></td>
-                      <td>$${newInvoice.summary.taxTotal.toFixed(2)}</td>
-                  </tr>
-                  <tr class="total-row">
-                      <td><strong>Total</strong></td>
-                      <td>$${newInvoice.summary.total.toFixed(2)}</td>
-                  </tr>
-              </table>
-          </body>
-          </html>
-      `;
-
-          // Generate PDF with Puppeteer
-          const browser = await puppeteer.launch();
-          const page = await browser.newPage();
-          await page.setContent(printContent, { waitUntil: "networkidle0" });
-          await page.pdf({ path: pdfPath, format: "A4" });
-          await browser.close();
-
-          console.log(`Preparing to send email to: ${contact.email}`);
-          const mailOptions = {
-              from: process.env.EMAIL, // Sender's email
-              to: contact.email, // Recipient's email
-              subject: "Invoice Created", // Subject of the email
-              text: `Dear ${accountinv.accountName},\n\nYour invoice has been created.\n\nBest regards,`, // Plain text content
-              // html: printContent, // HTML content of the email
-              attachments: [
-                  {
-                      filename: `invoice_${newInvoice.invoicenumber}.pdf`, // Filename for the attachment
-                      path: pdfPath // Path to the P.DF file
-                  }
-              ]
-          };
-
-          try {
-              const result = await transporter.sendMail(mailOptions);
-              return result;
-          } catch (error) {
-              console.error(`Failed to send email to ${contact.email}:`, error.message);
-              throw error;
-          }
-      });
-
-      console.log("Waiting for all emails to complete...");
-      await Promise.all(emailPromises);
-
-      console.log("All emails sent successfully.");
-      return res.status(201).json({ message: "Invoice created successfully", newInvoice });
-  } catch (error) {
-      console.error("Error creating Invoice:", error);
-      return res.status(500).json({ error: "Error creating Invoice", details: error.message });
-  }
-};
 
 
 //delete a Invoice
