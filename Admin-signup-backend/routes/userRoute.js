@@ -36,7 +36,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { updateUserPasswordwithoutAut,createUser, getUsers, getUser, deleteUser, updateUser, adminSignup, getUserByEmail, updateUserPassword, updateLoginStatus, getUserListbyId, getUsersByRoles, getVerifyUserbyPassword } = require("../Controller/userController");
+const { updateUserPasswordwithoutAut,createUser, getUsers, getUser, deleteUser, updateUser, adminSignup, getUserByEmail, updateUserPassword, updateLoginStatus, getUserListbyId, getUsersByRoles, getVerifyUserbyPassword } = require("../controller/userController");
 const { validateToken, logout, cleanupBlacklist } = require("../middleware/authJwt");
 const { generatetoken } = require("../controller/loginController");
 const { adminLogin } = require("../controller/loginController");
