@@ -82,10 +82,10 @@ const router = express.Router();
 const { upload } = require("../middleware/uploadfile");
 const{uploadimg}=require("../middleware/clientuploadfile");
 const { createAdmin, getAdmins, getAdmin,getAdminByUserid, deleteAdmin, updateAdmin, updatePassword, getAdminByEmail } = require("../controller/adminSignupController");
-const { createAccount, getAccount, getAccounts, updateAccount, deleteAccount, getAccountsList, getAccountsListById, getAccountListByUserId } = require("../Controller/accountDetailsController");
+const { createAccount, getAccount, getAccounts, updateAccount, deleteAccount, getAccountsList, getAccountsListById, getAccountListByUserId } = require("../controller/accountDetailsController");
 const { findTeamMemberByUserId,createTeamMember, getTeamMembers, getTeamMember, deleteTeamMember, updateTeamMember, getTeamMemberList, updateTeamMemberPassword } = require("../controller/teamMemberController");
 const { getClients, getClient, createClient, deleteClient, updateClient, getClientByEmail, updateclientPassword,getClientByUserId ,updateClientByUserId } = require("../controller/clientSignupController");
-const { createNotification, getNotifications, getNotification, deleteNotification, updateNotification, getNotificationbyUser } = require("../Controller/adminNotificationController");
+const { createNotification, getNotifications, getNotification, deleteNotification, updateNotification, getNotificationbyUser } = require("../controller/adminNotificationController");
 
 //ADMIN SIGNUP START******************** */
 router.get("/adminsignup", getAdmins);

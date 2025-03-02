@@ -241,7 +241,8 @@
 const User = require("../models/userModel");
 const mongoose = require("mongoose");
 const express = require("express");
-const bcrypt = require("bcryptjs");
+const bcrypt = require('bcryptjs');
+
 // const { use } = require("../middlewares/clientsignupOTPmail");
 
 const adminSignup = async (req, res) => {
