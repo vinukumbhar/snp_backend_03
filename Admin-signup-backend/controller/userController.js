@@ -327,18 +327,16 @@ const updateUser = async (req, res) => {
     return res.status(404).json({ error: "no such User " });
   }
 
-  const user = await User.findOneAndUpdate(
+  const updatedUser = await User.findOneAndUpdate(
     { _id: id },
-    {
-      ...req.body,
-    }
+            { ...req.body },
+            { new: true } 
   );
 
-  if (!user) {
+  if (!updatedUser) {
     return res.status(404).json({ error: "no such User " });
   }
-
-  res.status(200).json(user);
+  res.status(200).json({ message: "User updated successfully", user: updatedUser });
 };
 
 // UPDATE a password

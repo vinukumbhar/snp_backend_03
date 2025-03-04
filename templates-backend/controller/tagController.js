@@ -84,7 +84,7 @@ const createTag = async (req, res) => {
     let { tagName, tagColour, active } = req.body;
     try {
         // Normalize the tag name (convert to lowercase and trim spaces)
-        const normalizedTagName = tagName.trim().toLowerCase();
+        const normalizedTagName = tagName.trim();
 
         // Check if a tag with the same normalized name exists
         const existingTag = await Tags.findOne({ tagName: new RegExp(`^${normalizedTagName}$`, 'i') });
