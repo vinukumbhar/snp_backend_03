@@ -282,129 +282,41 @@ const updateProposalesandelsAccountwise = async (req, res) => {
     }
 };
 
-const createProposalsAndElsAccounts = async (req, res) => {
-    const { 
-        accountids, 
-        proposaltemplateid, 
-        teammember, 
-        proposalname, 
-        introduction, 
-        terms, 
-        servicesandinvoices, 
-        introductiontextname, 
-        introductiontext, 
-        termsandconditionsname, 
-        termsandconditions, 
-        custommessageinemail, 
-        custommessageinemailtext, 
-        reminders, 
-        daysuntilnextreminder, 
-        numberofreminder, 
-        servicesandinvoicetempid, 
-        invoicetemplatename, 
-        invoiceteammember, 
-        issueinvoice, 
-        specificdate, 
-        specifictime, 
-        description, 
-        lineItems, 
-        summary, 
-        notetoclient, 
-        Addinvoiceoraskfordeposit, 
-        Additemizedserviceswithoutcreatinginvoices, 
-        paymentterms, 
-        paymentduedate, 
-        paymentamount, 
-        active 
-    } = req.body;
-
-    // Check if accountids is an array
-    if (!Array.isArray(accountids)) {
-        return res.status(400).json({ error: "accountids must be an array" });
-    }
-    try {
-        for (const accountid of accountids) {
-            await ProposalesandelsAccountwise.create({
-                accountid,
-                proposaltemplateid,
-                teammember,
-                proposalname,
-                introduction,
-                terms,
-                servicesandinvoices,
-                introductiontextname,
-                introductiontext,
-                termsandconditionsname,
-                termsandconditions,
-                custommessageinemail,
-                custommessageinemailtext,
-                reminders,
-                daysuntilnextreminder,
-                numberofreminder,
-                servicesandinvoicetempid,
-                invoicetemplatename,
-                invoiceteammember,
-                issueinvoice,
-                specificdate,
-                specifictime,
-                description,
-                lineItems,
-                summary,
-                notetoclient,
-                Addinvoiceoraskfordeposit,
-                Additemizedserviceswithoutcreatinginvoices,
-                paymentterms,
-                paymentduedate,
-                paymentamount,
-                active
-            });
-        }
-        return res.status(201).json({ message: "ProposalesandelsAccountwise created successfully" });
-    } catch (error) {
-        console.error("Error creating ProposalesandelsAccountwise:", error);
-        return res.status(500).json({ error: "Error creating ProposalesandelsAccountwise" });
-    }
-};
-
-
-// sends emails
 // const createProposalsAndElsAccounts = async (req, res) => {
-//     const {
-//         accountids,
-//         proposaltemplateid,
-//         teammember,
-//         proposalname,
-//         introduction,
-//         terms,
-//         servicesandinvoices,
-//         introductiontextname,
-//         introductiontext,
-//         termsandconditionsname,
-//         termsandconditions,
-//         custommessageinemail,
-//         custommessageinemailtext,
-//         reminders,
-//         daysuntilnextreminder,
-//         numberofreminder,
-//         servicesandinvoicetempid,
-//         invoicetemplatename,
-//         invoiceteammember,
-//         issueinvoice,
-//         specificdate,
-//         specifictime,
-//         description,
-//         lineItems,
-//         summary,
-//         notetoclient,
-//         Addinvoiceoraskfordeposit,
-//         Additemizedserviceswithoutcreatinginvoices,
-//         paymentterms,
-//         paymentduedate,
-//         paymentamount,
-//         active
+//     const { 
+//         accountids, 
+//         proposaltemplateid, 
+//         teammember, 
+//         proposalname, 
+//         introduction, 
+//         terms, 
+//         servicesandinvoices, 
+//         introductiontextname, 
+//         introductiontext, 
+//         termsandconditionsname, 
+//         termsandconditions, 
+//         custommessageinemail, 
+//         custommessageinemailtext, 
+//         reminders, 
+//         daysuntilnextreminder, 
+//         numberofreminder, 
+//         servicesandinvoicetempid, 
+//         invoicetemplatename, 
+//         invoiceteammember, 
+//         issueinvoice, 
+//         specificdate, 
+//         specifictime, 
+//         description, 
+//         lineItems, 
+//         summary, 
+//         notetoclient, 
+//         Addinvoiceoraskfordeposit, 
+//         Additemizedserviceswithoutcreatinginvoices, 
+//         paymentterms, 
+//         paymentduedate, 
+//         paymentamount, 
+//         active 
 //     } = req.body;
-
-//     const missingContactsAccounts = [];
 
 //     // Check if accountids is an array
 //     if (!Array.isArray(accountids)) {
@@ -446,89 +358,193 @@ const createProposalsAndElsAccounts = async (req, res) => {
 //                 paymentamount,
 //                 active
 //             });
-
-
-
-//             const account = await Accounts.findById(accountid);
-
-//             for (const contactId of account.contacts) {
-//                 const contact = await Contacts.findById(contactId);
-//                 console.log(contact)
-//                 if (contact.login === true) {
-//                     if (!contact.email) {
-//                         missingContactsAccounts.push(account.accountName);
-//                     } else {
-//                         const transporter = nodemailer.createTransport({
-//                             host: "smtp.gmail.com",
-//                             port: 587,
-//                             secure: false, // Use STARTTLS
-//                             auth: {
-//                                 user: process.env.EMAIL,
-//                                 pass: process.env.EMAIL_PASSWORD,
-//                             },
-//                             tls: {
-//                                 rejectUnauthorized: false // Only for development
-//                             },
-//                         });
-
-//                         const mailOptions = {
-//                             from: process.env.EMAIL,
-//                             to: contact.email,
-//                             subject: `Review and sign document: ${proposalname}`,
-//                             html: `                                                           
-//                                 <p><b>${proposalname}</b></p>
-
-//                                 <p>Button not working? Copy and paste this link into your browser:</p>
-//                              `,
-//                         };
-//                     //     <a href="${proposalLink}" style="display: inline-block; padding: 10px 20px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;">
-//                     //     Review and Sign
-//                     // </a>
-//                         // <p>${username} has sent the following for your review and signature:</p>
-//                         // <p><a href="${proposalLink}">${proposalLink}</a></p>
-//                         await transporter.sendMail(mailOptions);
-//                         console.log(`Email sent to ${contact.email}`);
-//                     }
-//                 }
-//             }
-
 //         }
-
-//         if (missingContactsAccounts.length > 0) {
-//             const transporter = nodemailer.createTransport({
-//                 host: "smtp.gmail.com",
-//                 port: 587,
-//                 secure: false, // Use STARTTLS
-//                 auth: {
-//                     user: "dipeeka.pote52@gmail.com",
-//                     pass: "togt ljzg urar dlam",
-//                 },
-//             });
-
-//             const missingAccountsList = missingContactsAccounts.join(', ');
-
-//             const mailOptions = {
-//                 from: 'dipeeka.pote52@gmail.com',
-//                 to: 'dipeeka.pote52@gmail.com',
-//                 subject: 'Some proposals were not created',
-//                 html: `
-//                     <p>The following accounts have no contacts who can sign proposals, so we couldn’t create proposals for them:</p>
-//                     <p>${missingAccountsList}</p>
-//                     <p>Proposal name:</p>
-//                     <p>${proposalname}</p>
-//                 `,
-//             };
-
-//             await transporter.sendMail(mailOptions);
-//             console.log('Notification email sent about missing contacts');
-//         }
-
 //         return res.status(201).json({ message: "ProposalesandelsAccountwise created successfully" });
 //     } catch (error) {
 //         console.error("Error creating ProposalesandelsAccountwise:", error);
 //         return res.status(500).json({ error: "Error creating ProposalesandelsAccountwise" });
 //     }
 // };
+
+
+// sends emails
+
+
+
+const createProposalsAndElsAccounts = async (req, res) => {
+    const {
+        accountids,
+        proposaltemplateid,
+        teammember,
+        proposalname,
+        introduction,
+        terms,
+        servicesandinvoices,
+        introductiontextname,
+        introductiontext,
+        termsandconditionsname,
+        termsandconditions,
+        custommessageinemail,
+        custommessageinemailtext,
+        reminders,
+        daysuntilnextreminder,
+        numberofreminder,
+        servicesandinvoicetempid,
+        invoicetemplatename,
+        invoiceteammember,
+        issueinvoice,
+        specificdate,
+        specifictime,
+        description,
+        lineItems,
+        summary,
+        notetoclient,
+        Addinvoiceoraskfordeposit,
+        Additemizedserviceswithoutcreatinginvoices,
+        paymentterms,
+        paymentduedate,
+        paymentamount,
+        active
+    } = req.body;
+
+    const missingContactsAccounts = [];
+
+    // Check if accountids is an array
+    if (!Array.isArray(accountids)) {
+        return res.status(400).json({ error: "accountids must be an array" });
+    }
+    try {
+        for (const accountid of accountids) {
+            await ProposalesandelsAccountwise.create({
+                accountid,
+                proposaltemplateid,
+                teammember,
+                proposalname,
+                introduction,
+                terms,
+                servicesandinvoices,
+                introductiontextname,
+                introductiontext,
+                termsandconditionsname,
+                termsandconditions,
+                custommessageinemail,
+                custommessageinemailtext,
+                reminders,
+                daysuntilnextreminder,
+                numberofreminder,
+                servicesandinvoicetempid,
+                invoicetemplatename,
+                invoiceteammember,
+                issueinvoice,
+                specificdate,
+                specifictime,
+                description,
+                lineItems,
+                summary,
+                notetoclient,
+                Addinvoiceoraskfordeposit,
+                Additemizedserviceswithoutcreatinginvoices,
+                paymentterms,
+                paymentduedate,
+                paymentamount,
+                active
+            });
+
+
+
+            const account = await Accounts.findById(accountid);
+
+            for (const contactId of account.contacts) {
+                const contact = await Contacts.findById(contactId);
+                console.log(contact)
+                if (contact.login === true) {
+                    if (!contact.email) {
+                        missingContactsAccounts.push(account.accountName);
+                    } else {
+                        const transporter = nodemailer.createTransport({
+                            host: "smtp.gmail.com",
+                            port: 587,
+                            secure: false, // Use STARTTLS
+                            auth: {
+                                user: process.env.EMAIL,
+                                pass: process.env.EMAIL_PASSWORD,
+                            },
+                            tls: {
+                                rejectUnauthorized: false // Only for development
+                            },
+                        });
+
+                        const mailOptions = {
+                            from: process.env.EMAIL,
+                            to: contact.email,
+                            subject: `Review and sign document: ${proposalname}`,
+                            html: `                                                           
+                                <p><b>${proposalname}</b></p>
+
+                                <p>Button not working? Copy and paste this link into your browser:</p>
+                             `,
+                        };
+                    //     <a href="${proposalLink}" style="display: inline-block; padding: 10px 20px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;">
+                    //     Review and Sign
+                    // </a>
+                        // <p>${username} has sent the following for your review and signature:</p>
+                        // <p><a href="${proposalLink}">${proposalLink}</a></p>
+                        await transporter.sendMail(mailOptions);
+                        console.log(`Email sent to ${contact.email}`);
+                    }
+                }
+            }
+
+        }
+
+        if (missingContactsAccounts.length > 0) {
+            const transporter = nodemailer.createTransport({
+                host: "smtp.gmail.com",
+                port: 587,
+                secure: false, // Use STARTTLS
+                auth: {
+                    user: "dipeeka.pote52@gmail.com",
+                    pass: "togt ljzg urar dlam",
+                },
+            });
+
+            const missingAccountsList = missingContactsAccounts.join(', ');
+
+            const mailOptions = {
+                from: 'dipeeka.pote52@gmail.com',
+                to: 'dipeeka.pote52@gmail.com',
+                subject: 'Some proposals were not created',
+                html: `
+                    <p>The following accounts have no contacts who can sign proposals, so we couldn’t create proposals for them:</p>
+                    <p>${missingAccountsList}</p>
+                    <p>Proposal name:</p>
+                    <p>${proposalname}</p>
+                `,
+            };
+
+            await transporter.sendMail(mailOptions);
+            console.log('Notification email sent about missing contacts');
+        }
+
+        return res.status(201).json({ message: "ProposalesandelsAccountwise created successfully" });
+    } catch (error) {
+        console.error("Error creating ProposalesandelsAccountwise:", error);
+        return res.status(500).json({ error: "Error creating ProposalesandelsAccountwise" });
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
 // const createProposalsAndElsAccounts = async (req, res) => {
 //     const {
 //         accountids,
