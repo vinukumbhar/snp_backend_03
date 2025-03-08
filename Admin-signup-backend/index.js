@@ -63,12 +63,12 @@ app.use("/common", userRoutes);
 //! otp
 // const otpController = require("../../backend/Admin-signup-backend/middleware/otpController");
 const otpController = require("../Admin-signup-backend/middleware/otpController");
-app.use("/", otpController);
+app.use("/otp", otpController);
 // snp_backend_01
 // !client
 // const clientsignupOTPmail = require("../../backend/Admin-signup-backend/middleware/clientsignupOTPmail");
 const clientsignupOTPmail = require("../Admin-signup-backend/middleware/clientsignupOTPmail");
-app.use("/", clientsignupOTPmail);
+app.use("/clientsotp", clientsignupOTPmail);
 // ! admin
 // const adminRoutes = require("../../backend/Admin-signup-backend/routes/adminRoutes");
 const adminRoutes = require("../Admin-signup-backend/routes/adminRoutes");
@@ -76,31 +76,31 @@ app.use("/admin", adminRoutes);
 
 // const usersavedemail = require("../../backend/Admin-signup-backend/middleware/usersavedemail");
 const usersavedemail = require("../Admin-signup-backend/middleware/usersavedemail");
-app.use("/", usersavedemail);
+app.use("/usersemail", usersavedemail);
 
 //! resetpassword
 const resetpassword = require("./controller/resetPasswordController");
-app.use("/", resetpassword);
+app.use("/resetpass", resetpassword);
 
 //! resetpassword
 const teammemberpasswordupdate = require("../Admin-signup-backend/middleware/teammemberpasswordupdate");
-app.use("/", teammemberpasswordupdate);
+app.use("/teamresetpass", teammemberpasswordupdate);
 
 //!  Routes
 const passwordupdateemail = require("../Admin-signup-backend/middleware/passwordupdatemail");
-app.use("/", passwordupdateemail);
+app.use("/updatepass", passwordupdateemail);
 
 //! EmailTemplate Routes
 const clientsavedemail = require("../Admin-signup-backend/middleware/clientsavedEmail");
-app.use("/", clientsavedemail);
+app.use("/clientmail", clientsavedemail);
 
 //! EmailTemplate Routes
 const teammembersavedemail = require("../Admin-signup-backend/middleware/teamMembersendInviteEmail");
-app.use("/", teammembersavedemail);
+app.use("/teamemail", teammembersavedemail);
 
 const emailsync = require("../Admin-signup-backend/middleware/emailsync");
 // ../Admin-signup-backend/middleware/emailsync
-app.use("/", emailsync);
+app.use("/emailsynk", emailsync);
 
 app.use("/uploads", express.static("middleware/uploads"));
 // app.use('/uploads', express.static(path.join(__dirname, 'middleware/uploads')));
@@ -109,7 +109,7 @@ app.use("/uploads", express.static("middleware/uploads"));
 
 // firmsettinga
 const firmsetting = require("./routes/firmsettingRoutes");
-app.use("/", firmsetting);
+app.use("/adminfirm", firmsetting);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
