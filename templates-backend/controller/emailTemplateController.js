@@ -62,34 +62,30 @@ const getEmailTemplateList = async (req, res) => {
 
 
 // //POST a new JobTemplate 
-// const createEmailTemplate = async (req, res) => {
-//     const { templatename, from, emailsubject, emailbody, active } = req.body;
+const createEmailTemplate = async (req, res) => {
+    const { templatename, from, emailsubject, emailbody, active } = req.body;
 
-//     // Handle file uploads
-//     const files = req.files ? req.files.map(file => ({
-//         filename: file.originalname,
-//         path: file.path
-//     })) : [];
+   
 
-//     try {
-//         // Check if a task template with similar properties already exists
-//         const existingTemplate = await EmailTemplate.findOne({
-//             templatename
-//         });
+    try {
+        // Check if a task template with similar properties already exists
+        const existingTemplate = await EmailTemplate.findOne({
+            templatename
+        });
 
-//         if (existingTemplate) {
-//             return res.status(400).json({ error: "EmailTemplate  already exists" });
-//         }
-//         // If no existing template is found, create a new one
-//         const newEmailTemplate = await EmailTemplate.create({
-//             templatename, from, emailsubject, emailbody, files, active
-//         });
-//         return res.status(201).json({ message: "EmailTemplate created successfully", newEmailTemplate });
-//     } catch (error) {
-//         console.error("Error creating EmailTemplate:", error);
-//         return res.status(500).json({ error: "Error creating EmailTemplate" });
-//     }
-// };
+        if (existingTemplate) {
+            return res.status(200).json({ message: "EmailTemplate  already exists" });
+        }
+        // If no existing template is found, create a new one
+        const newEmailTemplate = await EmailTemplate.create({
+            templatename, from, emailsubject, emailbody, active
+        });
+        return res.status(201).json({ message: "EmailTemplate created successfully", newEmailTemplate });
+    } catch (error) {
+        console.error("Error creating EmailTemplate:", error);
+        return res.status(500).json({ error: "Error creating EmailTemplate" });
+    }
+};
 
 // const createEmailTemplate = async (req, res) => {
 //     const { templatename, from, emailsubject, emailbody, active } = req.body;
@@ -125,38 +121,38 @@ const getEmailTemplateList = async (req, res) => {
 // };
 
 
-const createEmailTemplate = async (req, res) => {
-    const { templatename, from, emailsubject, emailbody, active } = req.body;
-    const files = req.files || []; // Assuming req.files contains file information
+// const createEmailTemplate = async (req, res) => {
+//     const { templatename, from, emailsubject, emailbody, active } = req.body;
+//     const files = req.files || []; // Assuming req.files contains file information
 
-    try {
-        const existingTemplate = await EmailTemplate.findOne({ templatename });
-        if (existingTemplate) {
-            return res.status(400).json({ error: "EmailTemplate already exists" });
-        }
+//     try {
+//         const existingTemplate = await EmailTemplate.findOne({ templatename });
+//         if (existingTemplate) {
+//             return res.status(400).json({ error: "EmailTemplate already exists" });
+//         }
 
-        // Map to create an array of file objects with size
-        const fileDetails = files.map(file => ({
-            filename: file.originalname,  // File name
-            path: file.path,              // File path
-            size: file.size               // File size
-        }));
+//         // Map to create an array of file objects with size
+//         const fileDetails = files.map(file => ({
+//             filename: file.originalname,  // File name
+//             path: file.path,              // File path
+//             size: file.size               // File size
+//         }));
 
-        const newEmailTemplate = await EmailTemplate.create({
-            templatename,
-            from,
-            emailsubject,
-            emailbody,
-            active,
-           fileDetails // Assign the array of file objects
-        });
+//         const newEmailTemplate = await EmailTemplate.create({
+//             templatename,
+//             from,
+//             emailsubject,
+//             emailbody,
+//             active,
+//            fileDetails // Assign the array of file objects
+//         });
 
-        return res.status(201).json({ message: "EmailTemplate created successfully", newEmailTemplate });
-    } catch (error) {
-        console.error("Error creating EmailTemplate:", error);
-        return res.status(500).json({ error: "Error creating EmailTemplate" });
-    }
-};
+//         return res.status(201).json({ message: "EmailTemplate created successfully", newEmailTemplate });
+//     } catch (error) {
+//         console.error("Error creating EmailTemplate:", error);
+//         return res.status(500).json({ error: "Error creating EmailTemplate" });
+//     }
+// };
 
 
 //delete a JobTemplate

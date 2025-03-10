@@ -9,7 +9,7 @@ router.get('/emailtemplate/emailtemplateList/:id', getEmailTemplateList)
 // router.post('/emailtemplate', createEmailTemplate)
 // router.delete('/emailtemplate/:id', deleteEmailTemplate)
 // router.patch('/emailtemplate/:id', updateEmailTemplate)
-router.post('/emailtemplate', upload.array('files'), createEmailTemplate);
+router.post('/emailtemplate', createEmailTemplate);
 router.delete('/emailtemplate/:id', deleteEmailTemplate)
 router.patch('/emailtemplate/:id', upload.array('files', 10), updateEmailTemplate)
 

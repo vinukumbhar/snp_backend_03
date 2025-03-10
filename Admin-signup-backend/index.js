@@ -153,7 +153,7 @@ const emailsync = require("../Admin-signup-backend/middleware/emailsync");
 // ../Admin-signup-backend/middleware/emailsync
 app.use("/emailsynk", emailsync);
 
-app.use("/uploads", express.static("middleware/uploads"));
+// app.use("/uploads", express.static("middleware/uploads"));
 // app.use('/uploads', express.static(path.join(__dirname, 'middleware/uploads')));
 // app.use("/uploads", express.static("middleware/uploads"));
 // app.use('/uploads', express.static(path.join(__dirname, 'middleware/uploads')));

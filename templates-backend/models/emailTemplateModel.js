@@ -18,9 +18,9 @@ const emailTemplateSchema = new mongoose.Schema({
         type: String,
     },
     files: [{
-        filename: { type: String, required: true },
-        path: { type: String, required: true },
-        size: { type: Number, required: true } 
+        filename: { type: String },
+        path: { type: String },
+        size: { type: Number } 
     }],
     active: {
         type: Boolean,
