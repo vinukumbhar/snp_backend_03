@@ -296,6 +296,10 @@ exports.AutomationsMails = async (req, res) => {
         // Add organizer creation logic here
         break;
 
+        case "Update account tags":
+        console.log("Executing update account tags  logic...");
+        // Add organizer creation logic here
+        break;
       default:
         console.log("Unknown automation type.");
         return res.status(400).json({ message: "Invalid automation type" });

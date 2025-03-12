@@ -106,6 +106,74 @@ const getAccount = async (req, res) => {
   }
 };
 
+const updateAccountTags = async (req, res) => {
+  const { id } = req.params;
+  const { tags } = req.body; // Expecting an array of tag IDs
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ error: "Invalid Account ID" });
+  }
+
+  if (!Array.isArray(tags)) {
+    return res.status(400).json({ error: "Tags must be an array" });
+  }
+
+  try {
+    const account = await Accounts.findById(id);
+
+    if (!account) {
+      return res.status(404).json({ error: "No such Account" });
+    }
+
+    // Update only the tags field
+    account.tags = tags;
+    await account.save();
+
+    res.status(200).json({ message: "Account tags updated successfully", account });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// const updateAccountTags = async (req, res) => {
+//   const { id } = req.params;
+//   const { tags } = req.body; // Expecting an array of tag IDs
+
+//   if (!mongoose.Types.ObjectId.isValid(id)) {
+//     return res.status(400).json({ error: "Invalid Account ID" });
+//   }
+
+//   if (!Array.isArray(tags)) {
+//     return res.status(400).json({ error: "Tags must be an array" });
+//   }
+
+//   try {
+//     const account = await Accounts.findById(id);
+
+//     if (!account) {
+//       return res.status(404).json({ error: "No such Account" });
+//     }
+
+//     // Create a Set to prevent duplicates
+//     const existingTagsSet = new Set(account.tags.map(tag => tag.toString()));
+
+//     // Add only new tags (avoid duplicates)
+//     const newTags = tags.filter(tag => !existingTagsSet.has(tag));
+
+//     if (newTags.length === 0) {
+//       return res.status(200).json({ message: "No new tags to add", account });
+//     }
+
+//     // Update account tags and save
+//     account.tags.push(...newTags);
+//     await account.save();
+
+//     res.status(200).json({ message: "Account tags updated successfully", account });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
 // Get a single Account
 const getAccountsUserId = async (req, res) => {
   const { id } = req.params;
@@ -615,5 +683,6 @@ module.exports = {
   getAccountListByUserId,
   getAccountsIdAndName,
   getAccountsUserId,
-  getAccountsByTeamMember
+  getAccountsByTeamMember,
+  updateAccountTags
 };
