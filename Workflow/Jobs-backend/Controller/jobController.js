@@ -70,6 +70,92 @@ const getJobs = async (req, res) => {
   }
 };
 
+// Get Jobs by Account ID
+// const getJobsByAccount = async (req, res) => {
+//   try {
+//     // Extract accountId from the request parameters or query
+//     const { accountId } = req.params; // or req.query if passed in query string
+    
+//     // Find jobs where the accountId exists in the "accounts" array
+//     const jobs = await Job.find({ accounts: accountId }).populate({
+//       path: "pipeline",
+//       model: "pipeline",
+      
+//     });
+
+//     if (jobs.length === 0) {
+//       return res.status(404).json({ message: "No jobs found for this account" });
+//     }
+
+//     res.status(200).json({ message: "Jobs retrieved successfully", jobs });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
+
+const getJobsByAccount = async (req, res) => {
+  try {
+    const { accountId } = req.params;
+    const accountIdsArray = accountId.split(",");
+
+    // Fetch jobs where the accountId exists in the "accounts" array
+    const jobs = await Job.find({ accounts: { $in: accountIdsArray } })
+      .populate({ path: "pipeline", model: "pipeline" })
+      .populate({ path: "accounts", model: "Accounts" });
+
+    const jobList = [];
+
+    for (const job of jobs) {
+      const accountsname = job.accounts.map((account) => account.accountName);
+      const accountId = job.accounts.map((account) => account._id);
+
+      // Fetch account and associated contacts
+      const account = await Accounts.findById(accountId).populate("contacts");
+      const validContacts = account.contacts.filter((contact) => contact.login);
+
+      if (validContacts.length === 0) {
+        return res.status(400).json({ status: 400, message: "No contacts with login enabled." });
+      }
+
+      // Select the first valid contact
+      const contact = validContacts[0];
+
+      // Data for placeholder replacement
+      const placeholderData = {
+        ACCOUNT_NAME: accountsname.join(", "),
+        FIRST_NAME: contact.firstName,
+        MIDDLE_NAME: contact.middleName,
+        LAST_NAME: contact.lastName,
+        CONTACT_NAME: contact.contactName,
+        COMPANY_NAME: contact.companyName,
+        COUNTRY: contact.country,
+        STREET_ADDRESS: contact.streetAddress,
+        STATEPROVINCE: contact.state,
+        PHONE_NUMBER: contact.phoneNumbers,
+        ZIPPOSTALCODE: contact.postalCode,
+        CITY: contact.city,
+      };
+
+      // Replace placeholders in jobname
+      const jobName = replacePlaceholders(job.jobname, placeholderData);
+
+      jobList.push({
+        id: job._id,
+        Name: jobName,
+        Pipeline: job.pipeline?.pipelineName || null,
+        Accounts: accountsname,
+      });
+    }
+
+    res.status(200).json({ message: "Jobs retrieved successfully", jobList });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
 
 // Get job count
 const getJobsCount = async (req, res) => {
@@ -1684,5 +1770,6 @@ module.exports = {
   getActiveJobList,
   getActiveJobListbyAccountId,
   getActiveJobListByUserid,
-  getPipelinesFromJobList
+  getPipelinesFromJobList,
+  getJobsByAccount
 };
