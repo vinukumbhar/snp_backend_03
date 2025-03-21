@@ -17,10 +17,15 @@ const emailTemplateSchema = new mongoose.Schema({
     emailbody: {
         type: String,
     },
-    files: [{
-        filename: { type: String },
-        path: { type: String },
-        size: { type: Number } 
+    attachments: [{
+        filename: {
+            type: String,
+            required: true
+        },
+        size: {
+            type: Number,
+            required: true
+        }
     }],
     active: {
         type: Boolean,
