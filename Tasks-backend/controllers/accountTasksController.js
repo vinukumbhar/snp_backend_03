@@ -7,6 +7,8 @@ const Pipeline = require("../models/pipelineTemplateModel");
 const Job = require("../models/JobModel");
 const Contacts = require("../models/contactsModel");
 const TaskTemplate = require("../models/taskTemplateModel")
+require('dotenv').config();
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 // Get the current date
 const currentDate = new Date();
 const lastDay = new Date(currentDate);
@@ -55,7 +57,154 @@ const getAllTasks = async (req, res) => {
   }
 };
 
-//POST a new task
+// //POST a new task
+// const createTask = async (req, res) => {
+//   const {
+//     accounts,
+//     job,
+//     templatename,
+//     taskname,
+//     status,
+//     taskassignees,
+//     priority,
+//     description,
+//     tasktags,
+//     issubtaskschecked,
+//     startdate,
+//     enddate,
+//     subtasks,
+//     active,
+//   } = req.body;
+
+//   try {
+//     const newTask = await Task.create({
+//       accounts,
+//       job,
+//       templatename,
+//       taskname,
+//       status,
+//       taskassignees,
+//       priority,
+//       description,
+//       tasktags,
+//       issubtaskschecked,
+//       startdate,
+//       enddate,
+//       subtasks,
+//       active,
+//     });
+
+//     return res
+//       .status(201)
+//       .json({ message: "Task created successfully", newTask });
+//   } catch (error) {
+//     console.error("Error creating Job:", error);
+//     return res.status(500).json({ error: "Error creating Job" });
+//   }
+// };
+
+const nodemailer = require("nodemailer");
+// const Task = require("../models/Task"); // Adjust the path as needed
+
+// Configure Nodemailer transporter
+const transporter = nodemailer.createTransport({
+          host: "smtp.gmail.com",
+          port: 587,
+          secure: false, // Use STARTTLS
+          auth: {
+            user: process.env.EMAIL,
+            pass: process.env.EMAIL_PASSWORD,
+        },
+        tls: {
+            rejectUnauthorized: false
+        },
+      });
+
+// POST a new task
+// const createTask = async (req, res) => {
+//   const {
+//     accounts,
+//     job,
+//     templatename,
+//     taskname,
+//     status,
+//     taskassignees,
+//     priority,
+//     description,
+//     tasktags,
+//     issubtaskschecked,
+//     startdate,
+//     enddate,
+//     subtasks,
+//     active,
+//   } = req.body;
+
+//   try {
+//     // Create Task
+//     const newTask = await Task.create({
+//       accounts,
+//       job,
+//       templatename,
+//       taskname,
+//       status,
+//       taskassignees,
+//       priority,
+//       description,
+//       tasktags,
+//       issubtaskschecked,
+//       startdate,
+//       enddate,
+//       subtasks,
+//       active,
+//     });
+
+//     // Fetch emails of task assignees
+//     const users = await User.find({ _id: { $in: taskassignees } }, "email");
+
+//     const recipientEmails = users
+//       .map((user) => user.email)
+//       .filter((email) => email) // Ensure emails are not undefined
+//       .join(",");
+
+//     if (!recipientEmails) {
+//       console.warn("No valid emails found for task assignees.");
+//       return res
+//         .status(201)
+//         .json({ message: "Task created, but no valid emails found", newTask });
+//     }
+
+//     // Email setup
+//     const mailOptions = {
+//       from: process.env.EMAIL_USER,
+//       to: recipientEmails,
+//       subject: `New Task Assigned: ${taskname}`,
+//       html: `
+//         <h3>Hello,</h3>
+//         <p>A new task has been assigned to you:</p>
+//         <ul>
+//           <li><strong>Account:</strong> ${accounts}</li>
+//           <li><strong>Task Name:</strong> ${taskname}</li>
+//           <li><strong>Status:</strong> ${status}</li>
+//           <li><strong>Start Date:</strong> ${startdate}</li>
+//           <li><strong>End Date:</strong> ${enddate}</li>
+//         </ul>
+//         <p>Please log in to check the details.</p>
+//         <p>Best Regards,</p>
+//         <p>Your Team</p>
+//       `,
+//     };
+
+//     // Send email
+//     await transporter.sendMail(mailOptions);
+//     console.log(`Email sent to: ${recipientEmails}`);
+
+//     return res.status(201).json({ message: "Task created successfully", newTask });
+//   } catch (error) {
+//     console.error("Error creating Task or sending email:", error);
+//     return res.status(500).json({ error: "Error creating Task or sending email" });
+//   }
+// };
+
 const createTask = async (req, res) => {
   const {
     accounts,
@@ -75,6 +224,7 @@ const createTask = async (req, res) => {
   } = req.body;
 
   try {
+    // Create Task
     const newTask = await Task.create({
       accounts,
       job,
@@ -92,14 +242,94 @@ const createTask = async (req, res) => {
       active,
     });
 
-    return res
-      .status(201)
-      .json({ message: "Task created successfully", newTask });
+    // Fetch account names instead of IDs
+    const accountData = await Accounts.find({ _id: { $in: accounts } }, "accountName");
+    const accountNames = accountData.map((acc) => acc.accountName);
+
+    // Fetch emails of task assignees
+    const users = await User.find({ _id: { $in: taskassignees } }, "email");
+    const recipientEmails = users.map((user) => user.email).filter((email) => email).join(",");
+
+
+    if (!recipientEmails) {
+      console.warn("No valid emails found for task assignees.");
+      return res
+        .status(201)
+        .json({ message: "Task created, but no valid emails found", newTask });
+    }
+// Format dates as MM-DD-YYYY
+const formatDate = (date) => {
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  });
+};
+
+const formattedStartDate = formatDate(startdate);
+const formattedEndDate = formatDate(enddate);
+ 
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: recipientEmails,
+      subject: `Task Assigned: ${taskname}`,
+      html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9;">
+        <div style="background-color: #007bff; color: #ffffff; padding: 15px; text-align: center; border-radius: 8px 8px 0 0;">
+          <h2 style="margin: 0;">New Task Assigned</h2>
+        </div>
+        <div style="padding: 20px; background-color: #ffffff; border-radius: 0 0 8px 8px;">
+         
+          <p style="font-size: 14px; color: #555;">You have been assigned a new task. Please find the details below:</p>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <tr>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Account:</strong></td>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd;">${accountNames}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Task Name:</strong></td>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd;">${taskname}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Status:</strong></td>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd;">${status}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Priority:</strong></td>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd;">${priority}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Start Date:</strong></td>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd;">${formattedStartDate}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>End Date:</strong></td>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd;">${formattedEndDate}</td>
+            </tr>
+          </table>
+          <p style="font-size: 14px; color: #555; margin-top: 15px;">Please log in to your account to view and manage the task.</p>
+         
+          <p style="font-size: 14px; color: #555; margin-top: 20px;">Best Regards,</p>
+          <p style="font-size: 14px; color: #333;"><strong>Your Team</strong></p>
+        </div>
+      </div>
+      `,
+    };
+    
+
+    // Send email
+    await transporter.sendMail(mailOptions);
+    console.log(`Email sent to: ${recipientEmails}`);
+
+    return res.status(201).json({ message: "Task created successfully", newTask });
   } catch (error) {
-    console.error("Error creating Job:", error);
-    return res.status(500).json({ error: "Error creating Job" });
+    console.error("Error creating Task or sending email:", error);
+    return res.status(500).json({ error: "Error creating Task or sending email" });
   }
 };
+
+
+
 
 // gets tasks list
 const getTaskList = async (req, res) => {
@@ -138,9 +368,7 @@ const getTaskList = async (req, res) => {
       const pipelineId = task.job.pipeline._id;
       const pipelineName = task.job.pipeline.pipelineName || "";
 
-      const assigneeNames = task.taskassignees
-        .flat()
-        .map((assignee) => assignee.username);
+      const assigneeNames = task.taskassignees.map((assignee) => assignee.username);
 
       // Extract tags data
       const tagsData = task.tasktags.map((tag) => ({
@@ -319,14 +547,52 @@ const deleteTask = async (req, res) => {
 };
 
 //update a task
+// const updateTasks = async (req, res) => {
+//   const { id } = req.params;
+
+//   if (!mongoose.Types.ObjectId.isValid(id)) {
+//     return res.status(404).json({ error: "Invalid Task ID" });
+//   }
+
+//   try {
+//     const updatedTask = await Task.findOneAndUpdate(
+//       { _id: id },
+//       { ...req.body },
+//       { new: true }
+//     );
+
+//     if (!updatedTask) {
+//       return res.status(404).json({ error: "No such Task" });
+//     }
+
+//     res.status(200).json({ message: "Task Updated successfully", updatedTask });
+//   } catch (error) {
+//     return res.status(500).json({ error: error.message });
+//   }
+// };
+
 const updateTasks = async (req, res) => {
   const { id } = req.params;
+  const {
+    taskassignees, taskname, status, priority, startdate, enddate, accounts
+  } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(404).json({ error: "Invalid Task ID" });
   }
 
   try {
+    // Retrieve the existing task before updating
+    const existingTask = await Task.findById(id);
+    if (!existingTask) {
+      return res.status(404).json({ error: "No such Task" });
+    }
+
+    // Find new assignees (users who were not in the previous list)
+    const previousAssignees = existingTask.taskassignees.map(String);
+    const newAssignees = taskassignees.filter((assignee) => !previousAssignees.includes(String(assignee)));
+
+    // Update the task
     const updatedTask = await Task.findOneAndUpdate(
       { _id: id },
       { ...req.body },
@@ -337,9 +603,81 @@ const updateTasks = async (req, res) => {
       return res.status(404).json({ error: "No such Task" });
     }
 
-    res.status(200).json({ message: "Task Updated successfully", updatedTask });
+    // Fetch emails of new task assignees
+    if (newAssignees.length > 0) {
+      const users = await User.find({ _id: { $in: newAssignees } }, "email");
+      const recipientEmails = users.map((user) => user.email).filter(Boolean).join(",");
+
+      if (recipientEmails) {
+        // Fetch account names
+        const accountData = await Accounts.find({ _id: { $in: accounts } }, "accountName");
+        const accountNames = accountData.map((acc) => acc.accountName);
+
+        // Format dates as MM-DD-YYYY
+        const formatDate = (date) => new Date(date).toLocaleDateString("en-US", {
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+        });
+
+        const formattedStartDate = formatDate(startdate);
+        const formattedEndDate = formatDate(enddate);
+
+        const mailOptions = {
+          from: process.env.EMAIL_USER,
+          to: recipientEmails,
+          subject: `Task Assigned: ${taskname}`,
+          html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9;">
+            <div style="background-color: #007bff; color: #ffffff; padding: 15px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h2 style="margin: 0;">New Task Assigned</h2>
+            </div>
+            <div style="padding: 20px; background-color: #ffffff; border-radius: 0 0 8px 8px;">
+              <p style="font-size: 14px; color: #555;">You have been assigned a new task. Please find the details below:</p>
+              <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                <tr>
+                  <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Account:</strong></td>
+                  <td style="padding: 8px; border-bottom: 1px solid #ddd;">${accountNames}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Task Name:</strong></td>
+                  <td style="padding: 8px; border-bottom: 1px solid #ddd;">${taskname}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Status:</strong></td>
+                  <td style="padding: 8px; border-bottom: 1px solid #ddd;">${status}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Priority:</strong></td>
+                  <td style="padding: 8px; border-bottom: 1px solid #ddd;">${priority}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Start Date:</strong></td>
+                  <td style="padding: 8px; border-bottom: 1px solid #ddd;">${formattedStartDate}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>End Date:</strong></td>
+                  <td style="padding: 8px; border-bottom: 1px solid #ddd;">${formattedEndDate}</td>
+                </tr>
+              </table>
+              <p style="font-size: 14px; color: #555; margin-top: 15px;">Please log in to your account to view and manage the task.</p>
+              <p style="font-size: 14px; color: #555; margin-top: 20px;">Best Regards,</p>
+              <p style="font-size: 14px; color: #333;"><strong>Your Team</strong></p>
+            </div>
+          </div>
+          `,
+        };
+
+        // Send email
+        await transporter.sendMail(mailOptions);
+        console.log(`Email sent to new assignees: ${recipientEmails}`);
+      }
+    }
+
+    return res.status(200).json({ message: "Task Updated successfully", updatedTask });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    console.error("Error updating Task or sending email:", error);
+    return res.status(500).json({ error: "Error updating Task or sending email" });
   }
 };
 
@@ -493,9 +831,7 @@ const getCompleteTaskList = async (req, res) => {
       const pipelineId = task.job.pipeline._id;
       const pipelineName = task.job.pipeline.pipelineName || "";
 
-      const assigneeNames = task.taskassignees
-        .flat()
-        .map((assignee) => assignee.username);
+      const assigneeNames = task.taskassignees.map((assignee) => assignee.username);
 
       // Extract tags data
       const tagsData = task.tasktags.map((tag) => ({

@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const {updateAccountTags,getAccountsByTeamMember,getAccountsUserId,getAccountsIdAndName, updateContactsForMultipleAccounts, getActiveAccountList, getAccountListByUserId,createAccount, getAccount, getAccounts, updateAccount, deleteAccount, getAccountsList, getAccountsListById, getAccountsbyContactId, updateContactsForAccounts, removeContactFromAccount, getAccountbyIdAll } = require("../controller/AccountController"); // Adjust the path to your actual controller
+const {getAllAccounts,updateAccountTags,getAccountsByTeamMember,getAccountsUserId,getAccountsIdAndName, updateContactsForMultipleAccounts, getActiveAccountList, getAccountListByUserId,createAccount, getAccount, getAccounts, updateAccount, deleteAccount, getAccountsList, getAccountsListById, getAccountsbyContactId, updateContactsForAccounts, removeContactFromAccount, getAccountbyIdAll } = require("../controller/AccountController"); // Adjust the path to your actual controller
 
 router.get("/accountdetails", getAccounts);
 router.get("/nameandid/accountdetails", getAccountsIdAndName);
+router.get("/accountsdata",getAllAccounts)
 router.get("/accountsuserid/:id",getAccountsUserId)
 router.get("/accountdetails/:id", getAccount);
 

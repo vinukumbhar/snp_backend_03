@@ -43,7 +43,7 @@ const taskSchema = new mongoose.Schema({
        taskassignees: [{
            type: mongoose.Schema.Types.ObjectId,
            ref: 'User',
-           type: Array,
+        //    type: Array,
        }],
    
        priority: {

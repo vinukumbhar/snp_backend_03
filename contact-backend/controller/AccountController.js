@@ -84,7 +84,32 @@ const getAccountsIdAndName = async (req, res) => {
   }
 };
 
+const getAllAccounts = async (req, res) => {
+  try {
+    // Extract the 'test' parameter from the request query or params
+    const { test } = req.query; // Assuming 'test' is passed as a query parameter
 
+    // Define the query object
+    const query = {};
+    if (test) {
+      // Use $regex to perform a "LIKE" search on accountName
+      query.accountName = { $regex: test, $options: 'i' }; // Case-insensitive search
+    }
+
+    // Fetch accounts based on the query
+    const accounts = await Accounts.find(query);
+
+    // Map the accounts to only include id and name
+    const accountData = accounts.map(account => ({
+      _id: account._id,     // Include the account ID
+      accountName: account.accountName   // Include the account name
+    }));
+
+    res.status(200).json({ message: "Accounts retrieved successfully", accounts: accountData });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 //Get a single Account
 const getAccount = async (req, res) => {
@@ -684,5 +709,5 @@ module.exports = {
   getAccountsIdAndName,
   getAccountsUserId,
   getAccountsByTeamMember,
-  updateAccountTags
+  updateAccountTags,getAllAccounts
 };
