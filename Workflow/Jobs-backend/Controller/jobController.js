@@ -247,6 +247,9 @@ const createJob = async (req, res) => {
     // Use the provided stageid or defaultStageId if not provided
     const selectedStageId = stageid || defaultStageId;
 
+
+    let createdJobs = [];
+
     for (const accountid of accounts) {
       const newJob = await Job.create({
         accounts: accountid,
@@ -272,8 +275,10 @@ const createJob = async (req, res) => {
         clientfacingDescription,
         active,
       });
+      createdJobs.push(newJob); 
     }
-    return res.status(201).json({ message: "Job created successfully" });
+    return res.status(201).json({ message: "Job created successfully",createdJobs });
+ 
   } catch (error) {
     console.error("Error creating Job:", error);
     return res.status(500).json({ error: "Error creating Job" });
