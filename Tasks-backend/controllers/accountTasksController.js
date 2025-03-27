@@ -332,15 +332,189 @@ const formattedEndDate = formatDate(enddate);
 
 
 // gets tasks list
+// const getTaskList = async (req, res) => {
+//   try {
+//     const { isActive ,status } = req.params;
+//     const query = { active: isActive };
+//     if (status !== "all") {
+//       query.status = { $ne: "Completed" }; // Exclude "Completed" tasks unless "all" is requested
+//     }
+//     const tasks = await Task.find(query)
+
+//       .populate({ path: "accounts", model: "Accounts" })
+//       .populate({
+//         path: "job",
+//         model: "Job",
+//         populate: {
+//           path: "pipeline",
+//           model: "pipeline",
+//           populate: { path: "stages", model: "Stage" },
+//         },
+//       })
+//       .populate({ path: "tasktags", model: "Tags" })
+//       .populate({ path: "taskassignees", model: "User" })
+//       .sort({ createdAt: -1 });
+
+//     const taskList = [];
+
+//     for (const task of tasks) {
+//       const job = task.job;
+//       if (!job) continue;
+
+//       const pipeline = await Pipeline.findById(job.pipeline);
+//       if (!pipeline) continue;
+
+//       // Extract Pipeline details (Separate fields)
+//       const pipelineId = task.job.pipeline._id;
+//       const pipelineName = task.job.pipeline.pipelineName || "";
+
+//       const assigneeNames = task.taskassignees.map((assignee) => assignee.username);
+
+//       // Extract tags data
+//       const tagsData = task.tasktags.map((tag) => ({
+//         id: tag._id,
+//         tagName: tag.tagName,
+//         tagColour: tag.tagColour,
+//       }));
+
+//       // Extract Stage Names & IDs (Separate fields)
+//       let stageIds = [];
+//       let stageNames = [];
+//       if (task.job.stageid) {
+//         if (Array.isArray(task.job.stageid)) {
+//           task.job.stageid.forEach((stageId) => {
+//             const matchedStage = task.job.pipeline.stages.find((stage) =>
+//               stage._id.equals(stageId)
+//             );
+//             if (matchedStage) {
+//               stageIds.push(matchedStage._id);
+//               stageNames.push(matchedStage.name);
+//             }
+//           });
+//         } else {
+//           const matchedStage = task.job.pipeline.stages.find((stage) =>
+//             stage._id.equals(task.job.stageid)
+//           );
+//           if (matchedStage) {
+//             stageIds.push(matchedStage._id);
+//             stageNames.push(matchedStage.name);
+//           }
+//         }
+//       }
+//       // Get subtasks count
+//       const totalSubtasks = task.subtasks ? task.subtasks.length : 0;
+//       const checkedSubtasks = task.subtasks
+//         ? task.subtasks.filter((subtask) => subtask.checked).length
+//         : 0;
+//       const subtaskCount = `${checkedSubtasks}/${totalSubtasks}`; // Format checked/total
+
+//       // Fetch account and associated contacts
+//       const account = await Accounts.findById(job.accounts).populate(
+//         "contacts"
+//       );
+
+//       // console.log(account)
+//       const validContact = account.contacts.filter((contact) => contact.login);
+//       // console.log(validContact)
+//       // Define placeholder values
+//       const placeholderValues = {
+        // ACCOUNT_NAME: account?.accountName || "",
+        // FIRST_NAME: validContact[0]?.firstName || "",
+        // MIDDLE_NAME: validContact[0]?.middleName || "",
+        // LAST_NAME: validContact[0]?.lastName || "",
+        // CONTACT_NAME: validContact[0]?.contactName || "",
+        // COMPANY_NAME: validContact[0]?.companyName || "",
+        // COUNTRY: validContact[0]?.country || "",
+        // STREET_ADDRESS: validContact[0]?.streetAddress || "",
+        // STATEPROVINCE: validContact[0]?.state || "",
+        // PHONE_NUMBER: validContact[0]?.phoneNumbers || "",
+        // ZIPPOSTALCODE: validContact[0]?.postalCode || "",
+        // CITY: validContact[0]?.city || "",
+        // CURRENT_DAY_FULL_DATE: currentDate.toLocaleDateString(),
+        // CURRENT_DAY_NUMBER: currentDate.getDate(),
+        // CURRENT_DAY_NAME: currentDate.toLocaleString("default", {
+        //   weekday: "long",
+        // }),
+        // CURRENT_MONTH_NUMBER: currentDate.getMonth() + 1,
+        // CURRENT_MONTH_NAME: currentDate.toLocaleString("default", {
+        //   month: "long",
+        // }),
+        // CURRENT_YEAR: currentDate.getFullYear(),
+        // LAST_DAY_FULL_DATE: lastDayFullDate,
+        // LAST_DAY_NUMBER: lastDayNumber,
+        // LAST_DAY_NAME: lastDayName,
+        // LAST_WEEK: lastWeek,
+        // LAST_MONTH_NUMBER: lastMonthNumber,
+        // LAST_MONTH_NAME: lastMonthName,
+        // LAST_QUARTER: lastQuarter,
+        // LAST_YEAR: lastYear,
+        // NEXT_DAY_FULL_DATE: nextDayFullDate,
+        // NEXT_DAY_NUMBER: nextDayNumber,
+        // NEXT_DAY_NAME: nextDayName,
+        // NEXT_WEEK: nextWeek,
+        // NEXT_MONTH_NUMBER: nextMonthNumber,
+        // NEXT_MONTH_NAME: nextMonthName,
+        // NEXT_QUARTER: nextQuarter,
+        // NEXT_YEAR: nextYear,
+//         // Add other dynamic placeholders as required
+//       };
+
+//       // Function to replace placeholders in text
+//       const replacePlaceholders = (template, data) => {
+//         return template.replace(/\[([\w\s]+)\]/g, (match, placeholder) => {
+//           return data[placeholder.trim()] || "";
+//         });
+//       };
+
+//       // // Extract Job details (Separate fields)
+//       const jobId = task.job._id;
+//       const jobName = replacePlaceholders(
+//         task.job.jobname || "",
+//         placeholderValues
+//       );
+//       // task.job.jobname || ""
+//       // job.jobname = replacePlaceholders(job.jobname || '', placeholderValues);
+
+//       taskList.push({
+//         id: task._id,
+//         Name: task.taskname,
+//         JobID: jobId, // Job ID (Separate)
+//         JobName: jobName, // Job Name (Separate)
+//         PipelineId: pipelineId, // Pipeline ID (Separate)
+//         PipelineName: pipelineName, // Pipeline Name (Separate)
+//         StageIds: stageIds, // Array of Stage IDs
+//         StageNames: stageNames, // Array of Stage Names/ Includes array of Stage IDs and Names
+//         Assignees: assigneeNames,
+//         TaskTags: tagsData,
+//         AccountName: task.accounts.accountName,
+//         AccountId: task.accounts._id,
+//         StartDate: task.startdate,
+//         EndDate: task.enddate,
+//         Priority: task.priority,
+//         Description: task.description,
+//         Status: task.status,
+//         SubtaskCount: subtaskCount,
+//         createdAt: task.createdAt,
+//         updatedAt: task.updatedAt,
+//       });
+//     }
+
+//     res.status(200).json({ message: "Tasks retrieved successfully", taskList });
+//     // console.log("tasks list", taskList);
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
 const getTaskList = async (req, res) => {
   try {
-    const { isActive ,status } = req.params;
+    const { isActive, status } = req.params;
     const query = { active: isActive };
     if (status !== "all") {
       query.status = { $ne: "Completed" }; // Exclude "Completed" tasks unless "all" is requested
     }
-    const tasks = await Task.find(query)
 
+    const tasks = await Task.find(query)
       .populate({ path: "accounts", model: "Accounts" })
       .populate({
         path: "job",
@@ -358,15 +532,32 @@ const getTaskList = async (req, res) => {
     const taskList = [];
 
     for (const task of tasks) {
-      const job = task.job;
-      if (!job) continue;
+      const job = task.job || null; // Handle missing job
+      let pipelineId = null;
+      let pipelineName = "";
+      let stageIds = [];
+      let stageNames = [];
 
-      const pipeline = await Pipeline.findById(job.pipeline);
-      if (!pipeline) continue;
+      if (job) {
+        const pipeline = job.pipeline || null;
 
-      // Extract Pipeline details (Separate fields)
-      const pipelineId = task.job.pipeline._id;
-      const pipelineName = task.job.pipeline.pipelineName || "";
+        if (pipeline) {
+          pipelineId = pipeline._id;
+          pipelineName = pipeline.pipelineName || "";
+
+          if (job.stageid) {
+            const jobStageIds = Array.isArray(job.stageid) ? job.stageid : [job.stageid];
+
+            jobStageIds.forEach((stageId) => {
+              const matchedStage = pipeline.stages.find((stage) => stage._id.equals(stageId));
+              if (matchedStage) {
+                stageIds.push(matchedStage._id);
+                stageNames.push(matchedStage.name);
+              }
+            });
+          }
+        }
+      }
 
       const assigneeNames = task.taskassignees.map((assignee) => assignee.username);
 
@@ -377,87 +568,68 @@ const getTaskList = async (req, res) => {
         tagColour: tag.tagColour,
       }));
 
-      // Extract Stage Names & IDs (Separate fields)
-      let stageIds = [];
-      let stageNames = [];
-      if (task.job.stageid) {
-        if (Array.isArray(task.job.stageid)) {
-          task.job.stageid.forEach((stageId) => {
-            const matchedStage = task.job.pipeline.stages.find((stage) =>
-              stage._id.equals(stageId)
-            );
-            if (matchedStage) {
-              stageIds.push(matchedStage._id);
-              stageNames.push(matchedStage.name);
-            }
-          });
-        } else {
-          const matchedStage = task.job.pipeline.stages.find((stage) =>
-            stage._id.equals(task.job.stageid)
-          );
-          if (matchedStage) {
-            stageIds.push(matchedStage._id);
-            stageNames.push(matchedStage.name);
-          }
-        }
-      }
       // Get subtasks count
       const totalSubtasks = task.subtasks ? task.subtasks.length : 0;
       const checkedSubtasks = task.subtasks
         ? task.subtasks.filter((subtask) => subtask.checked).length
         : 0;
-      const subtaskCount = `${checkedSubtasks}/${totalSubtasks}`; // Format checked/total
+      const subtaskCount = `${checkedSubtasks}/${totalSubtasks}`;
 
       // Fetch account and associated contacts
-      const account = await Accounts.findById(job.accounts).populate(
-        "contacts"
-      );
+      let accountName = "";
+      let accountId = null;
+      let placeholderValues = {};
 
-      // console.log(account)
-      const validContact = account.contacts.filter((contact) => contact.login);
-      // console.log(validContact)
-      // Define placeholder values
-      const placeholderValues = {
-        ACCOUNT_NAME: account?.accountName || "",
-        FIRST_NAME: validContact[0]?.firstName || "",
-        MIDDLE_NAME: validContact[0]?.middleName || "",
-        LAST_NAME: validContact[0]?.lastName || "",
-        CONTACT_NAME: validContact[0]?.contactName || "",
-        COMPANY_NAME: validContact[0]?.companyName || "",
-        COUNTRY: validContact[0]?.country || "",
-        STREET_ADDRESS: validContact[0]?.streetAddress || "",
-        STATEPROVINCE: validContact[0]?.state || "",
-        PHONE_NUMBER: validContact[0]?.phoneNumbers || "",
-        ZIPPOSTALCODE: validContact[0]?.postalCode || "",
-        CITY: validContact[0]?.city || "",
-        CURRENT_DAY_FULL_DATE: currentDate.toLocaleDateString(),
-        CURRENT_DAY_NUMBER: currentDate.getDate(),
-        CURRENT_DAY_NAME: currentDate.toLocaleString("default", {
-          weekday: "long",
-        }),
-        CURRENT_MONTH_NUMBER: currentDate.getMonth() + 1,
-        CURRENT_MONTH_NAME: currentDate.toLocaleString("default", {
-          month: "long",
-        }),
-        CURRENT_YEAR: currentDate.getFullYear(),
-        LAST_DAY_FULL_DATE: lastDayFullDate,
-        LAST_DAY_NUMBER: lastDayNumber,
-        LAST_DAY_NAME: lastDayName,
-        LAST_WEEK: lastWeek,
-        LAST_MONTH_NUMBER: lastMonthNumber,
-        LAST_MONTH_NAME: lastMonthName,
-        LAST_QUARTER: lastQuarter,
-        LAST_YEAR: lastYear,
-        NEXT_DAY_FULL_DATE: nextDayFullDate,
-        NEXT_DAY_NUMBER: nextDayNumber,
-        NEXT_DAY_NAME: nextDayName,
-        NEXT_WEEK: nextWeek,
-        NEXT_MONTH_NUMBER: nextMonthNumber,
-        NEXT_MONTH_NAME: nextMonthName,
-        NEXT_QUARTER: nextQuarter,
-        NEXT_YEAR: nextYear,
-        // Add other dynamic placeholders as required
-      };
+      if (task.accounts) {
+        const account = await Accounts.findById(task.accounts).populate("contacts");
+
+        if (account) {
+          accountName = account.accountName || "";
+          accountId = account._id;
+          const validContact = account.contacts.filter((contact) => contact.login);
+
+          placeholderValues = {
+            ACCOUNT_NAME: account?.accountName || "",
+            FIRST_NAME: validContact[0]?.firstName || "",
+            MIDDLE_NAME: validContact[0]?.middleName || "",
+            LAST_NAME: validContact[0]?.lastName || "",
+            CONTACT_NAME: validContact[0]?.contactName || "",
+            COMPANY_NAME: validContact[0]?.companyName || "",
+            COUNTRY: validContact[0]?.country || "",
+            STREET_ADDRESS: validContact[0]?.streetAddress || "",
+            STATEPROVINCE: validContact[0]?.state || "",
+            PHONE_NUMBER: validContact[0]?.phoneNumbers || "",
+            ZIPPOSTALCODE: validContact[0]?.postalCode || "",
+            CITY: validContact[0]?.city || "",
+            CURRENT_DAY_FULL_DATE: currentDate.toLocaleDateString(),
+            CURRENT_DAY_NUMBER: currentDate.getDate(),
+            CURRENT_DAY_NAME: currentDate.toLocaleString("default", {
+              weekday: "long",
+            }),
+            CURRENT_MONTH_NUMBER: currentDate.getMonth() + 1,
+            CURRENT_MONTH_NAME: currentDate.toLocaleString("default", {
+              month: "long",
+            }),
+            CURRENT_YEAR: currentDate.getFullYear(),
+            LAST_DAY_FULL_DATE: lastDayFullDate,
+            LAST_DAY_NUMBER: lastDayNumber,
+            LAST_DAY_NAME: lastDayName,
+            LAST_WEEK: lastWeek,
+            LAST_MONTH_NUMBER: lastMonthNumber,
+            LAST_MONTH_NAME: lastMonthName,
+            LAST_QUARTER: lastQuarter,
+            LAST_YEAR: lastYear,
+            NEXT_DAY_FULL_DATE: nextDayFullDate,
+            NEXT_DAY_NUMBER: nextDayNumber,
+            NEXT_DAY_NAME: nextDayName,
+            NEXT_WEEK: nextWeek,
+            NEXT_MONTH_NUMBER: nextMonthNumber,
+            NEXT_MONTH_NAME: nextMonthName,
+            NEXT_QUARTER: nextQuarter,
+            NEXT_YEAR: nextYear,
+          };
+        }
+      }
 
       // Function to replace placeholders in text
       const replacePlaceholders = (template, data) => {
@@ -466,28 +638,22 @@ const getTaskList = async (req, res) => {
         });
       };
 
-      // // Extract Job details (Separate fields)
-      const jobId = task.job._id;
-      const jobName = replacePlaceholders(
-        task.job.jobname || "",
-        placeholderValues
-      );
-      // task.job.jobname || ""
-      // job.jobname = replacePlaceholders(job.jobname || '', placeholderValues);
+      const jobId = job ? job._id : null;
+      const jobName = replacePlaceholders(job?.jobname || "", placeholderValues);
 
       taskList.push({
         id: task._id,
         Name: task.taskname,
-        JobID: jobId, // Job ID (Separate)
-        JobName: jobName, // Job Name (Separate)
-        PipelineId: pipelineId, // Pipeline ID (Separate)
-        PipelineName: pipelineName, // Pipeline Name (Separate)
-        StageIds: stageIds, // Array of Stage IDs
-        StageNames: stageNames, // Array of Stage Names/ Includes array of Stage IDs and Names
+        JobID: jobId, // Can be null
+        JobName: jobName || "", // Can be empty string
+        PipelineId: pipelineId, // Can be null
+        PipelineName: pipelineName, // Can be empty string
+        StageIds: stageIds, // Can be empty array
+        StageNames: stageNames, // Can be empty array
         Assignees: assigneeNames,
         TaskTags: tagsData,
-        AccountName: task.accounts.accountName,
-        AccountId: task.accounts._id,
+        AccountName: accountName, // Can be empty string
+        AccountId: accountId, // Can be null
         StartDate: task.startdate,
         EndDate: task.enddate,
         Priority: task.priority,
@@ -500,7 +666,6 @@ const getTaskList = async (req, res) => {
     }
 
     res.status(200).json({ message: "Tasks retrieved successfully", taskList });
-    // console.log("tasks list", taskList);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -683,17 +848,177 @@ const updateTasks = async (req, res) => {
 
 //Get a single ServiceTemplate
 
+// const getsTaskListById = async (req, res) => {
+//   const { id } = req.params;
+
+//   try {
+//     const task = await Task.findById(id)
+//       .populate({ path: "accounts", model: "Accounts" })
+//       .populate({
+//         path: "job",
+//         model: "Job"
+        
+//       }).populate({path:"templatename", model:'TaskTemplate'})
+//       .populate({ path: "tasktags", model: "Tags" })
+//       .populate({ path: "taskassignees", model: "User" });
+
+//     if (!task) {
+//       return res.status(404).json({ message: "Task not found" });
+//     }
+
+//     const job = task.job;
+//     if (!job) {
+//       return res.status(404).json({ message: "Job not found for the task" });
+//     }
+
+
+//     // // Fetch account and associated contacts
+//     // const account = await Accounts.findById(job.accounts).populate("contacts");
+
+//     // const validContact = account.contacts.filter((contact) => contact.login);
+
+//     // // Define placeholder values
+//     // const placeholderValues = {
+//     //   ACCOUNT_NAME: account?.accountName || "",
+//     //   FIRST_NAME: validContact[0]?.firstName || "",
+//     //   MIDDLE_NAME: validContact[0]?.middleName || "",
+//     //   LAST_NAME: validContact[0]?.lastName || "",
+//     //   CONTACT_NAME: validContact[0]?.contactName || "",
+//     //   COMPANY_NAME: validContact[0]?.companyName || "",
+//     //   COUNTRY: validContact[0]?.country || "",
+//     //   STREET_ADDRESS: validContact[0]?.streetAddress || "",
+//     //   STATEPROVINCE: validContact[0]?.state || "",
+//     //   PHONE_NUMBER: validContact[0]?.phoneNumbers || "",
+//     //   ZIPPOSTALCODE: validContact[0]?.postalCode || "",
+//     //   CITY: validContact[0]?.city || "",
+//     //   CURRENT_DAY_FULL_DATE: currentDate.toLocaleDateString(),
+//     //   CURRENT_DAY_NUMBER: currentDate.getDate(),
+//     //   CURRENT_DAY_NAME: currentDate.toLocaleString("default", {
+//     //     weekday: "long",
+//     //   }),
+//     //   CURRENT_MONTH_NUMBER: currentDate.getMonth() + 1,
+//     //   CURRENT_MONTH_NAME: currentDate.toLocaleString("default", {
+//     //     month: "long",
+//     //   }),
+//     //   CURRENT_YEAR: currentDate.getFullYear(),
+//     //   LAST_DAY_FULL_DATE: lastDayFullDate,
+//     //   LAST_DAY_NUMBER: lastDayNumber,
+//     //   LAST_DAY_NAME: lastDayName,
+//     //   LAST_WEEK: lastWeek,
+//     //   LAST_MONTH_NUMBER: lastMonthNumber,
+//     //   LAST_MONTH_NAME: lastMonthName,
+//     //   LAST_QUARTER: lastQuarter,
+//     //   LAST_YEAR: lastYear,
+//     //   NEXT_DAY_FULL_DATE: nextDayFullDate,
+//     //   NEXT_DAY_NUMBER: nextDayNumber,
+//     //   NEXT_DAY_NAME: nextDayName,
+//     //   NEXT_WEEK: nextWeek,
+//     //   NEXT_MONTH_NUMBER: nextMonthNumber,
+//     //   NEXT_MONTH_NAME: nextMonthName,
+//     //   NEXT_QUARTER: nextQuarter,
+//     //   NEXT_YEAR: nextYear,
+//     //   // Add other dynamic placeholders as required
+//     // };
+
+//     if (task.accounts) {
+//       const account = await Accounts.findById(task.accounts).populate("contacts");
+
+//       if (account) {
+//         accountName = account.accountName || "";
+//         // accountId = account._id;
+//         const validContact = account.contacts.filter((contact) => contact.login);
+
+//         placeholderValues = {
+//           ACCOUNT_NAME: account?.accountName || "",
+//           FIRST_NAME: validContact[0]?.firstName || "",
+//           MIDDLE_NAME: validContact[0]?.middleName || "",
+//           LAST_NAME: validContact[0]?.lastName || "",
+//           CONTACT_NAME: validContact[0]?.contactName || "",
+//           COMPANY_NAME: validContact[0]?.companyName || "",
+//           COUNTRY: validContact[0]?.country || "",
+//           STREET_ADDRESS: validContact[0]?.streetAddress || "",
+//           STATEPROVINCE: validContact[0]?.state || "",
+//           PHONE_NUMBER: validContact[0]?.phoneNumbers || "",
+//           ZIPPOSTALCODE: validContact[0]?.postalCode || "",
+//           CITY: validContact[0]?.city || "",
+//           CURRENT_DAY_FULL_DATE: currentDate.toLocaleDateString(),
+//           CURRENT_DAY_NUMBER: currentDate.getDate(),
+//           CURRENT_DAY_NAME: currentDate.toLocaleString("default", {
+//             weekday: "long",
+//           }),
+//           CURRENT_MONTH_NUMBER: currentDate.getMonth() + 1,
+//           CURRENT_MONTH_NAME: currentDate.toLocaleString("default", {
+//             month: "long",
+//           }),
+//           CURRENT_YEAR: currentDate.getFullYear(),
+//           LAST_DAY_FULL_DATE: lastDayFullDate,
+//           LAST_DAY_NUMBER: lastDayNumber,
+//           LAST_DAY_NAME: lastDayName,
+//           LAST_WEEK: lastWeek,
+//           LAST_MONTH_NUMBER: lastMonthNumber,
+//           LAST_MONTH_NAME: lastMonthName,
+//           LAST_QUARTER: lastQuarter,
+//           LAST_YEAR: lastYear,
+//           NEXT_DAY_FULL_DATE: nextDayFullDate,
+//           NEXT_DAY_NUMBER: nextDayNumber,
+//           NEXT_DAY_NAME: nextDayName,
+//           NEXT_WEEK: nextWeek,
+//           NEXT_MONTH_NUMBER: nextMonthNumber,
+//           NEXT_MONTH_NAME: nextMonthName,
+//           NEXT_QUARTER: nextQuarter,
+//           NEXT_YEAR: nextYear,
+//         };
+//       }
+//     }
+//     // Function to replace placeholders in text
+//     const replacePlaceholders = (template, data) => {
+//       return template.replace(/\[([\w\s]+)\]/g, (match, placeholder) => {
+//         return data[placeholder.trim()] || "";
+//       });
+//     };
+
+//     // Extract Job details (Separate fields)
+//     const jobId = job._id;
+//     const jobName = replacePlaceholders(job.jobname || "", placeholderValues);
+
+//     const taskList = {
+//         id:task._id,
+//         Accounts:task.accounts,
+//         Assignees:task.taskassignees,
+//         Name:task.taskname,
+//         Tags:task.tasktags,
+//         Job: {
+//           _id:jobId,
+//           Name:jobName,
+//         },
+//         SubtaskCheck:task.issubtaskschecked,
+//         SubtaskList:task.subtasks,
+//         TaskTemp:{
+//           _id:task.templatename._id,
+//           Name:task.templatename.templatename
+//         },
+//         Descriptions:task.description,
+//         StartDate:task.startdate,
+//         DueDate:task.enddate,
+//         Status:task.status,
+//         Priority:task.priority,
+//         createdAt:task.createdAt,
+//         updatedAt:task.updatedAt
+//       }
+
+//     res.status(200).json({ message: "Task retrieved successfully", taskList });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
 const getsTaskListById = async (req, res) => {
   const { id } = req.params;
 
   try {
     const task = await Task.findById(id)
       .populate({ path: "accounts", model: "Accounts" })
-      .populate({
-        path: "job",
-        model: "Job"
-        
-      }).populate({path:"templatename", model:'TaskTemplate'})
+      .populate({ path: "job", model: "Job" })
+      .populate({ path: "templatename", model: "TaskTemplate" })
       .populate({ path: "tasktags", model: "Tags" })
       .populate({ path: "taskassignees", model: "User" });
 
@@ -701,59 +1026,58 @@ const getsTaskListById = async (req, res) => {
       return res.status(404).json({ message: "Task not found" });
     }
 
-    const job = task.job;
-    if (!job) {
-      return res.status(404).json({ message: "Job not found for the task" });
+    let placeholderValues = {};
+    let accountName = "";
+
+    if (task.accounts) {
+      const account = await Accounts.findById(task.accounts).populate("contacts");
+
+      if (account) {
+        accountName = account.accountName || "";
+        const validContact = account.contacts.filter((contact) => contact.login);
+
+        placeholderValues = {
+          ACCOUNT_NAME: account?.accountName || "",
+          FIRST_NAME: validContact[0]?.firstName || "",
+          MIDDLE_NAME: validContact[0]?.middleName || "",
+          LAST_NAME: validContact[0]?.lastName || "",
+          CONTACT_NAME: validContact[0]?.contactName || "",
+          COMPANY_NAME: validContact[0]?.companyName || "",
+          COUNTRY: validContact[0]?.country || "",
+          STREET_ADDRESS: validContact[0]?.streetAddress || "",
+          STATEPROVINCE: validContact[0]?.state || "",
+          PHONE_NUMBER: validContact[0]?.phoneNumbers || "",
+          ZIPPOSTALCODE: validContact[0]?.postalCode || "",
+          CITY: validContact[0]?.city || "",
+          CURRENT_DAY_FULL_DATE: currentDate.toLocaleDateString(),
+          CURRENT_DAY_NUMBER: currentDate.getDate(),
+          CURRENT_DAY_NAME: currentDate.toLocaleString("default", {
+            weekday: "long",
+          }),
+          CURRENT_MONTH_NUMBER: currentDate.getMonth() + 1,
+          CURRENT_MONTH_NAME: currentDate.toLocaleString("default", {
+            month: "long",
+          }),
+          CURRENT_YEAR: currentDate.getFullYear(),
+          LAST_DAY_FULL_DATE: lastDayFullDate,
+          LAST_DAY_NUMBER: lastDayNumber,
+          LAST_DAY_NAME: lastDayName,
+          LAST_WEEK: lastWeek,
+          LAST_MONTH_NUMBER: lastMonthNumber,
+          LAST_MONTH_NAME: lastMonthName,
+          LAST_QUARTER: lastQuarter,
+          LAST_YEAR: lastYear,
+          NEXT_DAY_FULL_DATE: nextDayFullDate,
+          NEXT_DAY_NUMBER: nextDayNumber,
+          NEXT_DAY_NAME: nextDayName,
+          NEXT_WEEK: nextWeek,
+          NEXT_MONTH_NUMBER: nextMonthNumber,
+          NEXT_MONTH_NAME: nextMonthName,
+          NEXT_QUARTER: nextQuarter,
+          NEXT_YEAR: nextYear,
+        };
+      }
     }
-
-
-    // Fetch account and associated contacts
-    const account = await Accounts.findById(job.accounts).populate("contacts");
-
-    const validContact = account.contacts.filter((contact) => contact.login);
-
-    // Define placeholder values
-    const placeholderValues = {
-      ACCOUNT_NAME: account?.accountName || "",
-      FIRST_NAME: validContact[0]?.firstName || "",
-      MIDDLE_NAME: validContact[0]?.middleName || "",
-      LAST_NAME: validContact[0]?.lastName || "",
-      CONTACT_NAME: validContact[0]?.contactName || "",
-      COMPANY_NAME: validContact[0]?.companyName || "",
-      COUNTRY: validContact[0]?.country || "",
-      STREET_ADDRESS: validContact[0]?.streetAddress || "",
-      STATEPROVINCE: validContact[0]?.state || "",
-      PHONE_NUMBER: validContact[0]?.phoneNumbers || "",
-      ZIPPOSTALCODE: validContact[0]?.postalCode || "",
-      CITY: validContact[0]?.city || "",
-      CURRENT_DAY_FULL_DATE: currentDate.toLocaleDateString(),
-      CURRENT_DAY_NUMBER: currentDate.getDate(),
-      CURRENT_DAY_NAME: currentDate.toLocaleString("default", {
-        weekday: "long",
-      }),
-      CURRENT_MONTH_NUMBER: currentDate.getMonth() + 1,
-      CURRENT_MONTH_NAME: currentDate.toLocaleString("default", {
-        month: "long",
-      }),
-      CURRENT_YEAR: currentDate.getFullYear(),
-      LAST_DAY_FULL_DATE: lastDayFullDate,
-      LAST_DAY_NUMBER: lastDayNumber,
-      LAST_DAY_NAME: lastDayName,
-      LAST_WEEK: lastWeek,
-      LAST_MONTH_NUMBER: lastMonthNumber,
-      LAST_MONTH_NAME: lastMonthName,
-      LAST_QUARTER: lastQuarter,
-      LAST_YEAR: lastYear,
-      NEXT_DAY_FULL_DATE: nextDayFullDate,
-      NEXT_DAY_NUMBER: nextDayNumber,
-      NEXT_DAY_NAME: nextDayName,
-      NEXT_WEEK: nextWeek,
-      NEXT_MONTH_NUMBER: nextMonthNumber,
-      NEXT_MONTH_NAME: nextMonthName,
-      NEXT_QUARTER: nextQuarter,
-      NEXT_YEAR: nextYear,
-      // Add other dynamic placeholders as required
-    };
 
     // Function to replace placeholders in text
     const replacePlaceholders = (template, data) => {
@@ -762,34 +1086,38 @@ const getsTaskListById = async (req, res) => {
       });
     };
 
-    // Extract Job details (Separate fields)
-    const jobId = job._id;
-    const jobName = replacePlaceholders(job.jobname || "", placeholderValues);
+    // Extract Job details (Allow Job to be null)
+    let jobId = null;
+    let jobName = "";
+
+    if (task.job) {
+      jobId = task.job._id;
+      jobName = replacePlaceholders(task.job.jobname || "", placeholderValues);
+    }
 
     const taskList = {
-        id:task._id,
-        Accounts:task.accounts,
-        Assignees:task.taskassignees,
-        Name:task.taskname,
-        Tags:task.tasktags,
-        Job: {
-          _id:jobId,
-          Name:jobName,
-        },
-        SubtaskCheck:task.issubtaskschecked,
-        SubtaskList:task.subtasks,
-        TaskTemp:{
-          _id:task.templatename._id,
-          Name:task.templatename.templatename
-        },
-        Descriptions:task.description,
-        StartDate:task.startdate,
-        DueDate:task.enddate,
-        Status:task.status,
-        Priority:task.priority,
-        createdAt:task.createdAt,
-        updatedAt:task.updatedAt
-      }
+      id: task._id,
+      Accounts: task.accounts,
+      Assignees: task.taskassignees,
+      Name: task.taskname,
+      Tags: task.tasktags,
+      Job: task.job ? { _id: jobId, Name: jobName } : null,
+      SubtaskCheck: task.issubtaskschecked,
+      SubtaskList: task.subtasks,
+      TaskTemp: task.templatename
+        ? {
+            _id: task.templatename._id,
+            Name: task.templatename.templatename,
+          }
+        : null,
+      Descriptions: task.description,
+      StartDate: task.startdate,
+      DueDate: task.enddate,
+      Status: task.status,
+      Priority: task.priority,
+      createdAt: task.createdAt,
+      updatedAt: task.updatedAt,
+    };
 
     res.status(200).json({ message: "Task retrieved successfully", taskList });
   } catch (error) {
@@ -799,10 +1127,178 @@ const getsTaskListById = async (req, res) => {
 
 
 // gets tasks list
-const getCompleteTaskList = async (req, res) => {
-  try {
+// const getCompleteTaskList = async (req, res) => {
+//   try {
    
 
+//     const tasks = await Task.find({ status: "Completed" })
+//       .populate({ path: "accounts", model: "Accounts" })
+//       .populate({
+//         path: "job",
+//         model: "Job",
+//         populate: {
+//           path: "pipeline",
+//           model: "pipeline",
+//           populate: { path: "stages", model: "Stage" },
+//         },
+//       })
+//       .populate({ path: "tasktags", model: "Tags" })
+//       .populate({ path: "taskassignees", model: "User" })
+//       .sort({ createdAt: -1 });
+
+//     const taskList = [];
+
+//     for (const task of tasks) {
+//       const job = task.job;
+//       if (!job) continue;
+
+//       const pipeline = await Pipeline.findById(job.pipeline);
+//       if (!pipeline) continue;
+
+//       // Extract Pipeline details (Separate fields)
+//       const pipelineId = task.job.pipeline._id;
+//       const pipelineName = task.job.pipeline.pipelineName || "";
+
+//       const assigneeNames = task.taskassignees.map((assignee) => assignee.username);
+
+//       // Extract tags data
+//       const tagsData = task.tasktags.map((tag) => ({
+//         id: tag._id,
+//         tagName: tag.tagName,
+//         tagColour: tag.tagColour,
+//       }));
+
+//       // Extract Stage Names & IDs (Separate fields)
+//       let stageIds = [];
+//       let stageNames = [];
+//       if (task.job.stageid) {
+//         if (Array.isArray(task.job.stageid)) {
+//           task.job.stageid.forEach((stageId) => {
+//             const matchedStage = task.job.pipeline.stages.find((stage) =>
+//               stage._id.equals(stageId)
+//             );
+//             if (matchedStage) {
+//               stageIds.push(matchedStage._id);
+//               stageNames.push(matchedStage.name);
+//             }
+//           });
+//         } else {
+//           const matchedStage = task.job.pipeline.stages.find((stage) =>
+//             stage._id.equals(task.job.stageid)
+//           );
+//           if (matchedStage) {
+//             stageIds.push(matchedStage._id);
+//             stageNames.push(matchedStage.name);
+//           }
+//         }
+//       }
+//       // Get subtasks count
+//       const totalSubtasks = task.subtasks ? task.subtasks.length : 0;
+//       const checkedSubtasks = task.subtasks
+//         ? task.subtasks.filter((subtask) => subtask.checked).length
+//         : 0;
+//       const subtaskCount = `${checkedSubtasks}/${totalSubtasks}`; // Format checked/total
+
+//       // Fetch account and associated contacts
+//       const account = await Accounts.findById(job.accounts).populate(
+//         "contacts"
+//       );
+
+//       // console.log(account)
+//       const validContact = account.contacts.filter((contact) => contact.login);
+//       // console.log(validContact)
+//       // Define placeholder values
+//       const placeholderValues = {
+//         ACCOUNT_NAME: account?.accountName || "",
+//         FIRST_NAME: validContact[0]?.firstName || "",
+//         MIDDLE_NAME: validContact[0]?.middleName || "",
+//         LAST_NAME: validContact[0]?.lastName || "",
+//         CONTACT_NAME: validContact[0]?.contactName || "",
+//         COMPANY_NAME: validContact[0]?.companyName || "",
+//         COUNTRY: validContact[0]?.country || "",
+//         STREET_ADDRESS: validContact[0]?.streetAddress || "",
+//         STATEPROVINCE: validContact[0]?.state || "",
+//         PHONE_NUMBER: validContact[0]?.phoneNumbers || "",
+//         ZIPPOSTALCODE: validContact[0]?.postalCode || "",
+//         CITY: validContact[0]?.city || "",
+//         CURRENT_DAY_FULL_DATE: currentDate.toLocaleDateString(),
+//         CURRENT_DAY_NUMBER: currentDate.getDate(),
+//         CURRENT_DAY_NAME: currentDate.toLocaleString("default", {
+//           weekday: "long",
+//         }),
+//         CURRENT_MONTH_NUMBER: currentDate.getMonth() + 1,
+//         CURRENT_MONTH_NAME: currentDate.toLocaleString("default", {
+//           month: "long",
+//         }),
+//         CURRENT_YEAR: currentDate.getFullYear(),
+//         LAST_DAY_FULL_DATE: lastDayFullDate,
+//         LAST_DAY_NUMBER: lastDayNumber,
+//         LAST_DAY_NAME: lastDayName,
+//         LAST_WEEK: lastWeek,
+//         LAST_MONTH_NUMBER: lastMonthNumber,
+//         LAST_MONTH_NAME: lastMonthName,
+//         LAST_QUARTER: lastQuarter,
+//         LAST_YEAR: lastYear,
+//         NEXT_DAY_FULL_DATE: nextDayFullDate,
+//         NEXT_DAY_NUMBER: nextDayNumber,
+//         NEXT_DAY_NAME: nextDayName,
+//         NEXT_WEEK: nextWeek,
+//         NEXT_MONTH_NUMBER: nextMonthNumber,
+//         NEXT_MONTH_NAME: nextMonthName,
+//         NEXT_QUARTER: nextQuarter,
+//         NEXT_YEAR: nextYear,
+//         // Add other dynamic placeholders as required
+//       };
+
+//       // Function to replace placeholders in text
+//       const replacePlaceholders = (template, data) => {
+//         return template.replace(/\[([\w\s]+)\]/g, (match, placeholder) => {
+//           return data[placeholder.trim()] || "";
+//         });
+//       };
+
+//       // // Extract Job details (Separate fields)
+//       const jobId = task.job._id;
+//       const jobName = replacePlaceholders(
+//         task.job.jobname || "",
+//         placeholderValues
+//       );
+//       // task.job.jobname || ""
+//       // job.jobname = replacePlaceholders(job.jobname || '', placeholderValues);
+
+//       taskList.push({
+        // id: task._id,
+        // Name: task.taskname,
+        // JobID: jobId, // Job ID (Separate)
+        // JobName: jobName, // Job Name (Separate)
+        // PipelineId: pipelineId, // Pipeline ID (Separate)
+        // PipelineName: pipelineName, // Pipeline Name (Separate)
+        // StageIds: stageIds, // Array of Stage IDs
+        // StageNames: stageNames, // Array of Stage Names/ Includes array of Stage IDs and Names
+        // Assignees: assigneeNames,
+        // TaskTags: tagsData,
+        // AccountName: task.accounts.accountName,
+        // AccountId: task.accounts._id,
+        // StartDate: task.startdate,
+        // EndDate: task.enddate,
+        // Priority: task.priority,
+        // Description: task.description,
+        // Status: task.status,
+        // SubtaskCount: subtaskCount,
+        // createdAt: task.createdAt,
+        // updatedAt: task.updatedAt,
+//       });
+//     }
+
+//     res.status(200).json({ message: "Tasks retrieved successfully", taskList });
+//     // console.log("tasks list", taskList);
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
+const getCompleteTaskList = async (req, res) => {
+  try {
     const tasks = await Task.find({ status: "Completed" })
       .populate({ path: "accounts", model: "Accounts" })
       .populate({
@@ -821,122 +1317,89 @@ const getCompleteTaskList = async (req, res) => {
     const taskList = [];
 
     for (const task of tasks) {
-      const job = task.job;
-      if (!job) continue;
+      const job = task.job || null;
+      let pipelineId = null;
+      let pipelineName = "";
+      let stageIds = [];
+      let stageNames = [];
 
-      const pipeline = await Pipeline.findById(job.pipeline);
-      if (!pipeline) continue;
+      if (job) {
+        const pipeline = job.pipeline || null;
+        if (pipeline) {
+          pipelineId = pipeline._id;
+          pipelineName = pipeline.pipelineName || "";
 
-      // Extract Pipeline details (Separate fields)
-      const pipelineId = task.job.pipeline._id;
-      const pipelineName = task.job.pipeline.pipelineName || "";
+          if (job.stageid) {
+            const jobStageIds = Array.isArray(job.stageid) ? job.stageid : [job.stageid];
+
+            jobStageIds.forEach((stageId) => {
+              const matchedStage = pipeline.stages.find((stage) => stage._id.equals(stageId));
+              if (matchedStage) {
+                stageIds.push(matchedStage._id);
+                stageNames.push(matchedStage.name);
+              }
+            });
+          }
+        }
+      }
 
       const assigneeNames = task.taskassignees.map((assignee) => assignee.username);
 
-      // Extract tags data
       const tagsData = task.tasktags.map((tag) => ({
         id: tag._id,
         tagName: tag.tagName,
         tagColour: tag.tagColour,
       }));
 
-      // Extract Stage Names & IDs (Separate fields)
-      let stageIds = [];
-      let stageNames = [];
-      if (task.job.stageid) {
-        if (Array.isArray(task.job.stageid)) {
-          task.job.stageid.forEach((stageId) => {
-            const matchedStage = task.job.pipeline.stages.find((stage) =>
-              stage._id.equals(stageId)
-            );
-            if (matchedStage) {
-              stageIds.push(matchedStage._id);
-              stageNames.push(matchedStage.name);
-            }
-          });
-        } else {
-          const matchedStage = task.job.pipeline.stages.find((stage) =>
-            stage._id.equals(task.job.stageid)
-          );
-          if (matchedStage) {
-            stageIds.push(matchedStage._id);
-            stageNames.push(matchedStage.name);
-          }
-        }
-      }
-      // Get subtasks count
       const totalSubtasks = task.subtasks ? task.subtasks.length : 0;
       const checkedSubtasks = task.subtasks
         ? task.subtasks.filter((subtask) => subtask.checked).length
         : 0;
-      const subtaskCount = `${checkedSubtasks}/${totalSubtasks}`; // Format checked/total
+      const subtaskCount = `${checkedSubtasks}/${totalSubtasks}`;
 
-      // Fetch account and associated contacts
-      const account = await Accounts.findById(job.accounts).populate(
-        "contacts"
-      );
+      let accountName = "";
+      let accountId = null;
+      let placeholderValues = {};
 
-      // console.log(account)
-      const validContact = account.contacts.filter((contact) => contact.login);
-      // console.log(validContact)
-      // Define placeholder values
-      const placeholderValues = {
-        ACCOUNT_NAME: account?.accountName || "",
-        FIRST_NAME: validContact[0]?.firstName || "",
-        MIDDLE_NAME: validContact[0]?.middleName || "",
-        LAST_NAME: validContact[0]?.lastName || "",
-        CONTACT_NAME: validContact[0]?.contactName || "",
-        COMPANY_NAME: validContact[0]?.companyName || "",
-        COUNTRY: validContact[0]?.country || "",
-        STREET_ADDRESS: validContact[0]?.streetAddress || "",
-        STATEPROVINCE: validContact[0]?.state || "",
-        PHONE_NUMBER: validContact[0]?.phoneNumbers || "",
-        ZIPPOSTALCODE: validContact[0]?.postalCode || "",
-        CITY: validContact[0]?.city || "",
-        CURRENT_DAY_FULL_DATE: currentDate.toLocaleDateString(),
-        CURRENT_DAY_NUMBER: currentDate.getDate(),
-        CURRENT_DAY_NAME: currentDate.toLocaleString("default", {
-          weekday: "long",
-        }),
-        CURRENT_MONTH_NUMBER: currentDate.getMonth() + 1,
-        CURRENT_MONTH_NAME: currentDate.toLocaleString("default", {
-          month: "long",
-        }),
-        CURRENT_YEAR: currentDate.getFullYear(),
-        LAST_DAY_FULL_DATE: lastDayFullDate,
-        LAST_DAY_NUMBER: lastDayNumber,
-        LAST_DAY_NAME: lastDayName,
-        LAST_WEEK: lastWeek,
-        LAST_MONTH_NUMBER: lastMonthNumber,
-        LAST_MONTH_NAME: lastMonthName,
-        LAST_QUARTER: lastQuarter,
-        LAST_YEAR: lastYear,
-        NEXT_DAY_FULL_DATE: nextDayFullDate,
-        NEXT_DAY_NUMBER: nextDayNumber,
-        NEXT_DAY_NAME: nextDayName,
-        NEXT_WEEK: nextWeek,
-        NEXT_MONTH_NUMBER: nextMonthNumber,
-        NEXT_MONTH_NAME: nextMonthName,
-        NEXT_QUARTER: nextQuarter,
-        NEXT_YEAR: nextYear,
-        // Add other dynamic placeholders as required
-      };
+      if (task.accounts) {
+        const account = await Accounts.findById(task.accounts).populate("contacts");
 
-      // Function to replace placeholders in text
+        if (account) {
+          accountName = account.accountName || "";
+          accountId = account._id;
+          const validContact = account.contacts.filter((contact) => contact.login);
+
+          placeholderValues = {
+            ACCOUNT_NAME: account?.accountName || "",
+            FIRST_NAME: validContact[0]?.firstName || "",
+            MIDDLE_NAME: validContact[0]?.middleName || "",
+            LAST_NAME: validContact[0]?.lastName || "",
+            CONTACT_NAME: validContact[0]?.contactName || "",
+            COMPANY_NAME: validContact[0]?.companyName || "",
+            COUNTRY: validContact[0]?.country || "",
+            STREET_ADDRESS: validContact[0]?.streetAddress || "",
+            STATEPROVINCE: validContact[0]?.state || "",
+            PHONE_NUMBER: validContact[0]?.phoneNumbers || "",
+            ZIPPOSTALCODE: validContact[0]?.postalCode || "",
+            CITY: validContact[0]?.city || "",
+            CURRENT_DAY_FULL_DATE: new Date().toLocaleDateString(),
+            CURRENT_DAY_NUMBER: new Date().getDate(),
+            CURRENT_DAY_NAME: new Date().toLocaleString("default", { weekday: "long" }),
+            CURRENT_MONTH_NUMBER: new Date().getMonth() + 1,
+            CURRENT_MONTH_NAME: new Date().toLocaleString("default", { month: "long" }),
+            CURRENT_YEAR: new Date().getFullYear(),
+          };
+        }
+      }
+
       const replacePlaceholders = (template, data) => {
         return template.replace(/\[([\w\s]+)\]/g, (match, placeholder) => {
           return data[placeholder.trim()] || "";
         });
       };
 
-      // // Extract Job details (Separate fields)
-      const jobId = task.job._id;
-      const jobName = replacePlaceholders(
-        task.job.jobname || "",
-        placeholderValues
-      );
-      // task.job.jobname || ""
-      // job.jobname = replacePlaceholders(job.jobname || '', placeholderValues);
+      const jobId = job ? job._id : null;
+      const jobName = replacePlaceholders(job?.jobname || "", placeholderValues);
 
       taskList.push({
         id: task._id,
@@ -962,20 +1425,212 @@ const getCompleteTaskList = async (req, res) => {
       });
     }
 
-    res.status(200).json({ message: "Tasks retrieved successfully", taskList });
-    // console.log("tasks list", taskList);
+    res.status(200).json({ message: "Completed tasks retrieved successfully", taskList });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
+// const getTaskListByAccountId = async (req, res) => {
+//   try {
+//     const { accountId, status } = req.params;
+    
+//     // Build query to filter by accountId and status
+//     const query = { accounts: accountId };
+//     if (status !== "all") {
+//       query.status = { $ne: "Completed" }; // Exclude "Completed" tasks unless "all" is requested
+//     }
+
+//     const tasks = await Task.find(query)
+//       .populate({ path: "accounts", model: "Accounts" })
+//       .populate({
+//         path: "job",
+//         model: "Job",
+//         populate: {
+//           path: "pipeline",
+//           model: "pipeline",
+//           populate: { path: "stages", model: "Stage" },
+//         },
+//       })
+//       .populate({ path: "tasktags", model: "Tags" })
+//       .populate({ path: "taskassignees", model: "User" })
+//       .sort({ createdAt: -1 });
+
+//     const taskList = [];
+
+//     for (const task of tasks) {
+//       const job = task.job;
+//       if (!job) continue;
+
+//       const pipeline = await Pipeline.findById(job.pipeline);
+//       if (!pipeline) continue;
+
+//       const pipelineId = job.pipeline._id;
+//       const pipelineName = job.pipeline.pipelineName || "";
+
+//       const assigneeNames = task.taskassignees.map((assignee) => assignee.username);
+
+//       const tagsData = task.tasktags.map((tag) => ({
+//         id: tag._id,
+//         tagName: tag.tagName,
+//         tagColour: tag.tagColour,
+//       }));
+
+//       let stageIds = [];
+//       let stageNames = [];
+//       if (job.stageid) {
+//         if (Array.isArray(job.stageid)) {
+//           job.stageid.forEach((stageId) => {
+//             const matchedStage = job.pipeline.stages.find((stage) => stage._id.equals(stageId));
+//             if (matchedStage) {
+//               stageIds.push(matchedStage._id);
+//               stageNames.push(matchedStage.name);
+//             }
+//           });
+//         } else {
+//           const matchedStage = job.pipeline.stages.find((stage) => stage._id.equals(job.stageid));
+//           if (matchedStage) {
+//             stageIds.push(matchedStage._id);
+//             stageNames.push(matchedStage.name);
+//           }
+//         }
+//       }
+
+//       const totalSubtasks = task.subtasks ? task.subtasks.length : 0;
+//       const checkedSubtasks = task.subtasks ? task.subtasks.filter((subtask) => subtask.checked).length : 0;
+//       const subtaskCount = `${checkedSubtasks}/${totalSubtasks}`;
+
+//       const account = await Accounts.findById(job.accounts).populate("contacts");
+//       const validContact = account.contacts.filter((contact) => contact.login);
+
+//       taskList.push({
+        // id: task._id,
+        // Name: task.taskname,
+        // JobID: job._id,
+        // JobName: job.jobname,
+        // PipelineId: pipelineId,
+        // PipelineName: pipelineName,
+        // StageIds: stageIds,
+        // StageNames: stageNames,
+        // Assignees: assigneeNames,
+        // TaskTags: tagsData,
+        // AccountName: account.accountName,
+        // AccountId: account._id,
+        // StartDate: task.startdate,
+        // EndDate: task.enddate,
+        // Priority: task.priority,
+        // Description: task.description,
+        // Status: task.status,
+        // SubtaskCount: subtaskCount,
+        // createdAt: task.createdAt,
+        // updatedAt: task.updatedAt,
+//       });
+//     }
+
+//     res.status(200).json({ message: "Tasks retrieved successfully", taskList });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
+// const getCompleteTaskListByAccount = async (req, res) => {
+//   try {
+//     const { accountId } = req.params;
+
+//     const tasks = await Task.find({ status: "Completed", accounts: accountId })
+//       .populate({ path: "accounts", model: "Accounts" })
+//       .populate({
+//         path: "job",
+//         model: "Job",
+//         populate: {
+//           path: "pipeline",
+//           model: "pipeline",
+//           populate: { path: "stages", model: "Stage" },
+//         },
+//       })
+//       .populate({ path: "tasktags", model: "Tags" })
+//       .populate({ path: "taskassignees", model: "User" })
+//       .sort({ createdAt: -1 });
+
+//     const taskList = [];
+
+//     for (const task of tasks) {
+//       const job = task.job;
+//       if (!job) continue;
+
+//       const pipeline = await Pipeline.findById(job.pipeline);
+//       if (!pipeline) continue;
+
+//       const pipelineId = job.pipeline._id;
+//       const pipelineName = job.pipeline.pipelineName || "";
+//       const assigneeNames = task.taskassignees.map((assignee) => assignee.username);
+
+//       const tagsData = task.tasktags.map((tag) => ({
+//         id: tag._id,
+//         tagName: tag.tagName,
+//         tagColour: tag.tagColour,
+//       }));
+
+//       let stageIds = [];
+//       let stageNames = [];
+//       if (job.stageid) {
+//         if (Array.isArray(job.stageid)) {
+//           job.stageid.forEach((stageId) => {
+//             const matchedStage = job.pipeline.stages.find((stage) => stage._id.equals(stageId));
+//             if (matchedStage) {
+//               stageIds.push(matchedStage._id);
+//               stageNames.push(matchedStage.name);
+//             }
+//           });
+//         } else {
+//           const matchedStage = job.pipeline.stages.find((stage) => stage._id.equals(job.stageid));
+//           if (matchedStage) {
+//             stageIds.push(matchedStage._id);
+//             stageNames.push(matchedStage.name);
+//           }
+//         }
+//       }
+
+//       const totalSubtasks = task.subtasks ? task.subtasks.length : 0;
+//       const checkedSubtasks = task.subtasks ? task.subtasks.filter((subtask) => subtask.checked).length : 0;
+//       const subtaskCount = `${checkedSubtasks}/${totalSubtasks}`;
+
+//       taskList.push({
+//         id: task._id,
+//         Name: task.taskname,
+//         JobID: job._id,
+//         JobName: job.jobname || "",
+//         PipelineId: pipelineId,
+//         PipelineName: pipelineName,
+//         StageIds: stageIds,
+//         StageNames: stageNames,
+//         Assignees: assigneeNames,
+//         TaskTags: tagsData,
+//         AccountName: task.accounts.accountName,
+//         AccountId: task.accounts._id,
+//         StartDate: task.startdate,
+//         EndDate: task.enddate,
+//         Priority: task.priority,
+//         Description: task.description,
+//         Status: task.status,
+//         SubtaskCount: subtaskCount,
+//         createdAt: task.createdAt,
+//         updatedAt: task.updatedAt,
+//       });
+//     }
+
+//     res.status(200).json({ message: "Tasks retrieved successfully", taskList });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
 const getTaskListByAccountId = async (req, res) => {
   try {
     const { accountId, status } = req.params;
-    
-    // Build query to filter by accountId and status
     const query = { accounts: accountId };
     if (status !== "all") {
-      query.status = { $ne: "Completed" }; // Exclude "Completed" tasks unless "all" is requested
+      query.status = { $ne: "Completed" };
     }
 
     const tasks = await Task.find(query)
@@ -996,63 +1651,128 @@ const getTaskListByAccountId = async (req, res) => {
     const taskList = [];
 
     for (const task of tasks) {
-      const job = task.job;
-      if (!job) continue;
+      const job = task.job || null; // Handle missing job
+      let pipelineId = null;
+      let pipelineName = "";
+      let stageIds = [];
+      let stageNames = [];
 
-      const pipeline = await Pipeline.findById(job.pipeline);
-      if (!pipeline) continue;
+      if (job) {
+        const pipeline = job.pipeline || null;
 
-      const pipelineId = job.pipeline._id;
-      const pipelineName = job.pipeline.pipelineName || "";
+        if (pipeline) {
+          pipelineId = pipeline._id;
+          pipelineName = pipeline.pipelineName || "";
+
+          if (job.stageid) {
+            const jobStageIds = Array.isArray(job.stageid) ? job.stageid : [job.stageid];
+
+            jobStageIds.forEach((stageId) => {
+              const matchedStage = pipeline.stages.find((stage) => stage._id.equals(stageId));
+              if (matchedStage) {
+                stageIds.push(matchedStage._id);
+                stageNames.push(matchedStage.name);
+              }
+            });
+          }
+        }
+      }
 
       const assigneeNames = task.taskassignees.map((assignee) => assignee.username);
 
+      // Extract tags data
       const tagsData = task.tasktags.map((tag) => ({
         id: tag._id,
         tagName: tag.tagName,
         tagColour: tag.tagColour,
       }));
 
-      let stageIds = [];
-      let stageNames = [];
-      if (job.stageid) {
-        if (Array.isArray(job.stageid)) {
-          job.stageid.forEach((stageId) => {
-            const matchedStage = job.pipeline.stages.find((stage) => stage._id.equals(stageId));
-            if (matchedStage) {
-              stageIds.push(matchedStage._id);
-              stageNames.push(matchedStage.name);
-            }
-          });
-        } else {
-          const matchedStage = job.pipeline.stages.find((stage) => stage._id.equals(job.stageid));
-          if (matchedStage) {
-            stageIds.push(matchedStage._id);
-            stageNames.push(matchedStage.name);
-          }
+      // Get subtasks count
+      const totalSubtasks = task.subtasks ? task.subtasks.length : 0;
+      const checkedSubtasks = task.subtasks
+        ? task.subtasks.filter((subtask) => subtask.checked).length
+        : 0;
+      const subtaskCount = `${checkedSubtasks}/${totalSubtasks}`;
+
+      // Fetch account and associated contacts
+      let accountName = "";
+      let accountId = null;
+      let placeholderValues = {};
+
+      if (task.accounts) {
+        const account = await Accounts.findById(task.accounts).populate("contacts");
+
+        if (account) {
+          accountName = account.accountName || "";
+          accountId = account._id;
+          const validContact = account.contacts.filter((contact) => contact.login);
+
+          placeholderValues = {
+            ACCOUNT_NAME: account?.accountName || "",
+            FIRST_NAME: validContact[0]?.firstName || "",
+            MIDDLE_NAME: validContact[0]?.middleName || "",
+            LAST_NAME: validContact[0]?.lastName || "",
+            CONTACT_NAME: validContact[0]?.contactName || "",
+            COMPANY_NAME: validContact[0]?.companyName || "",
+            COUNTRY: validContact[0]?.country || "",
+            STREET_ADDRESS: validContact[0]?.streetAddress || "",
+            STATEPROVINCE: validContact[0]?.state || "",
+            PHONE_NUMBER: validContact[0]?.phoneNumbers || "",
+            ZIPPOSTALCODE: validContact[0]?.postalCode || "",
+            CITY: validContact[0]?.city || "",
+            CURRENT_DAY_FULL_DATE: currentDate.toLocaleDateString(),
+            CURRENT_DAY_NUMBER: currentDate.getDate(),
+            CURRENT_DAY_NAME: currentDate.toLocaleString("default", {
+              weekday: "long",
+            }),
+            CURRENT_MONTH_NUMBER: currentDate.getMonth() + 1,
+            CURRENT_MONTH_NAME: currentDate.toLocaleString("default", {
+              month: "long",
+            }),
+            CURRENT_YEAR: currentDate.getFullYear(),
+            LAST_DAY_FULL_DATE: lastDayFullDate,
+            LAST_DAY_NUMBER: lastDayNumber,
+            LAST_DAY_NAME: lastDayName,
+            LAST_WEEK: lastWeek,
+            LAST_MONTH_NUMBER: lastMonthNumber,
+            LAST_MONTH_NAME: lastMonthName,
+            LAST_QUARTER: lastQuarter,
+            LAST_YEAR: lastYear,
+            NEXT_DAY_FULL_DATE: nextDayFullDate,
+            NEXT_DAY_NUMBER: nextDayNumber,
+            NEXT_DAY_NAME: nextDayName,
+            NEXT_WEEK: nextWeek,
+            NEXT_MONTH_NUMBER: nextMonthNumber,
+            NEXT_MONTH_NAME: nextMonthName,
+            NEXT_QUARTER: nextQuarter,
+            NEXT_YEAR: nextYear,
+          };
         }
       }
 
-      const totalSubtasks = task.subtasks ? task.subtasks.length : 0;
-      const checkedSubtasks = task.subtasks ? task.subtasks.filter((subtask) => subtask.checked).length : 0;
-      const subtaskCount = `${checkedSubtasks}/${totalSubtasks}`;
+      // Function to replace placeholders in text
+      const replacePlaceholders = (template, data) => {
+        return template.replace(/\[([\w\s]+)\]/g, (match, placeholder) => {
+          return data[placeholder.trim()] || "";
+        });
+      };
 
-      const account = await Accounts.findById(job.accounts).populate("contacts");
-      const validContact = account.contacts.filter((contact) => contact.login);
+      const jobId = job ? job._id : null;
+      const jobName = replacePlaceholders(job?.jobname || "", placeholderValues);
 
       taskList.push({
         id: task._id,
         Name: task.taskname,
-        JobID: job._id,
-        JobName: job.jobname,
-        PipelineId: pipelineId,
-        PipelineName: pipelineName,
-        StageIds: stageIds,
-        StageNames: stageNames,
+        JobID: jobId, // Can be null
+        JobName: jobName || "", // Can be empty string
+        PipelineId: pipelineId, // Can be null
+        PipelineName: pipelineName, // Can be empty string
+        StageIds: stageIds, // Can be empty array
+        StageNames: stageNames, // Can be empty array
         Assignees: assigneeNames,
         TaskTags: tagsData,
-        AccountName: account.accountName,
-        AccountId: account._id,
+        AccountName: accountName, // Can be empty string
+        AccountId: accountId, // Can be null
         StartDate: task.startdate,
         EndDate: task.enddate,
         Priority: task.priority,
@@ -1073,7 +1793,6 @@ const getTaskListByAccountId = async (req, res) => {
 const getCompleteTaskListByAccount = async (req, res) => {
   try {
     const { accountId } = req.params;
-
     const tasks = await Task.find({ status: "Completed", accounts: accountId })
       .populate({ path: "accounts", model: "Accounts" })
       .populate({
@@ -1089,74 +1808,119 @@ const getCompleteTaskListByAccount = async (req, res) => {
       .populate({ path: "taskassignees", model: "User" })
       .sort({ createdAt: -1 });
 
-    const taskList = [];
+      const taskList = [];
 
-    for (const task of tasks) {
-      const job = task.job;
-      if (!job) continue;
-
-      const pipeline = await Pipeline.findById(job.pipeline);
-      if (!pipeline) continue;
-
-      const pipelineId = job.pipeline._id;
-      const pipelineName = job.pipeline.pipelineName || "";
-      const assigneeNames = task.taskassignees.map((assignee) => assignee.username);
-
-      const tagsData = task.tasktags.map((tag) => ({
-        id: tag._id,
-        tagName: tag.tagName,
-        tagColour: tag.tagColour,
-      }));
-
-      let stageIds = [];
-      let stageNames = [];
-      if (job.stageid) {
-        if (Array.isArray(job.stageid)) {
-          job.stageid.forEach((stageId) => {
-            const matchedStage = job.pipeline.stages.find((stage) => stage._id.equals(stageId));
-            if (matchedStage) {
-              stageIds.push(matchedStage._id);
-              stageNames.push(matchedStage.name);
+      for (const task of tasks) {
+        const job = task.job || null;
+        let pipelineId = null;
+        let pipelineName = "";
+        let stageIds = [];
+        let stageNames = [];
+  
+        if (job) {
+          const pipeline = job.pipeline || null;
+          if (pipeline) {
+            pipelineId = pipeline._id;
+            pipelineName = pipeline.pipelineName || "";
+  
+            if (job.stageid) {
+              const jobStageIds = Array.isArray(job.stageid) ? job.stageid : [job.stageid];
+  
+              jobStageIds.forEach((stageId) => {
+                const matchedStage = pipeline.stages.find((stage) => stage._id.equals(stageId));
+                if (matchedStage) {
+                  stageIds.push(matchedStage._id);
+                  stageNames.push(matchedStage.name);
+                }
+              });
             }
-          });
-        } else {
-          const matchedStage = job.pipeline.stages.find((stage) => stage._id.equals(job.stageid));
-          if (matchedStage) {
-            stageIds.push(matchedStage._id);
-            stageNames.push(matchedStage.name);
           }
         }
+  
+        const assigneeNames = task.taskassignees.map((assignee) => assignee.username);
+  
+        const tagsData = task.tasktags.map((tag) => ({
+          id: tag._id,
+          tagName: tag.tagName,
+          tagColour: tag.tagColour,
+        }));
+  
+        const totalSubtasks = task.subtasks ? task.subtasks.length : 0;
+        const checkedSubtasks = task.subtasks
+          ? task.subtasks.filter((subtask) => subtask.checked).length
+          : 0;
+        const subtaskCount = `${checkedSubtasks}/${totalSubtasks}`;
+  
+        let accountName = "";
+        let accountId = null;
+        let placeholderValues = {};
+  
+        if (task.accounts) {
+          const account = await Accounts.findById(task.accounts).populate("contacts");
+  
+          if (account) {
+            accountName = account.accountName || "";
+            accountId = account._id;
+            const validContact = account.contacts.filter((contact) => contact.login);
+  
+            placeholderValues = {
+              ACCOUNT_NAME: account?.accountName || "",
+              FIRST_NAME: validContact[0]?.firstName || "",
+              MIDDLE_NAME: validContact[0]?.middleName || "",
+              LAST_NAME: validContact[0]?.lastName || "",
+              CONTACT_NAME: validContact[0]?.contactName || "",
+              COMPANY_NAME: validContact[0]?.companyName || "",
+              COUNTRY: validContact[0]?.country || "",
+              STREET_ADDRESS: validContact[0]?.streetAddress || "",
+              STATEPROVINCE: validContact[0]?.state || "",
+              PHONE_NUMBER: validContact[0]?.phoneNumbers || "",
+              ZIPPOSTALCODE: validContact[0]?.postalCode || "",
+              CITY: validContact[0]?.city || "",
+              CURRENT_DAY_FULL_DATE: new Date().toLocaleDateString(),
+              CURRENT_DAY_NUMBER: new Date().getDate(),
+              CURRENT_DAY_NAME: new Date().toLocaleString("default", { weekday: "long" }),
+              CURRENT_MONTH_NUMBER: new Date().getMonth() + 1,
+              CURRENT_MONTH_NAME: new Date().toLocaleString("default", { month: "long" }),
+              CURRENT_YEAR: new Date().getFullYear(),
+            };
+          }
+        }
+  
+        const replacePlaceholders = (template, data) => {
+          return template.replace(/\[([\w\s]+)\]/g, (match, placeholder) => {
+            return data[placeholder.trim()] || "";
+          });
+        };
+  
+        const jobId = job ? job._id : null;
+        const jobName = replacePlaceholders(job?.jobname || "", placeholderValues);
+  
+        taskList.push({
+          id: task._id,
+          Name: task.taskname,
+          JobID: jobId, // Job ID (Separate)
+          JobName: jobName, // Job Name (Separate)
+          PipelineId: pipelineId, // Pipeline ID (Separate)
+          PipelineName: pipelineName, // Pipeline Name (Separate)
+          StageIds: stageIds, // Array of Stage IDs
+          StageNames: stageNames, // Array of Stage Names/ Includes array of Stage IDs and Names
+          Assignees: assigneeNames,
+          TaskTags: tagsData,
+          AccountName: task.accounts.accountName,
+          AccountId: task.accounts._id,
+          StartDate: task.startdate,
+          EndDate: task.enddate,
+          Priority: task.priority,
+          Description: task.description,
+          Status: task.status,
+          SubtaskCount: subtaskCount,
+          createdAt: task.createdAt,
+          updatedAt: task.updatedAt,
+        });
       }
+  
 
-      const totalSubtasks = task.subtasks ? task.subtasks.length : 0;
-      const checkedSubtasks = task.subtasks ? task.subtasks.filter((subtask) => subtask.checked).length : 0;
-      const subtaskCount = `${checkedSubtasks}/${totalSubtasks}`;
-
-      taskList.push({
-        id: task._id,
-        Name: task.taskname,
-        JobID: job._id,
-        JobName: job.jobname || "",
-        PipelineId: pipelineId,
-        PipelineName: pipelineName,
-        StageIds: stageIds,
-        StageNames: stageNames,
-        Assignees: assigneeNames,
-        TaskTags: tagsData,
-        AccountName: task.accounts.accountName,
-        AccountId: task.accounts._id,
-        StartDate: task.startdate,
-        EndDate: task.enddate,
-        Priority: task.priority,
-        Description: task.description,
-        Status: task.status,
-        SubtaskCount: subtaskCount,
-        createdAt: task.createdAt,
-        updatedAt: task.updatedAt,
-      });
-    }
-
-    res.status(200).json({ message: "Tasks retrieved successfully", taskList });
+    res.status(200).json({ message: "Completed tasks retrieved successfully", taskList });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

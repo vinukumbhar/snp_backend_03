@@ -6,7 +6,7 @@ const Contacts = require("../Models/contactsModel")
 const User = require("../Models/userModel");
 const Tags = require("../Models/tagsModel");
 const ClientFacingjobStatus = require("../Models/clientfacingjobstatusesModel.js");
-
+const Task = require("../Models/accountTasksModel.js")
 
 const currentDate = new Date();
 const lastDay = new Date(currentDate);
@@ -94,6 +94,66 @@ const getJobs = async (req, res) => {
 // };
 
 
+// const getJobsByAccount = async (req, res) => {
+//   try {
+//     const { accountId } = req.params;
+//     const accountIdsArray = accountId.split(",");
+
+//     // Fetch jobs where the accountId exists in the "accounts" array
+//     const jobs = await Job.find({ accounts: { $in: accountIdsArray } })
+//       .populate({ path: "pipeline", model: "pipeline" })
+//       .populate({ path: "accounts", model: "Accounts" });
+
+//     const jobList = [];
+
+//     for (const job of jobs) {
+//       const accountsname = job.accounts.map((account) => account.accountName);
+//       const accountId = job.accounts.map((account) => account._id);
+
+//       // Fetch account and associated contacts
+//       const account = await Accounts.findById(accountId).populate("contacts");
+//       const validContacts = account.contacts.filter((contact) => contact.login);
+
+//       if (validContacts.length === 0) {
+//         return res.status(400).json({ status: 400, message: "No contacts with login enabled." });
+//       }
+
+//       // Select the first valid contact
+//       const contact = validContacts[0];
+
+//       // Data for placeholder replacement
+//       const placeholderData = {
+//         ACCOUNT_NAME: accountsname.join(", "),
+//         FIRST_NAME: contact.firstName,
+//         MIDDLE_NAME: contact.middleName,
+//         LAST_NAME: contact.lastName,
+//         CONTACT_NAME: contact.contactName,
+//         COMPANY_NAME: contact.companyName,
+//         COUNTRY: contact.country,
+//         STREET_ADDRESS: contact.streetAddress,
+//         STATEPROVINCE: contact.state,
+//         PHONE_NUMBER: contact.phoneNumbers,
+//         ZIPPOSTALCODE: contact.postalCode,
+//         CITY: contact.city,
+//       };
+
+//       // Replace placeholders in jobname
+//       const jobName = replacePlaceholders(job.jobname, placeholderData);
+
+//       jobList.push({
+//         id: job._id,
+//         Name: jobName,
+//         Pipeline: job.pipeline?.pipelineName || null,
+//         Accounts: accountsname,
+//       });
+//     }
+
+//     res.status(200).json({ message: "Jobs retrieved successfully", jobList });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
 const getJobsByAccount = async (req, res) => {
   try {
     const { accountId } = req.params;
@@ -108,44 +168,62 @@ const getJobsByAccount = async (req, res) => {
 
     for (const job of jobs) {
       const accountsname = job.accounts.map((account) => account.accountName);
-      const accountId = job.accounts.map((account) => account._id);
+      const accountIds = job.accounts.map((account) => account._id);
 
-      // Fetch account and associated contacts
-      const account = await Accounts.findById(accountId).populate("contacts");
-      const validContacts = account.contacts.filter((contact) => contact.login);
+      let foundValidContact = false;
+      let placeholderData = {};
 
-      if (validContacts.length === 0) {
-        return res.status(400).json({ status: 400, message: "No contacts with login enabled." });
+      for (const accountId of accountIds) {
+        // Fetch account and associated contacts
+        const account = await Accounts.findById(accountId).populate("contacts");
+        
+        if (account) {
+          const validContacts = account.contacts.filter((contact) => contact.login);
+
+          if (validContacts.length > 0) {
+            foundValidContact = true;
+            const contact = validContacts[0]; // Select the first valid contact
+
+            // Prepare placeholder data
+            placeholderData = {
+              ACCOUNT_NAME: accountsname.join(", "),
+              FIRST_NAME: contact.firstName,
+              MIDDLE_NAME: contact.middleName,
+              LAST_NAME: contact.lastName,
+              CONTACT_NAME: contact.contactName,
+              COMPANY_NAME: contact.companyName,
+              COUNTRY: contact.country,
+              STREET_ADDRESS: contact.streetAddress,
+              STATEPROVINCE: contact.state,
+              PHONE_NUMBER: contact.phoneNumbers,
+              ZIPPOSTALCODE: contact.postalCode,
+              CITY: contact.city,
+            };
+            break; // Exit loop once we find a valid contact
+          }
+        }
       }
 
-      // Select the first valid contact
-      const contact = validContacts[0];
-
-      // Data for placeholder replacement
-      const placeholderData = {
-        ACCOUNT_NAME: accountsname.join(", "),
-        FIRST_NAME: contact.firstName,
-        MIDDLE_NAME: contact.middleName,
-        LAST_NAME: contact.lastName,
-        CONTACT_NAME: contact.contactName,
-        COMPANY_NAME: contact.companyName,
-        COUNTRY: contact.country,
-        STREET_ADDRESS: contact.streetAddress,
-        STATEPROVINCE: contact.state,
-        PHONE_NUMBER: contact.phoneNumbers,
-        ZIPPOSTALCODE: contact.postalCode,
-        CITY: contact.city,
-      };
-
-      // Replace placeholders in jobname
-      const jobName = replacePlaceholders(job.jobname, placeholderData);
-
-      jobList.push({
-        id: job._id,
-        Name: jobName,
-        Pipeline: job.pipeline?.pipelineName || null,
-        Accounts: accountsname,
-      });
+      if (!foundValidContact) {
+        // Add job with a default placeholder if no valid contacts exist
+        jobList.push({
+          id: job._id,
+          Name: job.jobname, // Keeping the original job name
+          Pipeline: job.pipeline?.pipelineName || null,
+          Accounts: accountsname,
+          Warning: "No contacts with login enabled",
+        });
+      } else {
+        // Replace placeholders in job name
+        const jobName = replacePlaceholders(job.jobname, placeholderData);
+        
+        jobList.push({
+          id: job._id,
+          Name: jobName,
+          Pipeline: job.pipeline?.pipelineName || null,
+          Accounts: accountsname,
+        });
+      }
     }
 
     res.status(200).json({ message: "Jobs retrieved successfully", jobList });
@@ -153,7 +231,6 @@ const getJobsByAccount = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 
 
@@ -287,6 +364,24 @@ const createJob = async (req, res) => {
 
 //delete a JobTemplate
 
+// const deleteJob = async (req, res) => {
+//   const { id } = req.params;
+
+//   if (!mongoose.Types.ObjectId.isValid(id)) {
+//     return res.status(404).json({ error: "Invalid Job ID" });
+//   }
+
+//   try {
+//     const deletedJob = await Job.findByIdAndDelete({ _id: id });
+//     if (!deletedJob) {
+//       return res.status(404).json({ error: "No such Job" });
+//     }
+//     res.status(200).json({ message: "Job deleted successfully", deletedJob });
+//   } catch (error) {
+//     return res.status(500).json({ error: error.message });
+//   }
+// };
+
 const deleteJob = async (req, res) => {
   const { id } = req.params;
 
@@ -295,15 +390,20 @@ const deleteJob = async (req, res) => {
   }
 
   try {
-    const deletedJob = await Job.findByIdAndDelete({ _id: id });
+    const deletedJob = await Job.findByIdAndDelete(id);
     if (!deletedJob) {
       return res.status(404).json({ error: "No such Job" });
     }
-    res.status(200).json({ message: "Job deleted successfully", deletedJob });
+
+    // Remove the job reference from all tasks that were linked to this job
+    await Task.updateMany({ job: id }, { $unset: { job: "" } });
+
+    res.status(200).json({ message: "Job deleted successfully, tasks updated", deletedJob });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
 };
+
 
 //update a new tasktemplate
 const updateJob = async (req, res) => {
