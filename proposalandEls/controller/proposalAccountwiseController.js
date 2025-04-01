@@ -192,17 +192,72 @@ const getProposalandElsListbyAccountid = async (req, res) => {
     }
 };
 // Get a single InvoiceList by Account ID
-const getProposalandElsList = async (req, res) => {
+// const getProposalandElsList = async (req, res) => {
 
+//     try {
+        // const proposalesandelsAccountwise = await ProposalesandelsAccountwise.find()
+        //     .populate({ path: 'accountid', model: 'Accounts' }) // Ensure model name matches exactly
+        //     .populate({ path: 'proposaltemplateid', model: 'ProposalesAndEls' })
+        //     .populate({ path: 'teammember', model: 'User' }); // Ensure model name matches exactly; // Corrected syntax here
+
+//         // if (!proposalesandelsAccountwise || proposalesandelsAccountwise.length === 0) {
+//         //     return res.status(404).json({ message: "No Proposalesandels found for this account." });
+//         // }
+//         res.status(200).json({ message: "Proposalesandels Accountwise retrieved successfully", proposalesandelsAccountwise });
+//     } catch (error) {
+//         res.status(500).json({ error: error.message });
+//     }
+// };
+const getProposalandElsList = async (req, res) => {
     try {
         const proposalesandelsAccountwise = await ProposalesandelsAccountwise.find()
-            .populate({ path: 'accountid', model: 'Accounts' }) // Ensure model name matches exactly
-            .populate({ path: 'proposaltemplateid', model: 'ProposalesAndEls' })
-            .populate({ path: 'teammember', model: 'User' }); // Ensure model name matches exactly; // Corrected syntax here
+        .populate({ path: 'accountid', model: 'Accounts' }) // Ensure model name matches exactly
+        .populate({ path: 'proposaltemplateid', model: 'ProposalesAndEls' })
+        .populate({ path: 'teammember', model: 'User' }); 
 
-        if (!proposalesandelsAccountwise || proposalesandelsAccountwise.length === 0) {
-            return res.status(404).json({ message: "No Proposalesandels found for this account." });
-        }
+        // Function to process proposal data
+        const processProposalData = async (proposalesandelsAccountwise) => {
+            for (const proposal of proposalesandelsAccountwise) {
+                console.log(proposal.accountid._id);
+                
+                // Fetch account details and populate contacts
+                const account = await Accounts.findById(proposal.accountid._id).populate("contacts");
+                if (!account) {
+                    console.error(`Account not found for ID: ${proposal.accountid._id}`);
+                    continue;
+                }
+
+                // Filter contacts with valid login
+                const validContact = account.contacts.filter(contact => contact.login);
+                console.log(validContact);
+
+                // Define placeholder values
+                const placeholderValues = {
+                    ACCOUNT_NAME: account.accountName || "",
+                    FIRST_NAME: validContact[0]?.firstName || "",
+                    LAST_NAME: validContact[0]?.lastName || "",
+                    COMPANY_NAME: validContact[0]?.companyName || "",
+                    EMAIL: validContact[0]?.email || "",
+                    PHONE_NUMBER: validContact[0]?.phoneNumbers || "",
+                    CITY: validContact[0]?.city || "",
+                    CURRENT_DATE: new Date().toLocaleDateString(),
+                };
+
+                // Function to replace placeholders in text
+                const replacePlaceholders = (template, data) => {
+                    return template.replace(/\[([\w\s]+)\]/g, (match, placeholder) => {
+                        return data[placeholder.trim()] || "";
+                    });
+                };
+
+                // Replace placeholders in the proposal title or content
+                proposal.proposalname = replacePlaceholders(proposal.proposalname || "", placeholderValues);
+            }
+        };
+
+        // Process proposal data
+        await processProposalData(proposalesandelsAccountwise);
+
         res.status(200).json({ message: "Proposalesandels Accountwise retrieved successfully", proposalesandelsAccountwise });
     } catch (error) {
         res.status(500).json({ error: error.message });

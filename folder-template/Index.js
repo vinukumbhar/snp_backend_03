@@ -176,8 +176,96 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage });
+// const upload = multer({ storage: storage });
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (!file.originalname) {
+      console.log("Skipping empty file...");
+      return cb(null, false);
+    }
+    cb(null, true);
+  }
+});
+app.post("/upload-folder", upload.single("folderZip"), async (req, res) => {
+  if (!req.file || !req.body.destinationPath) {
+    return res.status(400).json({ error: "Missing file or destination path" });
+  }
 
+  let destinationPath = req.body.destinationPath;
+  destinationPath = destinationPath.replace(/\/\//g, "/"); // Normalize path
+console.log(destinationPath)
+  const zipPath = req.file.path;
+  const extractPath = path.join(__dirname, "uploads", destinationPath);
+
+  try {
+    console.log("Extracting:", zipPath, "to", extractPath);
+    await fs.ensureDir(extractPath); // Ensure the destination folder exists
+
+    const zipStream = fs.createReadStream(zipPath).pipe(unzipper.Extract({ path: extractPath }));
+
+    zipStream.on("close", async () => {
+      try {
+        await fs.unlink(zipPath); // Delete ZIP after extraction
+        console.log("Deleted ZIP file:", zipPath);
+        res.json({ message: "Folder extracted successfully!", path: extractPath });
+      } catch (unlinkError) {
+        console.error("Error deleting ZIP:", unlinkError);
+        res.status(500).json({ error: "Extraction completed, but ZIP deletion failed" });
+      }
+    });
+
+    zipStream.on("error", async (err) => {
+      console.error("Extraction error:", err);
+      await fs.unlink(zipPath); // Ensure ZIP is deleted on failure
+      res.status(500).json({ error: "Extraction failed, ZIP deleted" });
+    });
+
+  } catch (error) {
+    console.error("Server error:", error);
+    await fs.unlink(zipPath); // Ensure ZIP is deleted on unexpected error
+    res.status(500).json({ error: "Server error, ZIP deleted" });
+  }
+});
+// app.post("/upload-folder", upload.single("folderZip"), async (req, res) => {
+//   if (!req.file || !req.body.folderName) {
+//     return res.status(400).json({ error: "Missing file or folder name" });
+//   }
+
+//   const folderName = req.body.folderName;
+//   const zipPath = req.file.path;
+//   const extractPath = path.join(__dirname, "uploads", folderName);
+
+//   try {
+//     console.log("Extracting:", zipPath, "to", extractPath);
+//     await fs.ensureDir(extractPath); // Ensure directory exists
+
+//     const zipStream = fs.createReadStream(zipPath)
+//       .pipe(unzipper.Extract({ path: extractPath }));
+
+//     zipStream.on("close", async () => {
+//       try {
+//         await fs.unlink(zipPath); // Delete ZIP after extraction
+//         console.log("Deleted ZIP file:", zipPath);
+//         res.json({ message: "Folder extracted successfully!", path: extractPath });
+//       } catch (unlinkError) {
+//         console.error("Error deleting ZIP:", unlinkError);
+//         res.status(500).json({ error: "Extraction completed, but ZIP deletion failed" });
+//       }
+//     });
+
+//     zipStream.on("error", async (err) => {
+//       console.error("Extraction error:", err);
+//       await fs.unlink(zipPath); // Ensure ZIP is deleted on failure
+//       res.status(500).json({ error: "Extraction failed, ZIP deleted" });
+//     });
+
+//   } catch (error) {
+//     console.error("Server error:", error);
+//     await fs.unlink(zipPath); // Ensure ZIP is deleted on unexpected error
+//     res.status(500).json({ error: "Server error, ZIP deleted" });
+//   }
+// });
 // Create an API endpoint to upload files
 app.post("/uploadfile", upload.single("file"), (req, res) => {
   // Extract path from the form data

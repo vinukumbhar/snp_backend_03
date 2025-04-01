@@ -369,8 +369,8 @@ exports.createClient = async (req, res) => {
 
     // Subfolder names
     const subfolders = [
-      'FirmClient Uploaded Document',
-      'Firm Doc Shared With Client',
+      'Client Uploaded Documents',
+      'Firm Docs Shared With Client',
       'Private'
     ];
 
