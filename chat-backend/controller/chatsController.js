@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const AccountwiseChat = require('../models/chatsModel');
 const ChatTemplate = require("../models/ChatTempModels")  // Ensure this import is correct
 const Accounts = require("../models/AccountModel")
-
+const Account = require("../models/AccountModel")
 
 
 const currentDate = new Date();
@@ -91,6 +91,54 @@ const getChats = async (req, res) => {
 
 // POST a new ChatTemplate
 
+// const createChats = async (req, res) => {
+//     const {
+//         accountids,
+//         chattemplateid,
+//         templatename,
+//         from,
+//         chatsubject,
+//         description,
+
+//         sendreminderstoclient,
+//         daysuntilnextreminder,
+//         numberofreminders,
+//         clienttasks,
+//         active
+//     } = req.body;
+
+//     if (!Array.isArray(accountids)) {
+//         return res.status(400).json({ error: "accountids must be an array" });
+//     }
+
+//     try {
+       
+//         for (const accountid of accountids) {
+//             const newChats = await AccountwiseChat.create({
+//                 accountid,
+//                 chattemplateid,
+//                 templatename,
+//                 from,
+//                 chatsubject,
+//                 description,
+//                 sendreminderstoclient,
+//                 daysuntilnextreminder,
+//                 numberofreminders,
+//                 clienttasks,
+
+//                 active
+//             });
+//             return res.status(201).json({ message: "Chats created successfully", newChats });
+
+//         }
+        
+//     } catch (error) {
+//         console.error("Error creating chats:", error);
+//         return res.status(500).json({ error: "Error creating chats" });
+//     }
+// };
+const nodemailer = require("nodemailer");
+
 const createChats = async (req, res) => {
     const {
         accountids,
@@ -99,7 +147,6 @@ const createChats = async (req, res) => {
         from,
         chatsubject,
         description,
-
         sendreminderstoclient,
         daysuntilnextreminder,
         numberofreminders,
@@ -112,9 +159,24 @@ const createChats = async (req, res) => {
     }
 
     try {
-       
+        const createdChats = [];
+
+        // Configure the email transporter
+        const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 587,
+            secure: false, // Use STARTTLS
+            auth: {
+                user: process.env.EMAIL,
+                pass: process.env.EMAIL_PASSWORD,
+            },
+            tls: {
+                rejectUnauthorized: false,
+            },
+        });
+
         for (const accountid of accountids) {
-            const newChats = await AccountwiseChat.create({
+            const newChat = await AccountwiseChat.create({
                 accountid,
                 chattemplateid,
                 templatename,
@@ -125,12 +187,47 @@ const createChats = async (req, res) => {
                 daysuntilnextreminder,
                 numberofreminders,
                 clienttasks,
-
                 active
             });
-            return res.status(201).json({ message: "Chats created successfully", newChats });
+
+            createdChats.push(newChat);
+
+            // **Fetch Account Details**
+            const account = await Account.findById(accountid).populate("contacts");
+            if (!account) {
+                console.warn(`Account not found for ID: ${accountid}`);
+                continue;
+            }
+
+            const chatLink = `http://localhost:3001/updatechat/${newChat._id}`;
+
+            // **Send Emails to Eligible Contacts**
+            for (const contact of account.contacts) {
+                if (contact.emailSync && contact.email) {
+                    const mailOptions = {
+                        from: process.env.EMAIL,
+                        to: contact.email,
+                        subject: `${account.accountName} sent you a secure chat`,
+                        html: `
+                            <p><b>${account.accountName}</b></p>
+                            <p>You have a new secure chat <b>${templatename}</b> from ${from}.</p>
+                            <a href="${chatLink}" style="display: inline-block; padding: 10px 20px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;">
+                                View Chat
+                            </a>
+                        `,
+                    };
+
+                    try {
+                        await transporter.sendMail(mailOptions);
+                        console.log(`Email sent to ${contact.email}`);
+                    } catch (emailError) {
+                        console.error(`Failed to send email to ${contact.email}:`, emailError.message);
+                    }
+                }
+            }
         }
-        
+
+        return res.status(201).json({ message: "Chats created successfully", createdChats });
     } catch (error) {
         console.error("Error creating chats:", error);
         return res.status(500).json({ error: "Error creating chats" });
@@ -335,9 +432,16 @@ const getisactivechatAccountwise = async (req, res) => {
 
                 // Replace placeholders in the chat subject
                 chat.chatsubject = replacePlaceholders(chat.chatsubject || "", placeholderValues);
+               // Replace placeholders in the description messages
+        if (Array.isArray(chat.description)) {
+            chat.description = chat.description.map(desc => ({
+                ...desc,
+                message: replacePlaceholders(desc.message || "", placeholderValues),
+            }));
+        }
             }
         };
-
+ 
         // Call the function to process chat data
         await processChatData(chataccountwise);
 
