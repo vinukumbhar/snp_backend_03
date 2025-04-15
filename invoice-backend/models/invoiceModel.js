@@ -38,6 +38,7 @@ const summarySchema = new mongoose.Schema({
   total: {
     type: Number,
   },
+  
 });
 
 const invoiceSchema = new mongoose.Schema(

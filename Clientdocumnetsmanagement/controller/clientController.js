@@ -354,42 +354,91 @@ const path = require('path');
 
 
 // Create a new client linked to an account
+// exports.createClient = async (req, res) => {
+//   try {
+//     // Extract accountId from the request body
+//     const { accountId } = req.body;
+
+//     if (!accountId) {
+//       return res.status(400).json({ message: "Account ID is required" });
+//     }
+
+//     // Define the base directory for the account
+//     const baseDir = path.join(__dirname, '../uploads/AccountId');
+//     const accountDir = path.join(baseDir, accountId);
+
+//     // Subfolder names
+//     const subfolders = [
+//       'Client Uploaded Documents',
+//       'Firm Docs Shared With Client',
+//       'Private'
+//     ];
+
+//     // Check if the account folder already exists
+//     if (fs.existsSync(accountDir)) {
+//       return res.status(400).json({ message: "Account folder already exists" });
+//     }
+
+//     // Create the account folder and subfolders
+//     fs.mkdirSync(accountDir, { recursive: true });
+//     subfolders.forEach(subfolder => {
+//       const subfolderPath = path.join(accountDir, subfolder);
+//       fs.mkdirSync(subfolderPath);
+//     });
+
+//     // Respond with success
+//     res.status(201).json({
+//       message: `Account folder and subfolders created for account ID: ${accountId}`,
+//       folders: [accountDir, ...subfolders.map(name => path.join(accountDir, name))]
+//     });
+//   } catch (error) {
+//     console.error('Error creating folders:', error);
+//     res.status(500).json({ message: "An error occurred while creating folders", error: error.message });
+//   }
+// };
 exports.createClient = async (req, res) => {
   try {
-    // Extract accountId from the request body
     const { accountId } = req.body;
 
     if (!accountId) {
       return res.status(400).json({ message: "Account ID is required" });
     }
 
-    // Define the base directory for the account
-    const baseDir = path.join(__dirname, '../uploads');
+    const baseDir = path.join(__dirname, '../uploads/AccountId');
     const accountDir = path.join(baseDir, accountId);
 
-    // Subfolder names
     const subfolders = [
       'Client Uploaded Documents',
       'Firm Docs Shared With Client',
       'Private'
     ];
 
-    // Check if the account folder already exists
     if (fs.existsSync(accountDir)) {
       return res.status(400).json({ message: "Account folder already exists" });
     }
 
-    // Create the account folder and subfolders
     fs.mkdirSync(accountDir, { recursive: true });
+
+    const createdFolders = [accountDir];
+
     subfolders.forEach(subfolder => {
       const subfolderPath = path.join(accountDir, subfolder);
       fs.mkdirSync(subfolderPath);
+      createdFolders.push(subfolderPath);
+
+      // If subfolder is 'Client Uploaded Documents', create 'sealed' and 'unsealed' inside it
+      if (subfolder === 'Client Uploaded Documents') {
+        const sealedPath = path.join(subfolderPath, 'sealed');
+        const unsealedPath = path.join(subfolderPath, 'unsealed');
+        fs.mkdirSync(sealedPath);
+        fs.mkdirSync(unsealedPath);
+        createdFolders.push(sealedPath, unsealedPath);
+      }
     });
 
-    // Respond with success
     res.status(201).json({
       message: `Account folder and subfolders created for account ID: ${accountId}`,
-      folders: [accountDir, ...subfolders.map(name => path.join(accountDir, name))]
+      folders: createdFolders
     });
   } catch (error) {
     console.error('Error creating folders:', error);
@@ -536,16 +585,16 @@ try {
   console.log("Folder Template ID:", foldertempId);
 
   // Define paths
-  const baseDir = path.join(__dirname, '../uploads');
-  // const templatesDir = path.resolve('D:/snp3-12-24/backend/folder-template/uploads/FolderTemplates');
+  const baseDir = path.join(__dirname, '../uploads/AccountId');
+ 
   const templatesDir = path.join(__dirname, '..', '..', 'folder-template', 'uploads', 'FolderTemplates');
   const targetAccountDir = path.join(baseDir, accountId);
-  // D:\snp3-12-24\backend\folder-template\uploads\FolderTemplates
+  
   // Folder names to handle
   const foldersToHandle = [
-      'FirmClient Uploaded Document',
-      'Firm Doc Shared With Client',
-      'Private',
+    'Client Uploaded Documents',
+    'Firm Docs Shared With Client',
+    'Private'
   ];
 
   // Check if the account folder exists
