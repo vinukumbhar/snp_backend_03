@@ -7,7 +7,7 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     // // Log and get destination path from the request body
     const destinationPath = req.body.destinationPath || "uploads"; // Default to 'uploads' if not provided
-    console.log(destinationPath);
+    console.log("test",destinationPath);
 
     // Set the destination path
     cb(null, destinationPath);
@@ -24,7 +24,7 @@ const storage = multer.diskStorage({
 
 // const upload = multer({ storage: storage });
 const upload = multer({
-  storage,
+  storage: storage,
   fileFilter: (req, file, cb) => {
     if (!file.originalname) {
       console.log("Skipping empty file...");

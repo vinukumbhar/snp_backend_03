@@ -322,6 +322,7 @@ console.log(targetPath)
 app.post("/uploadfileinfirm", upload.single("file"), async (req, res) => {
   // Extract the file path and permissions from the request
   let targetPath = req.body.destinationPath;
+  const accountId = req.body.accountId;
   console.log("jjjj",targetPath)
   // Default permissions if not provided by user
   const defaultPermissions = {
@@ -351,6 +352,7 @@ app.post("/uploadfileinfirm", upload.single("file"), async (req, res) => {
   const newFile = new File({
     filename: req.file.filename,
     filePath: targetPath,
+    accountId,
     permissions: {
       canView: permissions.canView,
       canDownload: permissions.canDownload,
@@ -365,6 +367,7 @@ app.post("/uploadfileinfirm", upload.single("file"), async (req, res) => {
     res.status(200).send({
       message: "File uploaded successfully!",
       filePath: `/${targetPath}/${req.file.filename}`,
+      accountId,
       permissions: newFile.permissions,
     });
   } catch (error) {
