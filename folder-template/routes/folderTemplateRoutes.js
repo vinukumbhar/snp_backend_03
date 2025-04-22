@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const { createFolderTemplate, getFolders, getFolder, deleteFolderTemplate, updateFolderTemplate, deleteFile, downloadfile, deleteFolder, downloadfolder, getFolderStructure, createfolder, defaultfolderStructure } = require("../controller/folderTemplateController");
+const { createFolderTemplate, getFolders, getFolder, deleteFolderTemplate, updateFolderTemplate, deleteFile, downloadfile, deleteFolder, downloadfolder, getFolderStructure, createfolder, defaultfolderStructure ,} = require("../controller/folderTemplateController");
 
 router.get("/folder", getFolders);
 router.post("/folder", createFolderTemplate);

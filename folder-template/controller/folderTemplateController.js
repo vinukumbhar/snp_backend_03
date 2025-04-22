@@ -45,13 +45,32 @@ const createFolderTemplate = async (req, res) => {
 
     // Create folder based on newAccount._id
     const folderTemplateIdFolder = `uploads/FolderTemplates/${newFolderTemplate._id}`;
+    // if (!fs.existsSync(folderTemplateIdFolder)) {
+    //   fs.mkdirSync(folderTemplateIdFolder, { recursive: true });
+    //   fs.mkdirSync(folderTemplateIdFolder + `/${clientFolder}`, { recursive: true });
+    //   fs.mkdirSync(folderTemplateIdFolder + `/${firmFolder}`, { recursive: true });
+    //   fs.mkdirSync(folderTemplateIdFolder + `/${privateFolder}`, { recursive: true });
+    //   // fs.mkdirSync(folderTemplateIdFolder + `/${selectedFolderOption}` + `/${folderName}`, { recursive: true });
+    // }
+
     if (!fs.existsSync(folderTemplateIdFolder)) {
-      fs.mkdirSync(folderTemplateIdFolder, { recursive: true });
-      fs.mkdirSync(folderTemplateIdFolder + `/${clientFolder}`, { recursive: true });
-      fs.mkdirSync(folderTemplateIdFolder + `/${firmFolder}`, { recursive: true });
-      fs.mkdirSync(folderTemplateIdFolder + `/${privateFolder}`, { recursive: true });
-      // fs.mkdirSync(folderTemplateIdFolder + `/${selectedFolderOption}` + `/${folderName}`, { recursive: true });
-    }
+  fs.mkdirSync(folderTemplateIdFolder, { recursive: true });
+
+  // Create client folder with subfolders sealed and unsealed
+  const clientFolderPath = path.join(folderTemplateIdFolder, clientFolder);
+  fs.mkdirSync(clientFolderPath, { recursive: true });
+  fs.mkdirSync(path.join(clientFolderPath, "sealed"), { recursive: true });
+  fs.mkdirSync(path.join(clientFolderPath, "unsealed"), { recursive: true });
+
+  // Firm folder
+  fs.mkdirSync(path.join(folderTemplateIdFolder, firmFolder), { recursive: true });
+
+  // Private folder
+  fs.mkdirSync(path.join(folderTemplateIdFolder, privateFolder), { recursive: true });
+
+  // Optional nested structure (uncomment and customize as needed)
+  // fs.mkdirSync(path.join(folderTemplateIdFolder, selectedFolderOption, folderName), { recursive: true });
+}
 
     console.log(newFolderTemplate._id);
     res.status(200).json({ id: newFolderTemplate._id });
