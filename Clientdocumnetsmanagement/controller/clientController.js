@@ -351,7 +351,8 @@ const Client = require('../models/client');
 // const Account = require('../models/AccountModel');
 const fs = require('fs');
 const path = require('path');
-
+const FolderTempFile = require('../models/FolderTempFileModel'); // adjust path as needed
+const File = require('../models/FileModel');
 
 // Create a new client linked to an account
 // exports.createClient = async (req, res) => {
@@ -572,100 +573,307 @@ exports.deleteSubFolder = async (req, res) => {
   }
 };
 
-exports.folderTemplate = async (req, res) => {
+// exports.folderTemplate = async (req, res) => {
 
-try {
-  const { accountId, foldertempId } = req.body;
+// try {
+//   const { accountId, foldertempId } = req.body;
 
-  if (!accountId || !foldertempId) {
-      return res.status(400).json({ message: "Both accountId and foldertempId are required" });
-  }
+//   if (!accountId || !foldertempId) {
+//       return res.status(400).json({ message: "Both accountId and foldertempId are required" });
+//   }
 
-  console.log("Account ID:", accountId);
-  console.log("Folder Template ID:", foldertempId);
+//   console.log("Account ID:", accountId);
+//   console.log("Folder Template ID:", foldertempId);
 
-  // Define paths
-  const baseDir = path.join(__dirname, '../uploads/AccountId');
+//   // Define paths
+//   const baseDir = path.join(__dirname, '../uploads/AccountId');
  
-  const templatesDir = path.join(__dirname, '..', '..', 'folder-template', 'uploads', 'FolderTemplates');
-  const targetAccountDir = path.join(baseDir, accountId);
+//   const templatesDir = path.join(__dirname, '..', '..', 'folder-template', 'uploads', 'FolderTemplates');
+//   const targetAccountDir = path.join(baseDir, accountId);
   
-  // Folder names to handle
-  const foldersToHandle = [
-    'Client Uploaded Documents',
-    'Firm Docs Shared With Client',
-    'Private'
-  ];
+//   // Folder names to handle
+//   const foldersToHandle = [
+//     'Client Uploaded Documents',
+//     'Firm Docs Shared With Client',
+//     'Private'
+//   ];
 
-  // Check if the account folder exists
-  if (!fs.existsSync(targetAccountDir)) {
-    console.error(`Account folder does not exist at path: ${targetAccountDir}`);
+//   // Check if the account folder exists
+//   if (!fs.existsSync(targetAccountDir)) {
+//     console.error(`Account folder does not exist at path: ${targetAccountDir}`);
+//       return res.status(404).json({ message: "Account folder does not exist" });
+//   }
+
+//   // Process each folder
+//   const copyRecursiveSync = (src, dest) => {
+//       if (!fs.existsSync(dest)) {
+//           fs.mkdirSync(dest, { recursive: true });
+//       }
+
+//       const entries = fs.readdirSync(src, { withFileTypes: true });
+//       for (const entry of entries) {
+//           const srcPath = path.join(src, entry.name);
+//           const destPath = path.join(dest, entry.name);
+
+//           if (entry.isDirectory()) {
+//               // Recursively copy directories
+//               copyRecursiveSync(srcPath, destPath);
+//           } else {
+//               // Copy files
+//               fs.copyFileSync(srcPath, destPath);
+//           }
+//       }
+//   };
+
+//   const copiedFolders = [];
+
+//   for (const folderName of foldersToHandle) {
+//       const sourceFolder = path.join(templatesDir, foldertempId, folderName);
+//       const targetFolder = path.join(targetAccountDir, folderName);
+
+//       // Check if the source folder exists
+//       if (!fs.existsSync(sourceFolder)) {
+//           console.warn(`Source folder not found: ${sourceFolder}`);
+//           continue; // Skip if the source folder doesn't exist
+//       }
+
+//       // Check if the target folder exists
+//       if (!fs.existsSync(targetFolder)) {
+//           fs.mkdirSync(targetFolder, { recursive: true });
+//       }
+
+//       // Copy contents from source to target
+//       copyRecursiveSync(sourceFolder, targetFolder);
+//       copiedFolders.push({ source: sourceFolder, destination: targetFolder });
+//   }
+
+//   if (copiedFolders.length === 0) {
+//       return res.status(404).json({
+//           message: "None of the specified folders were found in the template directory",
+//       });
+//   }
+
+//   res.status(200).json({
+//       message: "Contents copied successfully from template to target folders",
+//       copiedFolders,
+//   });
+// } catch (error) {
+//   console.error('Error in folderTemplate:', error);
+//   res.status(500).json({
+//       message: "An error occurred while copying folders/files",
+//       error: error.message,
+//   });
+// }
+// }
+
+// Fetch all clients for a specific account
+
+
+
+
+
+
+
+
+
+// exports.folderTemplate = async (req, res) => {
+//   try {
+//     const { accountId, foldertempId } = req.body;
+
+//     if (!accountId || !foldertempId) {
+//       return res.status(400).json({ message: "Both accountId and foldertempId are required" });
+//     }
+
+//     console.log("Account ID:", accountId);
+//     console.log("Folder Template ID:", foldertempId);
+
+//     // Define base paths
+//     const baseDir = path.join(__dirname, '../uploads/AccountId');
+//     const templatesDir = path.join(__dirname, '..', '..', 'folder-template', 'uploads', 'FolderTemplates');
+//     const targetAccountDir = path.join(baseDir, accountId);
+
+//     const foldersToHandle = [
+//       'Client Uploaded Documents',
+//       'Private'
+//     ];
+
+//     if (!fs.existsSync(targetAccountDir)) {
+//       console.error(`Account folder does not exist at path: ${targetAccountDir}`);
+//       return res.status(404).json({ message: "Account folder does not exist" });
+//     }
+
+//     // Recursive copy function
+//     const copyRecursiveSync = (src, dest) => {
+//       if (!fs.existsSync(src)) return;
+
+//       if (!fs.existsSync(dest)) {
+//         fs.mkdirSync(dest, { recursive: true });
+//       }
+
+//       const entries = fs.readdirSync(src, { withFileTypes: true });
+//       for (const entry of entries) {
+//         const srcPath = path.join(src, entry.name);
+//         const destPath = path.join(dest, entry.name);
+
+//         if (entry.isDirectory()) {
+//           copyRecursiveSync(srcPath, destPath);
+//         } else {
+//           fs.copyFileSync(srcPath, destPath);
+//         }
+//       }
+//     };
+
+//     const copiedFolders = [];
+
+//     for (const folderName of foldersToHandle) {
+//       const sourceFolder = path.join(templatesDir, foldertempId, folderName);
+//       const targetFolder = path.join(targetAccountDir, folderName);
+
+//       if (!fs.existsSync(sourceFolder)) {
+//         console.warn(`Source folder not found: ${sourceFolder}`);
+//         continue;
+//       }
+
+//       copyRecursiveSync(sourceFolder, targetFolder);
+//       copiedFolders.push({ source: sourceFolder, destination: targetFolder });
+//     }
+
+//     if (copiedFolders.length === 0) {
+//       return res.status(404).json({
+//         message: "None of the specified folders were found in the template directory",
+//       });
+//     }
+
+//     res.status(200).json({
+//       message: "Contents copied successfully from template to target folders",
+//       copiedFolders,
+//     });
+//   } catch (error) {
+//     console.error('Error in folderTemplate:', error);
+//     res.status(500).json({
+//       message: "An error occurred while copying folders/files",
+//       error: error.message,
+//     });
+//   }
+// };
+
+
+
+
+
+
+exports.folderTemplate = async (req, res) => {
+  try {
+    const { accountId, foldertempId } = req.body;
+
+    if (!accountId || !foldertempId) {
+      return res.status(400).json({ message: "Both accountId and foldertempId are required" });
+    }
+
+    console.log("Account ID:", accountId);
+    console.log("Folder Template ID:", foldertempId);
+
+    // Define base paths
+    const baseDir = path.join(__dirname, '../uploads/AccountId');
+    const templatesDir = path.join(__dirname, '..', '..', 'folder-template', 'uploads', 'FolderTemplates');
+    const targetAccountDir = path.join(baseDir, accountId);
+
+    const foldersToHandle = [
+      'Client Uploaded Documents',
+      'Firm Docs Shared With Client',
+      'Private'
+    ];
+
+    if (!fs.existsSync(targetAccountDir)) {
+      console.error(`Account folder does not exist at path: ${targetAccountDir}`);
       return res.status(404).json({ message: "Account folder does not exist" });
-  }
+    }
 
-  // Process each folder
-  const copyRecursiveSync = (src, dest) => {
+    // Recursive copy function
+    const copyRecursiveSync = (src, dest) => {
+      if (!fs.existsSync(src)) return;
+
       if (!fs.existsSync(dest)) {
-          fs.mkdirSync(dest, { recursive: true });
+        fs.mkdirSync(dest, { recursive: true });
       }
 
       const entries = fs.readdirSync(src, { withFileTypes: true });
       for (const entry of entries) {
-          const srcPath = path.join(src, entry.name);
-          const destPath = path.join(dest, entry.name);
+        const srcPath = path.join(src, entry.name);
+        const destPath = path.join(dest, entry.name);
 
-          if (entry.isDirectory()) {
-              // Recursively copy directories
-              copyRecursiveSync(srcPath, destPath);
-          } else {
-              // Copy files
-              fs.copyFileSync(srcPath, destPath);
-          }
+        if (entry.isDirectory()) {
+          copyRecursiveSync(srcPath, destPath);
+        } else {
+          fs.copyFileSync(srcPath, destPath);
+        }
       }
-  };
+    };
 
-  const copiedFolders = [];
+    const copiedFolders = [];
 
-  for (const folderName of foldersToHandle) {
+    for (const folderName of foldersToHandle) {
       const sourceFolder = path.join(templatesDir, foldertempId, folderName);
       const targetFolder = path.join(targetAccountDir, folderName);
 
-      // Check if the source folder exists
       if (!fs.existsSync(sourceFolder)) {
-          console.warn(`Source folder not found: ${sourceFolder}`);
-          continue; // Skip if the source folder doesn't exist
+        console.warn(`Source folder not found: ${sourceFolder}`);
+        continue;
       }
 
-      // Check if the target folder exists
-      if (!fs.existsSync(targetFolder)) {
-          fs.mkdirSync(targetFolder, { recursive: true });
-      }
-
-      // Copy contents from source to target
       copyRecursiveSync(sourceFolder, targetFolder);
       copiedFolders.push({ source: sourceFolder, destination: targetFolder });
-  }
+    }
 
-  if (copiedFolders.length === 0) {
-      return res.status(404).json({
-          message: "None of the specified folders were found in the template directory",
+    // ✅ EXTRA: Copy DB entries from FolderTemplate -> Account for "Firm Docs Shared With Client"
+    const firmDocsTemplatePath = `uploads/FolderTemplates/${foldertempId}/Firm Docs Shared With Client`;
+    const firmDocsAccountPath = `uploads/AccountId/${accountId}/Firm Docs Shared With Client`;
+
+    const templateFiles = await FolderTempFile.find({
+      templateId: foldertempId,
+      filePath: { $regex: `^${firmDocsTemplatePath}` }
+    });
+
+    const copiedDbFilesToAccount = [];
+
+    for (const file of templateFiles) {
+      const relativePath = file.filePath.replace(firmDocsTemplatePath, '');
+      const newFilePath = `${firmDocsAccountPath}${relativePath}`;
+
+      const newFile = new File({
+        filename: file.filename,
+        filePath: newFilePath,
+        accountId: accountId,
+        permissions: file.permissions,
       });
-  }
 
-  res.status(200).json({
-      message: "Contents copied successfully from template to target folders",
+      await newFile.save();
+      copiedDbFilesToAccount.push(newFile);
+    }
+
+    if (copiedFolders.length === 0 && copiedDbFilesToAccount.length === 0) {
+      return res.status(404).json({
+        message: "No folders or Firm Docs Shared With Client files were found to copy",
+      });
+    }
+
+    res.status(200).json({
+      message: "Contents copied successfully",
       copiedFolders,
-  });
-} catch (error) {
-  console.error('Error in folderTemplate:', error);
-  res.status(500).json({
+      copiedDbFilesToAccountCount: copiedDbFilesToAccount.length,
+    });
+  } catch (error) {
+    console.error('Error in folderTemplate:', error);
+    res.status(500).json({
       message: "An error occurred while copying folders/files",
       error: error.message,
-  });
-}
-}
+    });
+  }
+};
 
-// Fetch all clients for a specific account
+
+
+
 exports.getClientsByAccount = async (req, res) => {
   try {
     const { accountId } = req.params;

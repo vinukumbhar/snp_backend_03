@@ -306,7 +306,7 @@ const app = express();
 const dbconnect = require("./database/db");
 const folderTemplateRoutes = require('./routes/folderTemplateRoutes');
 const firmDocsRoutes = require('./routes/firmDocsRouter')
-const File = require("./models/FileModel")
+const File = require("./models/FolderTempFileModel")
 // const clientDocRoutes = require("./Routes.js/ClientRoutes")
 const adminRoutes = require("./routes/AdminRoutes")
 // app.use(cors({ origin: "http://localhost:3000" })); // Allow frontend to access API

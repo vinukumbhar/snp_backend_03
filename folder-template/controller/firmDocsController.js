@@ -1,4 +1,4 @@
-const File = require("../models/FileModel"); // Adjust path if needed
+const File = require("../models/FolderTempFileModel"); // Adjust path if needed
 const path = require("path");
 const fs = require("fs/promises");
 // GET /api/files/:accountId
@@ -193,7 +193,7 @@ const uploadFileInFirm = async (req, res) => {
     try {
       const folderName = req.query.foldername;
       const folderPath = req.query.path;
-      const accountId = req.body.accountId;
+      const templateId = req.body.accountId;
       if (!folderName || !folderPath) {
         return res.status(400).send({ error: "Both folder name and path are required" });
       }
@@ -203,8 +203,8 @@ const uploadFileInFirm = async (req, res) => {
       }
   
       // Normalize and construct final folder path
-      const relativeSubPath = folderPath.replace(/^.*AccountId\//, "");
-      const basePath = path.join("uploads", "AccountId");
+      const relativeSubPath = folderPath.replace(/^.*FolderTemplates\//, "");
+      const basePath = path.join("uploads", "FolderTemplates");
       const finalFolderPath = path.join(basePath, relativeSubPath, folderName);
       const normalizedFolderPath = finalFolderPath.replace(/\\/g, "/");
   
@@ -234,7 +234,7 @@ const uploadFileInFirm = async (req, res) => {
         filename: defaultFileName,
         filePath: normalizedFolderPath,
         permissions,
-        accountId,
+        templateId,
       });
   
       await newFile.save();

@@ -1,6 +1,6 @@
 const path = require("path");
 const fs = require("fs/promises");
-const File = require("../models/FileModel")
+const File = require("../models/FolderTempFileModel")
 const getsClientUploadedDocsUnsealed = async (req, res) => {
   try {
     const { id } = req.params;
