@@ -126,7 +126,26 @@ const firmDocsRoutes = require("./routes/firmDocsRouter")
 app.use(cors());
 app.use(express.json()); // Allows parsing JSON body
 app.use(express.urlencoded({ extended: true })); // Allows parsing form data
+const nodemailer = require("nodemailer");
 
+
+
+require('dotenv').config();
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
+// Set up Nodemailer transporter
+ const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 587,
+            secure: false, // Use STARTTLS
+            auth: {
+                user: process.env.EMAIL,
+                pass: process.env.EMAIL_PASSWORD,
+            },
+            tls: {
+                rejectUnauthorized: false,
+            },
+        });
 
 // Middleware to dynamically store files
 // Set up multer storage configuration
@@ -318,7 +337,49 @@ console.log(targetPath)
   });
 });
 
+app.post("/clientuploadedfiledocument", upload.single("file"), async (req, res) => {
+  try {
+    // Extract path from the form data
+    let targetPath = req.body.destinationPath;
+    let accountName = req.body.accountName; // Assume you send this from frontend
+    targetPath = targetPath.replace(/\/\//g, "/");
 
+    console.log(targetPath);
+
+    if (!targetPath) {
+      return res
+        .status(400)
+        .send({ message: "Path is required in the request body." });
+    }
+
+    if (!req.file) {
+      return res.status(400).send({ message: "No file uploaded." });
+    }
+
+    // Send email notification to Admin
+    const mailOptions = {
+      from: "youradminemail@gmail.com",   // Sender address
+      to: "adminrecipientemail@gmail.com", // Admin email address
+      subject: "New Document Uploaded",
+      html: `
+        <h2>New Document Uploaded</h2>
+        <p><strong>Account Name:</strong> ${accountName}</p>
+        <p><strong>File Name:</strong> ${req.file.originalname}</p>
+        <p>Destination Path: ${targetPath}</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).send({
+      message: "File uploaded successfully and email sent to admin!",
+      // filePath: `${targetPath}/${req.file.filename}`,
+    });
+  } catch (error) {
+    console.error("Error uploading file or sending email:", error);
+    res.status(500).send({ message: "Error uploading file or sending email." });
+  }
+});
 app.post("/uploadfileinfirm", upload.single("file"), async (req, res) => {
   // Extract the file path and permissions from the request
   let targetPath = req.body.destinationPath;

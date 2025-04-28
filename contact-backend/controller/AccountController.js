@@ -119,13 +119,36 @@ const getAccount = async (req, res) => {
     return res.status(404).json({ error: "Invalid Account ID" });
   }
   try {
-    const account = await Accounts.findById(id);
+    const account = await Accounts.findById(id) .populate({ path: 'contacts', model: 'Contacts' });;
 
     if (!account) {
       return res.status(404).json({ error: "No such Account" });
     }
 
     res.status(200).json({ message: "Account retrieved successfully", account });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+const getAccountsByUserId = async (req, res) => {
+  const { userid } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(userid)) {
+    return res.status(404).json({ error: "Invalid User ID" });
+  }
+
+  try {
+    const accounts = await Accounts.find({ userid })
+      .populate({ path: 'contacts', model: 'Contacts' });
+
+    if (!accounts.length) {
+      return res.status(404).json({ error: "No accounts found for this user" });
+    }
+
+    res.status(200).json({ message: "Accounts retrieved successfully", accounts });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -709,5 +732,5 @@ module.exports = {
   getAccountsIdAndName,
   getAccountsUserId,
   getAccountsByTeamMember,
-  updateAccountTags,getAllAccounts
+  updateAccountTags,getAllAccounts,getAccountsByUserId
 };
