@@ -536,22 +536,7 @@ const getInvoiceListbyid = async (req, res) => {
 };
 
 // Get a single InvoiceList by Account ID
-// const getInvoiceListbyAccountid = async (req, res) => {
-//   const { id } = req.params; // Correct destructuring
-//   // console.log(id); // Log the account ID for debugging
 
-//   try {
-//     const invoice = await Invoice.find({ account: id }); // Corrected syntax here
-
-//     if (!invoice || invoice.length === 0) {
-//       return res.status(404).json({ message: "No invoices found for this account." });
-//     }
-
-//     res.status(200).json({ message: "Invoice retrieved successfully", invoice });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
 const getInvoiceListbyAccountid = async (req, res) => {
   const { id } = req.params; // Destructuring the account ID
 
@@ -689,6 +674,26 @@ const getInvoiceforPrint = async (req, res) => {
       console.log(error.message)
     }
 };
+
+const deleteInvoicesByAccountId = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deleteResult = await Invoice.deleteMany({ account: id });
+
+    if (deleteResult.deletedCount === 0) {
+      return res.status(404).json({ message: "No invoices found for this account." });
+    }
+
+    res.status(200).json({
+      message: "Invoices deleted successfully",
+      deletedCount: deleteResult.deletedCount,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getInvoiceCountByStatus,
   getInvoiceSummary,
@@ -702,5 +707,6 @@ module.exports = {
   getInvoiceList,
   getInvoiceListbyid,
   getInvoiceListbyAccountid,
-  getInvoiceforPrint
+  getInvoiceforPrint,
+  deleteInvoicesByAccountId
 };

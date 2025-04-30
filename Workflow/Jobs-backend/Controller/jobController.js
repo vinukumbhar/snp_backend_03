@@ -211,6 +211,7 @@ const getJobsByAccount = async (req, res) => {
           Name: job.jobname, // Keeping the original job name
           Pipeline: job.pipeline?.pipelineName || null,
           Accounts: accountsname,
+          AccountId:accountIds,
           Warning: "No contacts with login enabled",
         });
       } else {
@@ -222,6 +223,7 @@ const getJobsByAccount = async (req, res) => {
           Name: jobName,
           Pipeline: job.pipeline?.pipelineName || null,
           Accounts: accountsname,
+          AccountId:accountIds
         });
       }
     }
@@ -287,6 +289,7 @@ const getJob = async (req, res) => {
     console.log(error.message);
   }
 };
+
 
 //POST a new JobTemplate
 const createJob = async (req, res) => {
@@ -1860,6 +1863,31 @@ const getPipelinesFromJobList = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+const deleteJobsByAccount = async (req, res) => {
+  try {
+    const { accountId } = req.params;
+    const accountIdsArray = accountId.split(",");
+
+    // Find jobs with any of the provided account IDs in the "accounts" array
+    const jobsToDelete = await Job.find({ accounts: { $in: accountIdsArray } });
+
+    if (jobsToDelete.length === 0) {
+      return res.status(404).json({ message: "No jobs found for the given account ID(s)." });
+    }
+
+    // Delete the matching jobs
+    const deleteResult = await Job.deleteMany({ accounts: { $in: accountIdsArray } });
+
+    res.status(200).json({
+      message: "Jobs deleted successfully",
+      deletedJob: deleteResult,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getActiveJobCount ,
   getInactiveJobCount  ,
@@ -1876,5 +1904,5 @@ module.exports = {
   getActiveJobListbyAccountId,
   getActiveJobListByUserid,
   getPipelinesFromJobList,
-  getJobsByAccount
+  getJobsByAccount,deleteJobsByAccount
 };
