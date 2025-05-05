@@ -26,8 +26,7 @@ const AccountwiseChatSchema = new mongoose.Schema({
 
     templatename: {
         type: String,
-        // required: [true, 'Template name is required'],
-        // trim: true
+       
     },
     from: {
         type: mongoose.Schema.Types.ObjectId,
@@ -38,6 +37,11 @@ const AccountwiseChatSchema = new mongoose.Schema({
     },
 
     description : [ messageschema ],
+    chatstatus:{
+        type: Boolean,
+        default:false
+    },
+    
 
     sendreminderstoclient: {
         type: Boolean,

@@ -351,7 +351,7 @@ dbconnect();
 
 
 
-app.post("/upload-folder", upload.single("folderZip"), async (req, res) => {
+app.post("/uploadfolderintemplate", upload.single("folderZip"), async (req, res) => {
   if (!req.file || !req.body.folderName || !req.body.destinationPath) {
     return res.status(400).json({ error: "Missing file, folder name, or destination path" });
   }

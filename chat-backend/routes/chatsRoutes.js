@@ -12,7 +12,7 @@ const {
     updateMessage,
     deleteMessage,
     addClientTask,
-    updateTaskCheckedStatus
+    updateTaskCheckedStatus,getUnreadChatsWithLatestMessage,updateChatStatus
 
 } = require('../controller/chatsController');  // Adjust the path to where your controller file is
 
@@ -50,5 +50,9 @@ router.post('/chatsaccountwise/addclienttask', addClientTask);
 
 //update task client
 router.post('/chatsaccountwise/updateTaskCheckedStatus', updateTaskCheckedStatus);
+
+router.get('/unreadmessages',getUnreadChatsWithLatestMessage)
+
+router.post('/accountchat/updatestatus/:id',updateChatStatus)
 
 module.exports = router;

@@ -468,9 +468,9 @@ const getUsersByRoles = async (req, res) => {
 
   try {
     const users = await User.find({ role: { $in: rolesArray } }).sort({ createdAt: -1 });
-    if (users.length === 0) {
-      return res.status(404).json({ error: "No users found with the specified roles" });
-    }
+    // if (users.length === 0) {
+    //   return res.status(404).json({ error: "No users found with the specified roles" });
+    // }
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ error: error.message });
