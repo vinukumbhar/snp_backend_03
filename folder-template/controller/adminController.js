@@ -1,12 +1,14 @@
 const path = require("path");
 const fs = require("fs/promises");
-const File = require("../models/FolderTempFileModel")
+const File = require("../models/FolderTempFileModel");
 const getsClientUploadedDocsUnsealed = async (req, res) => {
   try {
     const { id } = req.params;
 
     if (!id) {
-      return res.status(400).json({ error: "Missing folder ID in request params." });
+      return res
+        .status(400)
+        .json({ error: "Missing folder ID in request params." });
     }
 
     const baseRelativePath = `uploads/FolderTemplates/${id}/Client Uploaded Documents/unsealed`;
@@ -18,23 +20,30 @@ const getsClientUploadedDocsUnsealed = async (req, res) => {
     // Recursive function
     const getAllItems = async (dir, relativePath = "") => {
       const entries = await fs.readdir(dir, { withFileTypes: true });
-      const items = await Promise.all(entries.map(async (entry) => {
-        const fullPath = path.join(dir, entry.name);
-        const itemRelativePath = toForwardSlash(path.join(baseRelativePath, relativePath, entry.name));
-        if (entry.isDirectory()) {
-          const subItems = await getAllItems(fullPath, path.join(relativePath, entry.name));
-          return {
-            folder: entry.name,
-            path: itemRelativePath,
-            contents: subItems
-          };
-        } else {
-          return {
-            file: entry.name,
-            path: itemRelativePath
-          };
-        }
-      }));
+      const items = await Promise.all(
+        entries.map(async (entry) => {
+          const fullPath = path.join(dir, entry.name);
+          const itemRelativePath = toForwardSlash(
+            path.join(baseRelativePath, relativePath, entry.name)
+          );
+          if (entry.isDirectory()) {
+            const subItems = await getAllItems(
+              fullPath,
+              path.join(relativePath, entry.name)
+            );
+            return {
+              folder: entry.name,
+              path: itemRelativePath,
+              contents: subItems,
+            };
+          } else {
+            return {
+              file: entry.name,
+              path: itemRelativePath,
+            };
+          }
+        })
+      );
       return items;
     };
 
@@ -52,7 +61,9 @@ const getsClientUploadedDocssealed = async (req, res) => {
     const { id } = req.params;
 
     if (!id) {
-      return res.status(400).json({ error: "Missing folder ID in request params." });
+      return res
+        .status(400)
+        .json({ error: "Missing folder ID in request params." });
     }
 
     const baseRelativePath = `uploads/FolderTemplates/${id}/Client Uploaded Documents/sealed`;
@@ -62,23 +73,30 @@ const getsClientUploadedDocssealed = async (req, res) => {
 
     const getAllItems = async (dir, relativePath = "") => {
       const entries = await fs.readdir(dir, { withFileTypes: true });
-      const items = await Promise.all(entries.map(async (entry) => {
-        const fullPath = path.join(dir, entry.name);
-        const itemRelativePath = toForwardSlash(path.join(baseRelativePath, relativePath, entry.name));
-        if (entry.isDirectory()) {
-          const subItems = await getAllItems(fullPath, path.join(relativePath, entry.name));
-          return {
-            folder: entry.name,
-            path: itemRelativePath,
-            contents: subItems
-          };
-        } else {
-          return {
-            file: entry.name,
-            path: itemRelativePath
-          };
-        }
-      }));
+      const items = await Promise.all(
+        entries.map(async (entry) => {
+          const fullPath = path.join(dir, entry.name);
+          const itemRelativePath = toForwardSlash(
+            path.join(baseRelativePath, relativePath, entry.name)
+          );
+          if (entry.isDirectory()) {
+            const subItems = await getAllItems(
+              fullPath,
+              path.join(relativePath, entry.name)
+            );
+            return {
+              folder: entry.name,
+              path: itemRelativePath,
+              contents: subItems,
+            };
+          } else {
+            return {
+              file: entry.name,
+              path: itemRelativePath,
+            };
+          }
+        })
+      );
       return items;
     };
 
@@ -87,35 +105,45 @@ const getsClientUploadedDocssealed = async (req, res) => {
     const folderData = await getAllItems(uploadsPath);
     res.status(200).json({ folders: folderData });
   } catch (error) {
-    console.error("Error fetching client uploaded sealed documents:", error.message);
+    console.error(
+      "Error fetching client uploaded sealed documents:",
+      error.message
+    );
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 
 const moveBetweenSealedUnsealed = async (req, res) => {
   try {
     const { id, itemPath, direction } = req.body;
 
     if (!id || !itemPath || !direction) {
-      return res.status(400).json({ 
-        error: "Missing required parameters: id, itemPath, or direction" 
+      return res.status(400).json({
+        error: "Missing required parameters: id, itemPath, or direction",
       });
     }
 
-    if (direction !== 'toSealed' && direction !== 'toUnsealed') {
-      return res.status(400).json({ 
-        error: "Invalid direction. Must be 'toSealed' or 'toUnsealed'" 
+    if (direction !== "toSealed" && direction !== "toUnsealed") {
+      return res.status(400).json({
+        error: "Invalid direction. Must be 'toSealed' or 'toUnsealed'",
       });
     }
 
     const basePath = `uploads/FolderTemplates/${id}/Client Uploaded Documents`;
-    const sourceBase = direction === 'toSealed' ? 'unsealed' : 'sealed';
-    const targetBase = direction === 'toSealed' ? 'sealed' : 'unsealed';
+    const sourceBase = direction === "toSealed" ? "unsealed" : "sealed";
+    const targetBase = direction === "toSealed" ? "sealed" : "unsealed";
 
     // Construct full paths
-    const fullSourcePath = path.join(__dirname, `../${basePath}/${sourceBase}`, itemPath);
-    const fullTargetPath = path.join(__dirname, `../${basePath}/${targetBase}`, itemPath);
+    const fullSourcePath = path.join(
+      __dirname,
+      `../${basePath}/${sourceBase}`,
+      itemPath
+    );
+    const fullTargetPath = path.join(
+      __dirname,
+      `../${basePath}/${targetBase}`,
+      itemPath
+    );
 
     // Ensure target directory exists
     await fs.mkdir(path.dirname(fullTargetPath), { recursive: true });
@@ -123,8 +151,10 @@ const moveBetweenSealedUnsealed = async (req, res) => {
     // Move the file/folder
     await fs.rename(fullSourcePath, fullTargetPath);
 
-    res.status(200).json({ 
-      message: `Successfully moved item ${direction === 'toSealed' ? 'to sealed' : 'to unsealed'}` 
+    res.status(200).json({
+      message: `Successfully moved item ${
+        direction === "toSealed" ? "to sealed" : "to unsealed"
+      }`,
     });
   } catch (error) {
     console.error("Error moving item:", error.message);
@@ -132,29 +162,35 @@ const moveBetweenSealedUnsealed = async (req, res) => {
   }
 };
 
-
 const getsClientUploadedDocs = async (req, res) => {
   try {
     const { id } = req.params;
 
     if (!id) {
-      return res.status(400).json({ error: "Missing folder ID in request params." });
+      return res
+        .status(400)
+        .json({ error: "Missing folder ID in request params." });
     }
 
-    const uploadsPath = path.join(__dirname, `../uploads/FolderTemplates/${id}/Client Uploaded Documents/unsealed`);
+    const uploadsPath = path.join(
+      __dirname,
+      `../uploads/FolderTemplates/${id}/Client Uploaded Documents/unsealed`
+    );
 
     // Recursive function to get all files and subfolders
     const getAllItems = async (dir) => {
       const entries = await fs.readdir(dir, { withFileTypes: true });
-      const items = await Promise.all(entries.map(async (entry) => {
-        const fullPath = path.join(dir, entry.name);
-        if (entry.isDirectory()) {
-          const subItems = await getAllItems(fullPath);
-          return { folder: entry.name, contents: subItems };
-        } else {
-          return { file: entry.name };
-        }
-      }));
+      const items = await Promise.all(
+        entries.map(async (entry) => {
+          const fullPath = path.join(dir, entry.name);
+          if (entry.isDirectory()) {
+            const subItems = await getAllItems(fullPath);
+            return { folder: entry.name, contents: subItems };
+          } else {
+            return { file: entry.name };
+          }
+        })
+      );
       return items;
     };
 
@@ -168,9 +204,9 @@ const getsClientUploadedDocs = async (req, res) => {
       folders: [
         {
           folder: "Client Uploaded Documents",
-          contents: folderContents
-        }
-      ]
+          contents: folderContents,
+        },
+      ],
     };
 
     res.status(200).json(result);
@@ -184,7 +220,9 @@ const getsPrivateDocs = async (req, res) => {
     const { id } = req.params;
 
     if (!id) {
-      return res.status(400).json({ error: "Missing folder ID in request params." });
+      return res
+        .status(400)
+        .json({ error: "Missing folder ID in request params." });
     }
 
     const baseRelativePath = `uploads/FolderTemplates/${id}/Private`;
@@ -194,23 +232,30 @@ const getsPrivateDocs = async (req, res) => {
 
     const getAllItems = async (dir, relativePath = "") => {
       const entries = await fs.readdir(dir, { withFileTypes: true });
-      const items = await Promise.all(entries.map(async (entry) => {
-        const fullPath = path.join(dir, entry.name);
-        const itemRelativePath = toForwardSlash(path.join(baseRelativePath, relativePath, entry.name));
-        if (entry.isDirectory()) {
-          const subItems = await getAllItems(fullPath, path.join(relativePath, entry.name));
-          return {
-            folder: entry.name,
-            path: itemRelativePath,
-            contents: subItems
-          };
-        } else {
-          return {
-            file: entry.name,
-            path: itemRelativePath
-          };
-        }
-      }));
+      const items = await Promise.all(
+        entries.map(async (entry) => {
+          const fullPath = path.join(dir, entry.name);
+          const itemRelativePath = toForwardSlash(
+            path.join(baseRelativePath, relativePath, entry.name)
+          );
+          if (entry.isDirectory()) {
+            const subItems = await getAllItems(
+              fullPath,
+              path.join(relativePath, entry.name)
+            );
+            return {
+              folder: entry.name,
+              path: itemRelativePath,
+              contents: subItems,
+            };
+          } else {
+            return {
+              file: entry.name,
+              path: itemRelativePath,
+            };
+          }
+        })
+      );
       return items;
     };
 
@@ -223,9 +268,9 @@ const getsPrivateDocs = async (req, res) => {
         {
           folder: "Private",
           path: toForwardSlash(baseRelativePath),
-          contents: folderData
-        }
-      ]
+          contents: folderData,
+        },
+      ],
     });
   } catch (error) {
     console.error("Error fetching private documents:", error.message);
@@ -238,18 +283,27 @@ const getsFirmDocs = async (req, res) => {
     const { id } = req.params;
 
     if (!id) {
-      return res.status(400).json({ error: "Missing folder ID in request params." });
+      return res
+        .status(400)
+        .json({ error: "Missing folder ID in request params." });
     }
 
     const dbFiles = await File.find({
-      filePath: { $regex: new RegExp(`FolderTemplates/${id}/Firm Docs Shared With Client`) }
+      filePath: {
+        $regex: new RegExp(
+          `FolderTemplates/${id}/Firm Docs Shared With Client`
+        ),
+      },
     });
 
     const contents = [];
     const folderMap = new Map();
 
-    dbFiles.forEach(file => {
-      const relativePath = file.filePath.split(`FolderTemplates/${id}/Firm Docs Shared With Client`)[1] || "";
+    dbFiles.forEach((file) => {
+      const relativePath =
+        file.filePath.split(
+          `FolderTemplates/${id}/Firm Docs Shared With Client`
+        )[1] || "";
       const cleanPath = relativePath.replace(/^\/+/, ""); // Remove leading slash
       const pathSegments = cleanPath.split("/");
 
@@ -258,7 +312,7 @@ const getsFirmDocs = async (req, res) => {
         if (file.filename !== "#$default.txt") {
           contents.push({
             file: file.filename,
-            metadata: file
+            metadata: file,
           });
         }
       } else {
@@ -267,7 +321,7 @@ const getsFirmDocs = async (req, res) => {
         if (file.filename === "#$default.txt") {
           folderMap.set(folderName, {
             folder: folderName,
-            contents: [] // we won't show the file
+            contents: [], // we won't show the file
           });
         }
       }
@@ -277,7 +331,7 @@ const getsFirmDocs = async (req, res) => {
 
     const result = {
       folder: "Firm Docs Shared With Client",
-      contents: [...folderList, ...contents] // folders first, then files
+      contents: [...folderList, ...contents], // folders first, then files
     };
 
     res.status(200).json(result);
@@ -287,4 +341,103 @@ const getsFirmDocs = async (req, res) => {
   }
 };
 
-module.exports = {getsFirmDocs,getsClientUploadedDocsUnsealed ,getsClientUploadedDocssealed,getsPrivateDocs,getsClientUploadedDocs,moveBetweenSealedUnsealed};
+// const deleteItem = async (req, res) => {
+//   try {
+//     const { path: filePath, id } = req.body;
+
+//     if (!filePath || !id) {
+//       return res
+//         .status(400)
+//         .json({ error: "Both file path and ID are required." });
+//     }
+
+//     const absolutePath = path.join(filePath);
+//     console.log("absolutepath", absolutePath);
+
+//     let fileDeleted = false;
+
+//     try {
+//       await fs.access(absolutePath); // Check if file exists
+//       await fs.unlink(absolutePath); // Delete the file
+//       console.log("Deleted file:", absolutePath);
+//       fileDeleted = true;
+//     } catch (fsError) {
+//       console.warn(
+//         "File does not exist or could not be accessed:",
+//         absolutePath
+//       );
+//     }
+
+//     return res.status(200).json({
+//       message: fileDeleted
+//         ? "File deleted successfully"
+//         : "File not found, nothing to delete",
+//       filePath,
+//       id,
+//     });
+//   } catch (error) {
+//     console.error("Error deleting file:", error);
+//     return res.status(500).json({ error: "Failed to delete file" });
+//   }
+// };
+
+const deleteItem = async (req, res) => {
+  try {
+    const { path: filePath, id } = req.body;
+
+    if (!filePath || !id) {
+      return res
+        .status(400)
+        .json({ error: "Both file path and ID are required." });
+    }
+
+    const absolutePath = path.join(filePath);
+    console.log("absolutepath", absolutePath);
+
+    let deleted = false;
+    let type = null;
+
+    try {
+      const stat = await fs.stat(absolutePath);
+
+      if (stat.isFile()) {
+        await fs.unlink(absolutePath);
+        type = "file";
+        console.log("Deleted file:", absolutePath);
+      } else if (stat.isDirectory()) {
+        await fs.rm(absolutePath, { recursive: true, force: true });
+        type = "folder";
+        console.log("Deleted folder:", absolutePath);
+      }
+
+      deleted = true;
+    } catch (fsError) {
+      console.warn(
+        "File or folder does not exist or could not be accessed:",
+        absolutePath
+      );
+    }
+
+    return res.status(200).json({
+      message: deleted
+        ? `${type === "folder" ? "Folder" : "File"} deleted successfully`
+        : "Item not found, nothing to delete",
+      filePath,
+      id,
+      type: type || "unknown",
+    });
+  } catch (error) {
+    console.error("Error deleting item:", error);
+    return res.status(500).json({ error: "Failed to delete item" });
+  }
+};
+
+module.exports = {
+  getsFirmDocs,
+  getsClientUploadedDocsUnsealed,
+  getsClientUploadedDocssealed,
+  getsPrivateDocs,
+  getsClientUploadedDocs,
+  moveBetweenSealedUnsealed,
+  deleteItem,
+};

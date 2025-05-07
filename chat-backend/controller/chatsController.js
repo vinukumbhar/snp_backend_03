@@ -101,7 +101,8 @@ const getChats = async (req, res) => {
     const chat = await AccountwiseChat.findById(id).populate({
       path: "accountid",
       model: "Accounts",
-    });
+    }).populate({ path: "description.senderid", model: 'User' })
+    ;
     // .populate({ path: 'chattemplateid', model: 'ChatTemplate' });
 
     if (!chat) {
@@ -191,52 +192,6 @@ const getChats = async (req, res) => {
 
 // POST a new ChatTemplate
 
-// const createChats = async (req, res) => {
-//     const {
-//         accountids,
-//         chattemplateid,
-//         templatename,
-//         from,
-//         chatsubject,
-//         description,
-
-//         sendreminderstoclient,
-//         daysuntilnextreminder,
-//         numberofreminders,
-//         clienttasks,
-//         active
-//     } = req.body;
-
-//     if (!Array.isArray(accountids)) {
-//         return res.status(400).json({ error: "accountids must be an array" });
-//     }
-
-//     try {
-
-//         for (const accountid of accountids) {
-//             const newChats = await AccountwiseChat.create({
-//                 accountid,
-//                 chattemplateid,
-//                 templatename,
-//                 from,
-//                 chatsubject,
-//                 description,
-//                 sendreminderstoclient,
-//                 daysuntilnextreminder,
-//                 numberofreminders,
-//                 clienttasks,
-
-//                 active
-//             });
-//             return res.status(201).json({ message: "Chats created successfully", newChats });
-
-//         }
-
-//     } catch (error) {
-//         console.error("Error creating chats:", error);
-//         return res.status(500).json({ error: "Error creating chats" });
-//     }
-// };
 const nodemailer = require("nodemailer");
 
 const createChats = async (req, res) => {
@@ -469,7 +424,7 @@ const getisactivechatAccountwise = async (req, res) => {
       active: req.params.isactive,
     })
       .populate({ path: "accountid", model: "Accounts" })
-      .populate({ path: "chattemplateid", model: "ChatTemplate" });
+      .populate({ path: "chattemplateid", model: "ChatTemplate" }).populate({ path: "description.senderid", model: 'User' });
 
     if (!chataccountwise) {
       return res.status(404).json({ error: "Chats Accountwise not found" });
@@ -733,45 +688,13 @@ const updateTaskCheckedStatus = async (req, res) => {
   }
 };
 
-// const getUnreadChatsWithLatestMessage = async (req, res) => {
-//   try {
-//     const unreadChats = await AccountwiseChat.find({
-//       chatstatus: false,
-//     }).populate({ path: "accountid", model: "Accounts" });
 
-//     // Map over chats to extract only the latest message from description
-//     const chatsWithLatestMessage = unreadChats.map((chat) => {
-//       const latestMessage =
-//         chat.description?.length > 0
-//           ? chat.description.reduce((latest, current) =>
-//               new Date(current.time) > new Date(latest.time) ? current : latest
-//             )
-//           : null;
-
-//       return {
-//         _id: chat._id,
-//         accountid: chat.accountid,
-
-//         chatsubject: chat.chatsubject,
-//         latestMessage,
-//         clienttasks: chat.clienttasks,
-//       };
-//     });
-
-//     res.status(200).json({
-//       message: "Unread chats with latest message retrieved successfully",
-//       chats: chatsWithLatestMessage,
-//     });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
 
 const getUnreadChatsWithLatestMessage = async (req, res) => {
     try {
       const unreadChats = await AccountwiseChat.find({
         chatstatus: false,
-      }).populate({ path: "accountid", model: "Accounts" });
+      }).populate({ path: "accountid", model: "Accounts" }).populate({ path: "description.senderid", model: 'User' });
   
       const chatsWithLatestMessage = [];
   

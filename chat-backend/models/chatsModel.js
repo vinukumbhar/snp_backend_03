@@ -5,7 +5,12 @@ const messageschema = new mongoose.Schema({
         type: String,
     },
     fromwhome : {
-        type: String
+        type: String,
+        
+    },
+    senderid: {
+       type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
     },
     time: {
         type: Date,

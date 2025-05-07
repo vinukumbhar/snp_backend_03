@@ -6,6 +6,8 @@ const emailTemplateSchema = new mongoose.Schema({
         required: [true, 'Template name is required'],
         trim: true
     },
+
+    
     from: {
         type: mongoose.Schema.Types.ObjectId,
     },
@@ -13,7 +15,11 @@ const emailTemplateSchema = new mongoose.Schema({
     emailsubject: {
         type: String,
     },
-
+    mode: {
+        type: String,
+        enum: ['contacts', 'account'],
+        default: 'contacts' // Assuming contact is the default selected option
+    },
     emailbody: {
         type: String,
     },

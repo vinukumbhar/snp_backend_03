@@ -45,14 +45,14 @@ app.use("/workflow/category", CategoryRoutes);
 // routes for category
 app.use("/workflow/invoicetemp", invoiceTemplateRoutes);
 
-app.use("/Workflow/chats", ChatTemplateRoutes);
+app.use("/workflow/chats", ChatTemplateRoutes);
 
 // routes for in backend clientfacing  index.js
 
 app.use("/workflow/clientfacingjobstatus", ClientfacingjobstatusRoutes);
 
 // routes for ChatTemplate
-app.use("/Workflow/proposalesandels", ProposalsandelsRoutes);
+app.use("/workflow/proposalesandels", ProposalsandelsRoutes);
 // database connect
 dbconnect();
 

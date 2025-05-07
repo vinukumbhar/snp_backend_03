@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const upload = require('../multerConfig'); // Adjust the path as necessary
-const { getEmailTemplates,createEmailTemplate,getEmailTemplate,deleteEmailTemplate, updateEmailTemplate,getEmailTemplateList } = require('../controller/emailTemplateController')
+const { deleteAttachment,getEmailTemplates,createEmailTemplate,getEmailTemplate,deleteEmailTemplate, updateEmailTemplate,getEmailTemplateList } = require('../controller/emailTemplateController')
 
 router.get('/emailtemplate', getEmailTemplates)
 router.get('/emailtemplate/:id', getEmailTemplate)
@@ -29,4 +29,8 @@ router.patch('/emailtemplate/:id', (req, res) => {
       updateEmailTemplate(req, res);
     });
   });
+
+
+  router.delete('/deleteattachments/:templateId/:filename', deleteAttachment);
+
 module.exports = router;
