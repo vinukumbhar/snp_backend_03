@@ -432,6 +432,35 @@ const deleteItem = async (req, res) => {
   }
 };
 
+
+const renameItem = async (req, res) => {
+  try {
+    const { currentPath, newName } = req.body;
+
+    if (!currentPath || !newName) {
+      return res.status(400).json({ error: "Both current path and new name are required." });
+    }
+
+    const directory = path.dirname(currentPath); // Keep the same parent folder
+    const newPath = path.join(directory, newName); // New path with new name
+
+    try {
+      await fs.rename(currentPath, newPath);
+
+      return res.status(200).json({
+        message: "File or folder renamed successfully",
+        // id,
+        newName,
+      });
+    } catch (fsError) {
+      console.error("Rename error:", fsError);
+      return res.status(500).json({ error: "Failed to rename file or folder" });
+    }
+  } catch (error) {
+    console.error("Server error:", error);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
 module.exports = {
   getsFirmDocs,
   getsClientUploadedDocsUnsealed,
@@ -440,4 +469,5 @@ module.exports = {
   getsClientUploadedDocs,
   moveBetweenSealedUnsealed,
   deleteItem,
+  renameItem
 };
