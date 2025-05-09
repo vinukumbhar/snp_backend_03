@@ -174,7 +174,7 @@ const getsClientUploadedDocs = async (req, res) => {
 
     const uploadsPath = path.join(
       __dirname,
-      `../uploads/FolderTemplates/${id}/Client Uploaded Documents/unsealed`
+      `../uploads/FolderTemplates/${id}/Client Uploaded Documents`
     );
 
     // Recursive function to get all files and subfolders
