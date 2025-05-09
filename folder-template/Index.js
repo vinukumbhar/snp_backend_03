@@ -782,8 +782,7 @@ app.get('/api/files/account/:templateId', async (req, res) => {
   }
 });
 
-// app.use("/clients", clientDocRoutes)
-// app.use("/clients", clientDocRoutes)
+
 app.use("/foldertemplates", adminRoutes)
 app.use("/foldertemp", folderTemplateRoutes);
 app.use('/firmClientDocs',firmDocsRoutes)

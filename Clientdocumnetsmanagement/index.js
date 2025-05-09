@@ -718,8 +718,6 @@ app.get('/api/files', async (req, res) => {
 
 
 
-// app.use("/clients", clientDocRoutes)
-// app.use("/clients", clientDocRoutes)
 app.use("/admindocs", adminRoutes)
 app.use('/clientdocs', clientRoutes);
 app.use('/firmDocs',firmDocsRoutes)

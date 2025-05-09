@@ -10,11 +10,6 @@ router.get("/clientDocs/:id",getsClientUploadedDocs)
 router.post('/moveBetweenSealedUnsealed', moveBetweenSealedUnsealed);
 router.delete('/delete-item', deleteItem)
 router.patch('/rename-item', renameItem)
-// MOVE from unsealed to sealed
-// router.post("/client-docs/move-to-sealed/:id", moveClientUploadedDocsToSealed);
 
-// router.get("/clientFolders/:id",getClientPublicFolders)
-// router.get("/unsealeddocuments/:id",getUnsealedClientDocuments)
-// router.get("/filtereddocs/:id",getFilteredClientFolders)
 
 module.exports = router;
