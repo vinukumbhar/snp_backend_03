@@ -246,7 +246,7 @@ const createChats = async (req, res) => {
       });
 
       createdChats.push(newChat);
-
+console.log("new chat",newChat)
       // **Fetch Account Details**
       const account = await Account.findById(accountid).populate("contacts");
       if (!account) {
@@ -346,6 +346,7 @@ const updateChatDescription = async (req, res) => {
   try {
     const { id } = req.params;
     const { newDescriptions } = req.body; // Assuming newDescriptions is an array of description objects
+    
 
     // Validate the provided ID
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -418,7 +419,7 @@ const getchatAccountwiselist = async (req, res) => {
 
 const getisactivechatAccountwise = async (req, res) => {
   try {
-    console.log(req.params.accountid);
+    // console.log(req.params.accountid);
     const chataccountwise = await AccountwiseChat.find({
       accountid: req.params.accountid,
       active: req.params.isactive,
@@ -433,7 +434,7 @@ const getisactivechatAccountwise = async (req, res) => {
     // Function to process chat data
     const processChatData = async (chataccountwise) => {
       for (const chat of chataccountwise) {
-        console.log(chat.accountid._id);
+        // console.log(chat.accountid._id);
 
         // Fetch account details and populate contacts
         const account = await Accounts.findById(chat.accountid._id).populate(
@@ -448,7 +449,7 @@ const getisactivechatAccountwise = async (req, res) => {
         const validContact = account.contacts.filter(
           (contact) => contact.login
         );
-        console.log(validContact);
+        // console.log(validContact);
 
         // Define placeholder values
         const placeholderValues = {
@@ -529,7 +530,7 @@ const getisactivechatAccountwise = async (req, res) => {
 };
 //update messages
 const updateMessage = async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   try {
     const { chatId, messageId, newMessage } = req.body;
 
@@ -616,12 +617,12 @@ const deleteMessage = async (req, res) => {
 ///for resend client task button
 const addClientTask = async (req, res) => {
   const { chatId, newTask } = req.body;
-  console.log(chatId);
+  // console.log(chatId);
 
   try {
     // Find the chat document
     const chat = await AccountwiseChat.findById(chatId);
-    console.log(chat);
+    // console.log(chat);
 
     if (!chat) {
       return res.status(404).json({ message: "Chat not found" });
@@ -636,7 +637,7 @@ const addClientTask = async (req, res) => {
     // Save the updated chat document
     const updatedChat = await chat.save();
 
-    console.log("Client tasks updated successfully.");
+    // console.log("Client tasks updated successfully.");
     res.status(200).json({
       message: "Client tasks updated successfully",
       updatedChat,
@@ -652,7 +653,7 @@ const addClientTask = async (req, res) => {
 //update task client
 const updateTaskCheckedStatus = async (req, res) => {
   const { chatId, taskUpdates } = req.body;
-  console.log(req.body);
+  // console.log(req.body);
   // taskUpdates should be an array of objects, e.g., [{ id: "1", checked: true }, { id: "2", checked: false }]
   try {
     // Find the chat document
@@ -675,7 +676,7 @@ const updateTaskCheckedStatus = async (req, res) => {
     // Save the updated document
     const updatedChat = await chat.save();
 
-    console.log("Task(s) updated successfully.");
+    // console.log("Task(s) updated successfully.");
     res.status(200).json({
       message: "Task(s) updated successfully",
       updatedChat,

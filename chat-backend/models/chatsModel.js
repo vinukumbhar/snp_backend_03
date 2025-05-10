@@ -16,6 +16,10 @@ const messageschema = new mongoose.Schema({
         type: Date,
         default: Date.now, // Automatically set the current time when the document is created
     },
+    replyTo: {
+        type: mongoose.Schema.Types.ObjectId,
+        default: null,
+    }
 });
 
 const AccountwiseChatSchema = new mongoose.Schema({
@@ -34,7 +38,8 @@ const AccountwiseChatSchema = new mongoose.Schema({
        
     },
     from: {
-        type: mongoose.Schema.Types.ObjectId,
+        // type: mongoose.Schema.Types.ObjectId,
+         type: String,
     },
 
     chatsubject: {
