@@ -55,7 +55,7 @@ const contactSchema = new mongoose.Schema({
     },
     tags: [{
         type: mongoose.Schema.Types.ObjectId,
-        type: Array,
+        
         ref: 'tag',
         // required: true
     }],

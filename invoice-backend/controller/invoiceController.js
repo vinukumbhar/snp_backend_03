@@ -66,9 +66,21 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
  const nextQuarter = Math.floor((nextDay.getMonth() + 3) / 3); // Calculate the quarter
  const nextYear = nextDay.getFullYear();
 //get all Invoice
+// const getInvoices = async (req, res) => {
+//   try {
+//     const invoice = await Invoice.find({}).sort({ createdAt: -1 });
+//     res.status(200).json({ message: "Invoices retrieved successfully", invoice });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
 const getInvoices = async (req, res) => {
   try {
-    const invoice = await Invoice.find({}).sort({ createdAt: -1 });
+    const invoice = await Invoice.find({})
+      .sort({ createdAt: -1 })
+      .populate('account'); // populates the 'account' field with data from Account collection
+
     res.status(200).json({ message: "Invoices retrieved successfully", invoice });
   } catch (error) {
     res.status(500).json({ error: error.message });
