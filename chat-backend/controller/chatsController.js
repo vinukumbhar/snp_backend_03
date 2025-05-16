@@ -64,12 +64,10 @@ const getAllChats = async (req, res) => {
       path: "accountid",
       model: "Accounts",
     }); // Removed .populate('chattemplateid') since it's redundant
-    res
-      .status(200)
-      .json({
-        message: "Chats Accountwise retrieved successfully",
-        accountChats,
-      });
+    res.status(200).json({
+      message: "Chats Accountwise retrieved successfully",
+      accountChats,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -98,11 +96,12 @@ const getChats = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const chat = await AccountwiseChat.findById(id).populate({
-      path: "accountid",
-      model: "Accounts",
-    }).populate({ path: "description.senderid", model: 'User' })
-    ;
+    const chat = await AccountwiseChat.findById(id)
+      .populate({
+        path: "accountid",
+        model: "Accounts",
+      })
+      .populate({ path: "description.senderid", model: "User" });
     // .populate({ path: 'chattemplateid', model: 'ChatTemplate' });
 
     if (!chat) {
@@ -162,7 +161,6 @@ const getChats = async (req, res) => {
       NEXT_QUARTER: nextQuarter,
       NEXT_YEAR: nextYear,
     };
-    
 
     // Replace placeholders in subject
     const replacePlaceholders = (template, data) => {
@@ -246,7 +244,7 @@ const createChats = async (req, res) => {
       });
 
       createdChats.push(newChat);
-console.log("new chat",newChat)
+      console.log("new chat", newChat);
       // **Fetch Account Details**
       const account = await Account.findById(accountid).populate("contacts");
       if (!account) {
@@ -308,12 +306,10 @@ const deleteChats = async (req, res) => {
       return res.status(404).json({ error: "No such  Chat Accountwise" });
     }
 
-    res
-      .status(200)
-      .json({
-        message: "Chat Accountwise deleted successfully",
-        deletedChataccountwise,
-      });
+    res.status(200).json({
+      message: "Chat Accountwise deleted successfully",
+      deletedChataccountwise,
+    });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -346,7 +342,6 @@ const updateChatDescription = async (req, res) => {
   try {
     const { id } = req.params;
     const { newDescriptions } = req.body; // Assuming newDescriptions is an array of description objects
-    
 
     // Validate the provided ID
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -391,12 +386,10 @@ const getchatAccountwiselist = async (req, res) => {
       return res.status(404).json({ error: "No such Chat Accountwise" });
     }
 
-    res
-      .status(200)
-      .json({
-        message: "Chats Accountwise retrieved successfully",
-        chataccountwise,
-      });
+    res.status(200).json({
+      message: "Chats Accountwise retrieved successfully",
+      chataccountwise,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -425,7 +418,8 @@ const getisactivechatAccountwise = async (req, res) => {
       active: req.params.isactive,
     })
       .populate({ path: "accountid", model: "Accounts" })
-      .populate({ path: "chattemplateid", model: "ChatTemplate" }).populate({ path: "description.senderid", model: 'User' });
+      .populate({ path: "chattemplateid", model: "ChatTemplate" })
+      .populate({ path: "description.senderid", model: "User" }).sort({ createdAt: -1 });
 
     if (!chataccountwise) {
       return res.status(404).json({ error: "Chats Accountwise not found" });
@@ -518,12 +512,10 @@ const getisactivechatAccountwise = async (req, res) => {
     // Call the function to process chat data
     await processChatData(chataccountwise);
 
-    res
-      .status(200)
-      .json({
-        message: "Chats Accountwise retrieved successfully",
-        chataccountwise,
-      });
+    res.status(200).json({
+      message: "Chats Accountwise retrieved successfully",
+      chataccountwise,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -689,125 +681,141 @@ const updateTaskCheckedStatus = async (req, res) => {
   }
 };
 
-
-
 const getUnreadChatsWithLatestMessage = async (req, res) => {
-    try {
-      const unreadChats = await AccountwiseChat.find({
-        chatstatus: false,
-      }).populate({ path: "accountid", model: "Accounts" }).populate({ path: "description.senderid", model: 'User' });
-  
-      const chatsWithLatestMessage = [];
-  
-      for (const chat of unreadChats) {
-        const account = await Accounts.findById(chat.accountid._id).populate("contacts");
-  
-        if (!account) continue;
-  
-        const validContact = account.contacts.filter((contact) => contact.login);
-  
-        const currentDate = new Date();
-        const placeholderValues = {
-          ACCOUNT_NAME: account.accountName || "",
-          FIRST_NAME: validContact[0]?.firstName || "",
-          MIDDLE_NAME: validContact[0]?.middleName || "",
-          LAST_NAME: validContact[0]?.lastName || "",
-          CONTACT_NAME: validContact[0]?.contactName || "",
-          COMPANY_NAME: validContact[0]?.companyName || "",
-          COUNTRY: validContact[0]?.country || "",
-          STREET_ADDRESS: validContact[0]?.streetAddress || "",
-          STATEPROVINCE: validContact[0]?.state || "",
-          PHONE_NUMBER: validContact[0]?.phoneNumbers || "",
-          ZIPPOSTALCODE: validContact[0]?.postalCode || "",
-          CITY: validContact[0]?.city || "",
-          CURRENT_DAY_FULL_DATE: new Date().toLocaleDateString(),
-          CURRENT_DAY_NUMBER: new Date().getDate(),
-          CURRENT_DAY_NAME: new Date().toLocaleString("default", { weekday: "long" }),
-          CURRENT_MONTH_NUMBER: new Date().getMonth() + 1,
-          CURRENT_MONTH_NAME: new Date().toLocaleString("default", { month: "long" }),
-          CURRENT_YEAR: new Date().getFullYear(),
-          LAST_DAY_FULL_DATE: lastDayFullDate,
-          LAST_DAY_NUMBER: lastDayNumber,
-          LAST_DAY_NAME: lastDayName,
-          LAST_WEEK: lastWeek,
-          LAST_MONTH_NUMBER: lastMonthNumber,
-          LAST_MONTH_NAME: lastMonthName,
-          LAST_QUARTER: lastQuarter,
-          LAST_YEAR: lastYear,
-          NEXT_DAY_FULL_DATE: nextDayFullDate,
-          NEXT_DAY_NUMBER: nextDayNumber,
-          NEXT_DAY_NAME: nextDayName,
-          NEXT_WEEK: nextWeek,
-          NEXT_MONTH_NUMBER: nextMonthNumber,
-          NEXT_MONTH_NAME: nextMonthName,
-          NEXT_QUARTER: nextQuarter,
-          NEXT_YEAR: nextYear,
-        };
-  
-        const replacePlaceholders = (template, data) => {
-          return template.replace(/\[([\w\s]+)\]/g, (match, key) => data[key.trim()] || "");
-        };
-  
-        // Replace placeholders in chatsubject
-        const processedSubject = replacePlaceholders(chat.chatsubject || "", placeholderValues);
-  
-        // Get latest message
-        const latestMessageRaw = chat.description?.length
-          ? chat.description.reduce((latest, current) =>
-              new Date(current.time) > new Date(latest.time) ? current : latest
-            )
-          : null;
-  
-        // Replace placeholders in latest message (if exists)
-        const latestMessage = latestMessageRaw
-          ? {
-              ...latestMessageRaw,
-              message: replacePlaceholders(latestMessageRaw.message || "", placeholderValues),
-            }
-          : null;
-  
-        chatsWithLatestMessage.push({
-          _id: chat._id,
-          accountid: chat.accountid,
-          chatsubject: processedSubject,
-          latestMessage,
-          clienttasks: chat.clienttasks,
-        });
-      }
-  
-      res.status(200).json({
-        message: "Unread chats with latest message retrieved successfully",
-        chats: chatsWithLatestMessage,
-      });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
-  
-  const updateChatStatus = async (req, res) => {
-    try {
-      const { id } = req.params;
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ error: "Invalid Chat Accountwise ID" });
-      }
-  
-      // Update the chatstatus field to true
-      const updatedChatStatus = await AccountwiseChat.findByIdAndUpdate(
-        { _id: id },
-        { chatstatus: true }, // Set chatstatus to true
-        { new: true }
+  try {
+    const unreadChats = await AccountwiseChat.find({
+      chatstatus: false,
+    })
+      .populate({ path: "accountid", model: "Accounts" })
+      .populate({ path: "description.senderid", model: "User" });
+
+    const chatsWithLatestMessage = [];
+
+    for (const chat of unreadChats) {
+      const account = await Accounts.findById(chat.accountid._id).populate(
+        "contacts"
       );
-  
-      if (!updatedChatStatus) {
-        return res.status(404).json({ error: "No such Chat Accountwise" });
-      }
-  
-      res.status(200).json({ message: "Chat status updated to true", updatedChatStatus });
-    } catch (error) {
-      return res.status(500).json({ error: error.message });
+
+      if (!account) continue;
+
+      const validContact = account.contacts.filter((contact) => contact.login);
+
+      const currentDate = new Date();
+      const placeholderValues = {
+        ACCOUNT_NAME: account.accountName || "",
+        FIRST_NAME: validContact[0]?.firstName || "",
+        MIDDLE_NAME: validContact[0]?.middleName || "",
+        LAST_NAME: validContact[0]?.lastName || "",
+        CONTACT_NAME: validContact[0]?.contactName || "",
+        COMPANY_NAME: validContact[0]?.companyName || "",
+        COUNTRY: validContact[0]?.country || "",
+        STREET_ADDRESS: validContact[0]?.streetAddress || "",
+        STATEPROVINCE: validContact[0]?.state || "",
+        PHONE_NUMBER: validContact[0]?.phoneNumbers || "",
+        ZIPPOSTALCODE: validContact[0]?.postalCode || "",
+        CITY: validContact[0]?.city || "",
+        CURRENT_DAY_FULL_DATE: new Date().toLocaleDateString(),
+        CURRENT_DAY_NUMBER: new Date().getDate(),
+        CURRENT_DAY_NAME: new Date().toLocaleString("default", {
+          weekday: "long",
+        }),
+        CURRENT_MONTH_NUMBER: new Date().getMonth() + 1,
+        CURRENT_MONTH_NAME: new Date().toLocaleString("default", {
+          month: "long",
+        }),
+        CURRENT_YEAR: new Date().getFullYear(),
+        LAST_DAY_FULL_DATE: lastDayFullDate,
+        LAST_DAY_NUMBER: lastDayNumber,
+        LAST_DAY_NAME: lastDayName,
+        LAST_WEEK: lastWeek,
+        LAST_MONTH_NUMBER: lastMonthNumber,
+        LAST_MONTH_NAME: lastMonthName,
+        LAST_QUARTER: lastQuarter,
+        LAST_YEAR: lastYear,
+        NEXT_DAY_FULL_DATE: nextDayFullDate,
+        NEXT_DAY_NUMBER: nextDayNumber,
+        NEXT_DAY_NAME: nextDayName,
+        NEXT_WEEK: nextWeek,
+        NEXT_MONTH_NUMBER: nextMonthNumber,
+        NEXT_MONTH_NAME: nextMonthName,
+        NEXT_QUARTER: nextQuarter,
+        NEXT_YEAR: nextYear,
+      };
+
+      const replacePlaceholders = (template, data) => {
+        return template.replace(
+          /\[([\w\s]+)\]/g,
+          (match, key) => data[key.trim()] || ""
+        );
+      };
+
+      // Replace placeholders in chatsubject
+      const processedSubject = replacePlaceholders(
+        chat.chatsubject || "",
+        placeholderValues
+      );
+
+      // Get latest message
+      const latestMessageRaw = chat.description?.length
+        ? chat.description.reduce((latest, current) =>
+            new Date(current.time) > new Date(latest.time) ? current : latest
+          )
+        : null;
+
+      // Replace placeholders in latest message (if exists)
+      const latestMessage = latestMessageRaw
+        ? {
+            ...latestMessageRaw,
+            message: replacePlaceholders(
+              latestMessageRaw.message || "",
+              placeholderValues
+            ),
+          }
+        : null;
+
+      chatsWithLatestMessage.push({
+        _id: chat._id,
+        accountid: chat.accountid,
+        chatsubject: processedSubject,
+        latestMessage,
+        clienttasks: chat.clienttasks,
+      });
     }
-  };
-  
+
+    res.status(200).json({
+      message: "Unread chats with latest message retrieved successfully",
+      chats: chatsWithLatestMessage,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const updateChatStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({ error: "Invalid Chat Accountwise ID" });
+    }
+
+    // Update the chatstatus field to true
+    const updatedChatStatus = await AccountwiseChat.findByIdAndUpdate(
+      { _id: id },
+      { chatstatus: true }, // Set chatstatus to true
+      { new: true }
+    );
+
+    if (!updatedChatStatus) {
+      return res.status(404).json({ error: "No such Chat Accountwise" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Chat status updated to true", updatedChatStatus });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
 
 module.exports = {
   getAllChats,
@@ -823,5 +831,5 @@ module.exports = {
   addClientTask,
   updateTaskCheckedStatus,
   getUnreadChatsWithLatestMessage,
-  updateChatStatus
+  updateChatStatus,
 };

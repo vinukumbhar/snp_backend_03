@@ -241,7 +241,7 @@
 const User = require("../models/userModel");
 const mongoose = require("mongoose");
 const express = require("express");
-const bcrypt = require('bcryptjs');
+const bcrypt = require("bcryptjs");
 
 // const { use } = require("../middlewares/clientsignupOTPmail");
 
@@ -289,11 +289,29 @@ const getUser = async (req, res) => {
 //create new user
 
 const createUser = async (req, res) => {
-  const { username, email, password, cpassword, role, access, loginStatus, active } = req.body;
+  const {
+    username,
+    email,
+    password,
+    cpassword,
+    role,
+    access,
+    loginStatus,
+    active,
+  } = req.body;
   console.log(req.body);
 
   try {
-    const user = await User.create({ username, email, password, cpassword, role, access, loginStatus, active });
+    const user = await User.create({
+      username,
+      email,
+      password,
+      cpassword,
+      role,
+      access,
+      loginStatus,
+      active,
+    });
     res.status(200).json(user);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -329,15 +347,19 @@ const updateUser = async (req, res) => {
 
   const updatedUser = await User.findOneAndUpdate(
     { _id: id },
-            { ...req.body },
-            { new: true } 
+    { ...req.body },
+    { new: true }
   );
 
   if (!updatedUser) {
     return res.status(404).json({ error: "no such User " });
   }
-  res.status(200).json({ message: "User updated successfully", user: updatedUser });
+  res
+    .status(200)
+    .json({ message: "User updated successfully", user: updatedUser });
 };
+
+
 
 // UPDATE a password
 const updateUserPassword = async (req, res) => {
@@ -359,14 +381,16 @@ const updateUserPassword = async (req, res) => {
       return res.status(404).json({ error: "No such User" });
     }
 
-    res.status(200).json({ message: "User password updated successfully", user: updatedUser });
+    res
+      .status(200)
+      .json({
+        message: "User password updated successfully",
+        user: updatedUser,
+      });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
-
-
-
 
 const updateUserPasswordwithoutAut = async (req, res) => {
   const { password } = req.body;
@@ -386,12 +410,16 @@ const updateUserPasswordwithoutAut = async (req, res) => {
       return res.status(404).json({ error: "No such User" });
     }
 
-    res.status(200).json({ message: "User password updated successfully", user: updatedUser });
+    res
+      .status(200)
+      .json({
+        message: "User password updated successfully",
+        user: updatedUser,
+      });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 const getUserByEmail = async (req, res) => {
   const { email } = req.params;
@@ -423,7 +451,12 @@ const updateLoginStatus = async (req, res) => {
     if (!updatedUser) {
       return res.status(404).json({ error: "No such User" });
     }
-    res.status(200).json({ message: "User Login Status updated successfully", user: updatedUser });
+    res
+      .status(200)
+      .json({
+        message: "User Login Status updated successfully",
+        user: updatedUser,
+      });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -453,7 +486,9 @@ const getUserListbyId = async (req, res) => {
       Created: user.createdAt,
     };
 
-    res.status(200).json({ message: "User retrieved successfully", user: userslist });
+    res
+      .status(200)
+      .json({ message: "User retrieved successfully", user: userslist });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -467,7 +502,9 @@ const getUsersByRoles = async (req, res) => {
   const rolesArray = roles.split(",");
 
   try {
-    const users = await User.find({ role: { $in: rolesArray } }).sort({ createdAt: -1 });
+    const users = await User.find({ role: { $in: rolesArray } }).sort({
+      createdAt: -1,
+    });
     // if (users.length === 0) {
     //   return res.status(404).json({ error: "No users found with the specified roles" });
     // }
@@ -514,5 +551,5 @@ module.exports = {
   getUserListbyId,
   getUsersByRoles,
   getVerifyUserbyPassword,
-  updateUserPasswordwithoutAut
+  updateUserPasswordwithoutAut,
 };

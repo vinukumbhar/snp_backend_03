@@ -65,9 +65,9 @@ const AccountwiseChatSchema = new mongoose.Schema({
         type: Number,
     },
 
-    clienttasks: [{
+    clienttasks: {
         type: Array
-    }],
+    },
     
     active: {
         type: Boolean,

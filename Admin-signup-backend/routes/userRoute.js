@@ -64,6 +64,7 @@ router.post("/user", createUser);
 router.delete("/user/:id", deleteUser);
 router.patch("/user/:id", updateUser);
 router.get("/user/email/getuserbyemail/:email", getUserByEmail);
+
 router.post("/updateUserLoginStatus", updateLoginStatus);
 router.get("/resetpassword/verifytoken", validateToken, (req, res) => {
   res.json({ message: "Access granted", user: req.user });
