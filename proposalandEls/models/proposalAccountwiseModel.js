@@ -1,174 +1,185 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const lineItemsSchema = new mongoose.Schema({
-    productorService: {
-        type: String,
-        // required: [true, 'Product or Service  is required'], // Validation for required notification description
-    },
-    description: {
-        type: String,
-    },
-    rate: {
-        type: String,
-    },
-    quantity: {
-        type: Number,
-    },
-    amount: {
-        type: String,
-    },
-    tax: {
-        type: Boolean,
-    }
+  productorService: {
+    type: String,
+    // required: [true, 'Product or Service  is required'], // Validation for required notification description
+  },
+  description: {
+    type: String,
+  },
+  rate: {
+    type: String,
+  },
+  quantity: {
+    type: Number,
+  },
+  amount: {
+    type: String,
+  },
+  tax: {
+    type: Boolean,
+  },
 });
 
-// Define the lineItems Schema 
+// Define the lineItems Schema
 const summarySchema = new mongoose.Schema({
-    subtotal: {
-        type: Number,
-    },
-    taxRate: {
-        type: Number,
-    },
-    taxTotal: {
-        type: Number,
-    },
-    total: {
-        type: Number,
-    },
+  subtotal: {
+    type: Number,
+  },
+  taxRate: {
+    type: Number,
+  },
+  taxTotal: {
+    type: Number,
+  },
+  total: {
+    type: Number,
+  },
 });
 
-const proposalesandelsAccountwiseSchema = new mongoose.Schema({
-
-    accountid:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Accounts',
+const proposalesandelsAccountwiseSchema = new mongoose.Schema(
+  {
+    accountid: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Accounts",
     },
 
-    proposaltemplateid : {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'ProposalesAndEls',
+    proposaltemplateid: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ProposalesAndEls",
     },
-    teammember: [{
+    teammember: [
+      {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-    }],
+        ref: "User",
+      },
+    ],
 
     proposalname: {
-        type: String,
+      type: String,
     },
 
     introduction: {
-        type: Boolean,
+      type: Boolean,
     },
 
     terms: {
-        type: Boolean,
+      type: Boolean,
     },
 
     servicesandinvoices: {
-        type: Boolean,
+      type: Boolean,
     },
 
     introductiontextname: {
-        type: String,
+      type: String,
     },
 
     introductiontext: {
-        type: String,
+      type: String,
     },
 
     termsandconditionsname: {
-        type: String,
+      type: String,
     },
 
     termsandconditions: {
-        type: String,
+      type: String,
     },
 
     custommessageinemail: {
-        type: Boolean
+      type: Boolean,
     },
 
     custommessageinemailtext: {
-        type: String
+      type: String,
     },
 
     reminders: {
-        type: Boolean,
+      type: Boolean,
     },
 
-    daysuntilnextreminder : {
-        type : Number
+    daysuntilnextreminder: {
+      type: Number,
     },
 
-    numberofreminder : {
-        type : Number
+    numberofreminder: {
+      type: Number,
     },
-        //Serveice and invoice
-        
+    //Serveice and invoice
+
     servicesandinvoicetempid: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'InvoiceTemplate',
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "InvoiceTemplate",
     },
 
     invoicetemplatename: {
-        type: String,
+      type: String,
     },
 
     invoiceteammember: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
 
-    issueinvoice:{
-        type: String,
+    issueinvoice: {
+      type: String,
     },
 
-    specificdate:{
-        type: Date
+    specificdate: {
+      type: Date,
     },
 
-    specifictime:{
-        type: Date
+    specifictime: {
+      type: Date,
     },
 
     description: {
-        type: String,
-    },  
+      type: String,
+    },
 
     lineItems: {
-        type: [lineItemsSchema]
+      type: [lineItemsSchema],
     },
 
     summary: {
-        type: summarySchema,
+      type: summarySchema,
     },
 
-    notetoclient:{
-        type: String,
+    notetoclient: {
+      type: String,
     },
 
-    Addinvoiceoraskfordeposit:{
-        type: String,
+    Addinvoiceoraskfordeposit: {
+      type: String,
     },
-    Additemizedserviceswithoutcreatinginvoices:{
-        type: String,
+    Additemizedserviceswithoutcreatinginvoices: {
+      type: String,
     },
     paymentterms: {
-        type: String,
+      type: String,
     },
     paymentduedate: {
-        type: String,
+      type: String,
     },
     paymentamount: {
-        type: String,
+      type: String,
+    },
+    status: {
+     type: String,
+     
     },
     active: {
-        type: Boolean,
-        default: true
-    }
-}, { timestamps: true });
+      type: Boolean,
+      default: true,
+    },
+  },
+  { timestamps: true }
+);
 
-const ProposalesandelsAccountwise = mongoose.model('ProposalesandelsAccountwise', proposalesandelsAccountwiseSchema);
+const ProposalesandelsAccountwise = mongoose.model(
+  "ProposalesandelsAccountwise",
+  proposalesandelsAccountwiseSchema
+);
 module.exports = ProposalesandelsAccountwise;

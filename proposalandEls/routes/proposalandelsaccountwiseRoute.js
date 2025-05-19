@@ -8,7 +8,7 @@ const { createProposalsAndElsAccounts,
     updateProposalesandelsAccountwise,
     getProposalandElsListbyid,
     getProposalandElsListbyAccountid,
-    getProposalandElsList,getProposalesAndElsAccountwisePrint } = require('../controller/proposalAccountwiseController')
+    getProposalandElsList,getProposalesAndElsAccountwisePrint,getPendingProposalesAndElsAccountswise } = require('../controller/proposalAccountwiseController')
 
 //******organizer Accountwise Start******** */
 
@@ -21,6 +21,7 @@ router.patch('/proposalaccountwise/:id', updateProposalesandelsAccountwise)
 router.get('/proposalaccountwise/proposallist/:id', getProposalandElsListbyid)
 router.get('/proposalaccountwise/allproposallist/list', getProposalandElsList)
 router.get('/proposalaccountwise/proposalaccountwiseforprint/:id', getProposalesAndElsAccountwisePrint)
+router.get('/pending', getPendingProposalesAndElsAccountswise);
 //******organizer Accountwise ENd******** */
 
 module.exports = router
