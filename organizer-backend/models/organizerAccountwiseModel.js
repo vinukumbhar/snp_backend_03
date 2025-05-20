@@ -123,6 +123,9 @@ const organizerAccountWiseSchema = new mongoose.Schema({
         ref: 'OrganizerTemplate',
     },
     
+organizerName:  {
+        type: String,
+    },
 
     reminders : {
         type: Boolean,

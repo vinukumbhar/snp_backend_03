@@ -51,6 +51,34 @@ const accountSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "companyAddress", // Ensure this matches your CompanyAddresses model
     },
+
+   country: {
+        name: {
+            type: String,
+            // required: true
+        },
+        code: {
+            type: String,
+            // required: true
+        }
+    },
+    
+    streetAddress: {
+        type: String,
+        //required: [true, 'Street address is required'],
+    },
+    city: {
+        type: String,
+        // required: [true, 'City is required'],
+    },
+    state: {
+        type: String,
+        // required: [true, 'State is required'],
+    },
+    postalCode: {
+        type: Number,
+        // required: [true, 'Postal code is required'],
+    },
   },
   { timestamps: true }
 );

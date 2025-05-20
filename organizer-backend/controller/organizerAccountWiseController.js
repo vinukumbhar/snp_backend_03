@@ -563,6 +563,7 @@ const getActiveOrganizerByAccountId = async (req, res) => {
             placeholderValues
           );
         }
+        organizer.organizerName = replacePlaceholders(organizer.organizerName || "",placeholderValues)
       }
     };
 

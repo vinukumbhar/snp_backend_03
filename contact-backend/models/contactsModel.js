@@ -60,46 +60,57 @@ const contactSchema = new mongoose.Schema({
         // required: true
     }],
 
-    // country: {
-    //     type: String,
-    //     //  required: [true, 'Country is required'],
-    // },
 
     country: {
         name: {
             type: String,
-            // required: true
+      
         },
         code: {
             type: String,
-            // required: true
+           
         }
     },
     
     streetAddress: {
         type: String,
-        //required: [true, 'Street address is required'],
+    
     },
     city: {
         type: String,
-        // required: [true, 'City is required'],
+      
     },
     state: {
         type: String,
-        // required: [true, 'State is required'],
+       
     },
     postalCode: {
         type: Number,
-        // required: [true, 'Postal code is required'],
+       
     },
-    phoneNumbers: [
-        {
-            type: Array,
+    // phoneNumbers: [
+    //     {
+    //         type: Array,
 
 
-        }
-    ],
-
+    //     }
+    // ],
+phoneNumbers: [
+  {
+    phone: {
+      type: Number,
+    
+    },
+    country: {
+      type: String,
+      
+    },
+    countryCode:{
+        type:Number
+    }
+ 
+  }
+],
     accountid: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Accounts',
