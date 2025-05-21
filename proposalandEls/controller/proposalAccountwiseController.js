@@ -1451,6 +1451,110 @@ const getProposalesAndElsAccountwisePrint = async (req, res) => {
   }
 };
 
+const getPendingProposalsByAccountId = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const pendingProposals = await ProposalesandelsAccountwise.find({
+      accountid: id,
+      status: "Pending", // Only fetch proposals with status "Pending"
+    })
+      .populate({ path: "accountid", model: "Accounts" })
+      .populate({ path: "proposaltemplateid", model: "ProposalesAndEls" })
+      .populate({ path: "teammember", model: "User" });
+
+    if (!pendingProposals || pendingProposals.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No pending proposals found for this account." });
+    }
+// Function to process proposal data
+    const processProposalData = async (pendingProposals) => {
+      for (const proposal of pendingProposals) {
+        console.log(proposal.accountid._id);
+
+        // Fetch account details and populate contacts
+        const account = await Accounts.findById(
+          proposal.accountid._id
+        ).populate("contacts");
+        if (!account) {
+          console.error(`Account not found for ID: ${proposal.accountid._id}`);
+          continue;
+        }
+
+        // Filter contacts with valid login
+        const validContact = account.contacts.filter(
+          (contact) => contact.login
+        );
+        console.log(validContact);
+
+        // Define placeholder values
+        const placeholderValues = {
+          ACCOUNT_NAME: account.accountName || "",
+          FIRST_NAME: validContact[0]?.firstName || "",
+          LAST_NAME: validContact[0]?.lastName || "",
+          COMPANY_NAME: validContact[0]?.companyName || "",
+          EMAIL: validContact[0]?.email || "",
+          PHONE_NUMBER: validContact[0]?.phoneNumbers || "",
+          CITY: validContact[0]?.city || "",
+          CURRENT_DAY_FULL_DATE: currentDate.toLocaleDateString(),
+          CURRENT_DAY_NUMBER: currentDate.getDate(),
+          CURRENT_DAY_NAME: currentDate.toLocaleString("default", {
+            weekday: "long",
+          }),
+          CURRENT_MONTH_NUMBER: currentDate.getMonth() + 1,
+          CURRENT_MONTH_NAME: currentDate.toLocaleString("default", {
+            month: "long",
+          }),
+          CURRENT_YEAR: currentDate.getFullYear(),
+          LAST_DAY_FULL_DATE: lastDayFullDate,
+          LAST_DAY_NUMBER: lastDayNumber,
+          LAST_DAY_NAME: lastDayName,
+          LAST_WEEK: lastWeek,
+          LAST_MONTH_NUMBER: lastMonthNumber,
+          LAST_MONTH_NAME: lastMonthName,
+          LAST_QUARTER: lastQuarter,
+          LAST_YEAR: lastYear,
+          NEXT_DAY_FULL_DATE: nextDayFullDate,
+          NEXT_DAY_NUMBER: nextDayNumber,
+          NEXT_DAY_NAME: nextDayName,
+          NEXT_WEEK: nextWeek,
+          NEXT_MONTH_NUMBER: nextMonthNumber,
+          NEXT_MONTH_NAME: nextMonthName,
+          NEXT_QUARTER: nextQuarter,
+          NEXT_YEAR: nextYear,
+        };
+
+        // Function to replace placeholders in text
+        const replacePlaceholders = (template, data) => {
+          return template.replace(/\[([\w\s]+)\]/g, (match, placeholder) => {
+            return data[placeholder.trim()] || "";
+          });
+        };
+
+        // Replace placeholders in the proposal title or content
+        proposal.proposalname = replacePlaceholders(
+          proposal.proposalname || "",
+          placeholderValues
+        );
+        proposal.introductiontext = replacePlaceholders( proposal.introductiontext || "",
+            placeholderValues
+        );
+        proposal.termsandconditions = replacePlaceholders(proposal.termsandconditions || "", placeholderValues)
+      }
+    };
+
+    // Process proposal data
+    await processProposalData(pendingProposals);
+    res.status(200).json({
+      message: "Pending proposals retrieved successfully",
+      pendingProposals,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createProposalsAndElsAccounts,
   getProposalesAndElsAccountswise,
@@ -1462,4 +1566,5 @@ module.exports = {
   getProposalandElsList,
   getProposalesAndElsAccountwisePrint,
   getPendingProposalesAndElsAccountswise,
+  getPendingProposalsByAccountId
 };

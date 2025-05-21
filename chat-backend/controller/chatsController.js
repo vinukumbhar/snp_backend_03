@@ -791,6 +791,88 @@ const getUnreadChatsWithLatestMessage = async (req, res) => {
   }
 };
 
+const getUnreadChatsByAccountId = async (req, res) => {
+  try {
+    const { accountid } = req.params;
+
+    if (!accountid) {
+      return res.status(400).json({ error: "accountid is required in params" });
+    }
+
+    const unreadChats = await AccountwiseChat.find({
+      chatstatus: false,
+      accountid: accountid,
+    })
+      .populate({ path: "accountid", model: "Accounts" })
+      .populate({ path: "description.senderid", model: "User" });
+
+    const chatsWithLatestMessage = [];
+
+    for (const chat of unreadChats) {
+      const account = await Accounts.findById(chat.accountid._id).populate("contacts");
+      if (!account) continue;
+
+      const validContact = account.contacts.filter((contact) => contact.login);
+
+      const placeholderValues = {
+        ACCOUNT_NAME: account.accountName || "",
+        FIRST_NAME: validContact[0]?.firstName || "",
+        MIDDLE_NAME: validContact[0]?.middleName || "",
+        LAST_NAME: validContact[0]?.lastName || "",
+        CONTACT_NAME: validContact[0]?.contactName || "",
+        COMPANY_NAME: validContact[0]?.companyName || "",
+        COUNTRY: validContact[0]?.country || "",
+        STREET_ADDRESS: validContact[0]?.streetAddress || "",
+        STATEPROVINCE: validContact[0]?.state || "",
+        PHONE_NUMBER: validContact[0]?.phoneNumbers || "",
+        ZIPPOSTALCODE: validContact[0]?.postalCode || "",
+        CITY: validContact[0]?.city || "",
+        CURRENT_DAY_FULL_DATE: new Date().toLocaleDateString(),
+        CURRENT_DAY_NUMBER: new Date().getDate(),
+        CURRENT_DAY_NAME: new Date().toLocaleString("default", { weekday: "long" }),
+        CURRENT_MONTH_NUMBER: new Date().getMonth() + 1,
+        CURRENT_MONTH_NAME: new Date().toLocaleString("default", { month: "long" }),
+        CURRENT_YEAR: new Date().getFullYear(),
+        // Optionally: handle LAST_*, NEXT_* placeholders as in original code
+      };
+
+      const replacePlaceholders = (template, data) => {
+        return template.replace(/\[([\w\s]+)\]/g, (match, key) => data[key.trim()] || "");
+      };
+
+      const processedSubject = replacePlaceholders(chat.chatsubject || "", placeholderValues);
+
+      const latestMessageRaw = chat.description?.length
+        ? chat.description.reduce((latest, current) =>
+            new Date(current.time) > new Date(latest.time) ? current : latest
+          )
+        : null;
+
+      const latestMessage = latestMessageRaw
+        ? {
+            ...latestMessageRaw,
+            message: replacePlaceholders(latestMessageRaw.message || "", placeholderValues),
+          }
+        : null;
+
+      chatsWithLatestMessage.push({
+        _id: chat._id,
+        accountid: chat.accountid,
+        chatsubject: processedSubject,
+        latestMessage,
+        clienttasks: chat.clienttasks,
+      });
+    }
+
+    res.status(200).json({
+      message: "Unread chats for the account retrieved successfully",
+      chats: chatsWithLatestMessage,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 const updateChatStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -832,4 +914,5 @@ module.exports = {
   updateTaskCheckedStatus,
   getUnreadChatsWithLatestMessage,
   updateChatStatus,
+  getUnreadChatsByAccountId
 };
