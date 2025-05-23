@@ -163,6 +163,10 @@ organizerName:  {
       type: Boolean,
       default: false
     },
+ status: {
+     type: String,
+     
+    },
 
 }, { timestamps: true });
 

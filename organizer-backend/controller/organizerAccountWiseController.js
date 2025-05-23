@@ -118,7 +118,7 @@ const createOrganizerAccountWise = async (req, res) => {
     const newOrganizerAccountWise = new OrganizerAccountWise(req.body);
 
     await newOrganizerAccountWise.save();
-    console.log(newOrganizerAccountWise);
+    // console.log(newOrganizerAccountWise);
     // Fetch account and associated contacts
     const account = await Accounts.findById(
       newOrganizerAccountWise.accountid
@@ -133,7 +133,7 @@ const createOrganizerAccountWise = async (req, res) => {
         return data[placeholder.trim()] || "";
       });
     };
- console.log(account);
+//  console.log(account);
     const validContacts = account.contacts.filter(
       (contact) => contact.emailSync
     );
@@ -147,7 +147,7 @@ const createOrganizerAccountWise = async (req, res) => {
     const organizerLink = `http://localhost:3000/organizers/update/${newOrganizerAccountWise._id}`;
 
     // Get the current date
-    console.log(validContacts);
+    // console.log(validContacts);
     const emailPromises = validContacts.map(async (contactId) => {
       try {
         const contact = await Contacts.findById(contactId);
@@ -383,7 +383,7 @@ const getOrganizerByAccountId = async (req, res) => {
     // Function to process organizer data
     const processOrganizerData = async (organizerAccountWise) => {
       for (const organizer of organizerAccountWise) {
-        console.log(organizer.accountid._id);
+        // console.log(organizer.accountid._id);
 
         // Fetch account details and populate contacts
         const account = await Accounts.findById(
@@ -475,7 +475,7 @@ const getOrganizerByAccountId = async (req, res) => {
 
 const getActiveOrganizerByAccountId = async (req, res) => {
   try {
-    console.log(req.params.id)
+    // console.log(req.params.id)
     const organizerAccountWise = await OrganizerAccountWise.find({
       accountid: req.params.id,
       active : req.params.isactive,
@@ -490,7 +490,7 @@ const getActiveOrganizerByAccountId = async (req, res) => {
     // Function to process organizer data
     const processOrganizerData = async (organizerAccountWise) => {
       for (const organizer of organizerAccountWise) {
-        console.log(organizer.accountid._id);
+        // console.log(organizer.accountid._id);
 
         // Fetch account details and populate contacts
         const account = await Accounts.findById(
@@ -505,7 +505,7 @@ const getActiveOrganizerByAccountId = async (req, res) => {
         const validContact = account.contacts.filter(
           (contact) => contact.emailSync
         );
-        console.log(validContact);
+        // console.log(validContact);
 
         // Define placeholder values
         const placeholderValues = {
@@ -580,6 +580,113 @@ const getActiveOrganizerByAccountId = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
+const getPendingOrganizersByAccountId = async (req, res) => {
+  try {
+    const { id } = req.params; // Account ID
+    const pendingOrganizers = await OrganizerAccountWise.find({
+      accountid: id,
+      status: 'Pending',
+    })
+      .populate({ path: "accountid", model: "Accounts" })
+      .populate({ path: "organizertemplateid", model: "OrganizerTemplate" });
+
+    if (!pendingOrganizers || pendingOrganizers.length === 0) {
+      return res.status(404).json({ message: "No pending organizers found for this account" });
+    }
+    // Function to process organizer data
+    const processOrganizerData = async (pendingOrganizers) => {
+      for (const organizer of pendingOrganizers) {
+        // console.log(organizer.accountid._id);
+
+        // Fetch account details and populate contacts
+        const account = await Accounts.findById(
+          organizer.accountid._id
+        ).populate("contacts");
+        if (!account) {
+          console.error(`Account not found for ID: ${organizer.accountid._id}`);
+          continue; // Skip processing this organizer if account is not found
+        }
+
+        // Filter contacts with emailSync enabled
+        const validContact = account.contacts.filter(
+          (contact) => contact.emailSync
+        );
+        // console.log(validContact);
+
+        // Define placeholder values
+        const placeholderValues = {
+          ACCOUNT_NAME: account.accountName || "",
+          FIRST_NAME: validContact[0]?.firstName || "",
+          MIDDLE_NAME: validContact[0]?.middleName || "",
+          LAST_NAME: validContact[0]?.lastName || "",
+          CONTACT_NAME: validContact[0]?.contactName || "",
+          COMPANY_NAME: validContact[0]?.companyName || "",
+          COUNTRY: validContact[0]?.country || "",
+          STREET_ADDRESS: validContact[0]?.streetAddress || "",
+          STATEPROVINCE: validContact[0]?.state || "",
+          PHONE_NUMBER: validContact[0]?.phoneNumbers || "",
+          ZIPPOSTALCODE: validContact[0]?.postalCode || "",
+          CITY: validContact[0]?.city || "",
+          CURRENT_DAY_FULL_DATE: new Date().toLocaleDateString(),
+          CURRENT_DAY_NUMBER: new Date().getDate(),
+          CURRENT_DAY_NAME: new Date().toLocaleString("default", {
+            weekday: "long",
+          }),
+          CURRENT_MONTH_NUMBER: new Date().getMonth() + 1,
+          CURRENT_MONTH_NAME: new Date().toLocaleString("default", {
+            month: "long",
+          }),
+          CURRENT_YEAR: new Date().getFullYear(),
+          LAST_DAY_FULL_DATE: lastDayFullDate,
+          LAST_DAY_NUMBER: lastDayNumber,
+          LAST_DAY_NAME: lastDayName,
+          LAST_WEEK: lastWeek,
+          LAST_MONTH_NUMBER: lastMonthNumber,
+          LAST_MONTH_NAME: lastMonthName,
+          LAST_QUARTER: lastQuarter,
+          LAST_YEAR: lastYear,
+          NEXT_DAY_FULL_DATE: nextDayFullDate,
+          NEXT_DAY_NUMBER: nextDayNumber,
+          NEXT_DAY_NAME: nextDayName,
+          NEXT_WEEK: nextWeek,
+          NEXT_MONTH_NUMBER: nextMonthNumber,
+          NEXT_MONTH_NAME: nextMonthName,
+          NEXT_QUARTER: nextQuarter,
+          NEXT_YEAR: nextYear,
+        };
+
+        // Function to replace placeholders in text
+        const replacePlaceholders = (template, data) => {
+          return template.replace(/\[([\w\s]+)\]/g, (match, placeholder) => {
+            return data[placeholder.trim()] || "";
+          });
+        };
+
+        // Replace placeholders in the organizer's template
+        if (organizer.organizertemplateid) {
+          organizer.organizertemplateid.organizerName = replacePlaceholders(
+            organizer.organizertemplateid.organizerName || "",
+            placeholderValues
+          );
+        }
+        organizer.organizerName = replacePlaceholders(organizer.organizerName || "",placeholderValues)
+      }
+    };
+
+    // Call the function to process organizer data
+    await processOrganizerData(pendingOrganizers);
+
+    res.status(200).json({
+      message: "Pending organizers retrieved successfully",
+      pendingOrganizers,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 //update a new OrganizerTemplate
 const updateOrganizerAccountWise = async (req, res) => {
   const { id } = req.params;
@@ -647,5 +754,5 @@ module.exports = {
   getOrganizerByAccountId,
   updateOrganizerAccountWise,
   updateOrganizerAccountWiseStatus,
-  getActiveOrganizerByAccountId
+  getActiveOrganizerByAccountId,getPendingOrganizersByAccountId
 };
