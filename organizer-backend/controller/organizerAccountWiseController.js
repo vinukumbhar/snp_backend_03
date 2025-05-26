@@ -97,18 +97,6 @@ const getOrganizerAccountWise = async (req, res) => {
 
 //POST a new OrganizerAccountWise
 
-// const createOrganizerAccountWise = async (req, res) => {
-//     try {
-//         // console.log(req.body)
-//         const newOrganizerAccountWise = new OrganizerAccountWise(req.body);
-//         await newOrganizerAccountWise.save();
-//         return res.status(201).json({ message: "OrganizerAccountWise created successfully", newOrganizerAccountWise });
-//     } catch (error) {
-//         console.error("Error creating OrganizerAccountWise:", error);
-//         return res.status(500).json({ error: "Error creating OrganizerAccountWise" });
-//     }
-// };
-
 // sends eamil
 const createOrganizerAccountWise = async (req, res) => {
   try {
@@ -398,7 +386,7 @@ const getOrganizerByAccountId = async (req, res) => {
         const validContact = account.contacts.filter(
           (contact) => contact.emailSync
         );
-        console.log(validContact);
+        // console.log(validContact);
 
         // Define placeholder values
         const placeholderValues = {
@@ -746,6 +734,40 @@ const updateOrganizerAccountWiseStatus = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
+
+const updateFormElementActiveStatus = async (req, res) => {
+  const { organizerId, sectionId, formElementId } = req.params;
+  const { active } = req.body;
+
+  try {
+    const organizer = await OrganizerAccountWise.findById(organizerId);
+    if (!organizer) {
+      return res.status(404).json({ message: 'Organizer not found' });
+    }
+
+    const section = organizer.sections.find((sec) => sec.id === sectionId);
+    if (!section) {
+      return res.status(404).json({ message: 'Section not found' });
+    }
+
+    const formElement = section.formElements.find((fe) => fe.id === parseInt(formElementId));
+    if (!formElement) {
+      return res.status(404).json({ message: 'Form Element not found' });
+    }
+
+    formElement.active = active;
+    await organizer.save();
+
+    return res.status(200).json({
+      message: 'Form Element active status updated',
+      formElement,
+    });
+  } catch (error) {
+    console.error('Error updating formElement active status:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
 module.exports = {
   createOrganizerAccountWise,
   getOrganizerAccountWise,
@@ -754,5 +776,6 @@ module.exports = {
   getOrganizerByAccountId,
   updateOrganizerAccountWise,
   updateOrganizerAccountWiseStatus,
-  getActiveOrganizerByAccountId,getPendingOrganizersByAccountId
+  getActiveOrganizerByAccountId,getPendingOrganizersByAccountId,
+  updateFormElementActiveStatus,
 };

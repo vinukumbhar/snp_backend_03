@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { getPendingOrganizersByAccountId,getActiveOrganizerByAccountId,createOrganizerAccountWise, getOrganizerAccountWise, getOrganizerAccountWises, deleteOrganizerAccountWise,updateOrganizerAccountWiseStatus, getOrganizerByAccountId, updateOrganizerAccountWise } = require("../controller/organizerAccountWiseController");
+const { updateFormElementActiveStatus,getPendingOrganizersByAccountId,getActiveOrganizerByAccountId,createOrganizerAccountWise, getOrganizerAccountWise, getOrganizerAccountWises, deleteOrganizerAccountWise,updateOrganizerAccountWiseStatus, getOrganizerByAccountId, updateOrganizerAccountWise } = require("../controller/organizerAccountWiseController");
 
 //******organizer Accountwise Start******** */
 
@@ -14,6 +14,10 @@ router.get("/organizeraccountwise/organizerbyaccount/:id/:isactive", getActiveOr
 router.patch("/organizeraccountwise/:id", updateOrganizerAccountWise);
 router.patch("/organizeraccountwise/organizeraccountwisestatus/:id/:issubmited", updateOrganizerAccountWiseStatus);
 router.get("/organizer/pending/:id", getPendingOrganizersByAccountId);
+router.patch(
+  '/:organizerId/sections/:sectionId/form-elements/:formElementId',
+  updateFormElementActiveStatus
+);
 
 //******organizer Accountwise ENd******** */
 

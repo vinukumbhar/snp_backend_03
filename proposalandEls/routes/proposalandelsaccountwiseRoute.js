@@ -12,7 +12,7 @@ const { createProposalsAndElsAccounts,
 
 //******organizer Accountwise Start******** */
 
-router.get('/proposalaccountwise', getProposalesAndElsAccountswise)
+router.get('/c', getProposalesAndElsAccountswise)
 router.get('/proposalaccountwise/:id', getProposalesAndElsAccountwise)
 router.post('/proposalaccountwise', createProposalsAndElsAccounts)
 router.delete('/proposalaccountwise/:id', deleteProposalesAndElsAccountwise)
