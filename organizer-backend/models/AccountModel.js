@@ -46,10 +46,32 @@ const accountSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-
-    companyAddress: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "companyAddress", // Ensure this matches your CompanyAddresses model
+ country: {
+        name: {
+            type: String,
+      
+        },
+        code: {
+            type: String,
+           
+        }
+    },
+    
+    streetAddress: {
+        type: String,
+    
+    },
+    city: {
+        type: String,
+      
+    },
+    state: {
+        type: String,
+       
+    },
+    postalCode: {
+        type: Number,
+       
     },
   },
   { timestamps: true }

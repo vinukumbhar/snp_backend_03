@@ -47,10 +47,7 @@ const accountSchema = new mongoose.Schema(
       default: true,
     },
 
-    companyAddress: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "companyAddress", // Ensure this matches your CompanyAddresses model
-    },
+  
 
    country: {
         name: {
