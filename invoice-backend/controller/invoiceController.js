@@ -553,7 +553,7 @@ const getInvoiceListbyAccountid = async (req, res) => {
   const { id } = req.params; // Destructuring the account ID
 
   try {
-      const invoice = await Invoice.find({ account: id }); // Fetch invoices for the account
+      const invoice = await Invoice.find({ account: id }).sort({ createdAt: -1 }).populate('account'); // Fetch invoices for the account
 
       if (!invoice || invoice.length === 0) {
           return res.status(404).json({ message: "No invoices found for this account." });
@@ -705,6 +705,70 @@ const deleteInvoicesByAccountId = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+const getPendingInvoicesByAccountId = async (req, res) => {
+  const { id } = req.params; // Account ID from params
+
+  try {
+    // Fetch only pending invoices for the given account ID
+    const invoices = await Invoice.find({ account: id, invoiceStatus: "Pending" }).sort({ createdAt: -1 }).populate('account');
+
+    if (!invoices || invoices.length === 0) {
+      return res.status(404).json({ message: "No pending invoices found for this account." });
+    }
+
+    // Fetch account and related contacts
+    const account = await Accounts.findById(id).populate("contacts");
+    const validContact = account.contacts.filter(contact => contact.emailSync);
+
+    const currentDate = new Date();
+
+    // Placeholder values
+    const placeholderValues = {
+      ACCOUNT_NAME: account?.accountName || '',
+      FIRST_NAME: validContact[0]?.firstName || '',
+      MIDDLE_NAME: validContact[0]?.middleName || '',
+      LAST_NAME: validContact[0]?.lastName || '',
+      CONTACT_NAME: validContact[0]?.contactName || '',
+      COMPANY_NAME: validContact[0]?.companyName || '',
+      COUNTRY: validContact[0]?.country || '',
+      STREET_ADDRESS: validContact[0]?.streetAddress || '',
+      STATEPROVINCE: validContact[0]?.state || '',
+      PHONE_NUMBER: validContact[0]?.phoneNumbers || '',
+      ZIPPOSTALCODE: validContact[0]?.postalCode || '',
+      CITY: validContact[0]?.city || '',
+      CURRENT_DAY_FULL_DATE: currentDate.toLocaleDateString(),
+      CURRENT_DAY_NUMBER: currentDate.getDate(),
+      CURRENT_DAY_NAME: currentDate.toLocaleString('default', { weekday: 'long' }),
+      CURRENT_MONTH_NUMBER: currentDate.getMonth() + 1,
+      CURRENT_MONTH_NAME: currentDate.toLocaleString('default', { month: 'long' }),
+      CURRENT_YEAR: currentDate.getFullYear(),
+    };
+
+    // Function to replace placeholders
+    const replacePlaceholders = (template, data) => {
+      return template.replace(/\[([\w\s]+)\]/g, (match, placeholder) => {
+        return data[placeholder.trim()] || '';
+      });
+    };
+
+    // Replace placeholders in invoice descriptions
+    const updatedInvoices = invoices.map((inv) => {
+      const updatedDescription = replacePlaceholders(inv.description || '', placeholderValues);
+      return {
+        ...inv.toObject(),
+        description: updatedDescription,
+      };
+    });
+
+    res.status(200).json({
+      message: "Pending invoices retrieved successfully",
+      invoice: updatedInvoices,
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 module.exports = {
   getInvoiceCountByStatus,
@@ -720,5 +784,5 @@ module.exports = {
   getInvoiceListbyid,
   getInvoiceListbyAccountid,
   getInvoiceforPrint,
-  deleteInvoicesByAccountId
+  deleteInvoicesByAccountId,getPendingInvoicesByAccountId
 };

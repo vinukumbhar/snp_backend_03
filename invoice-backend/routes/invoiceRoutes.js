@@ -16,7 +16,7 @@
 const express = require("express");
 const router = express.Router();
 
-const {deleteInvoicesByAccountId,getInvoiceSummary,getInvoiceCountByStatus, getInvoicesCount,updateInvoiceByStatus,getInvoiceforPrint,getInvoices, getInvoice, createInvoice, deleteInvoice, updateInvoice, getInvoiceList, getInvoiceListbyid, getInvoiceListbyAccountid } = require("../controller/invoiceController");
+const {getPendingInvoicesByAccountId,deleteInvoicesByAccountId,getInvoiceSummary,getInvoiceCountByStatus, getInvoicesCount,updateInvoiceByStatus,getInvoiceforPrint,getInvoices, getInvoice, createInvoice, deleteInvoice, updateInvoice, getInvoiceList, getInvoiceListbyid, getInvoiceListbyAccountid } = require("../controller/invoiceController");
 
 router.get("/invoice", getInvoices);
 router.get("/invoice/:id", getInvoice);
@@ -30,6 +30,7 @@ router.patch("/invoicestatus/:invoicenumber", updateInvoiceByStatus);
 router.get("/invoice/invoicelist", getInvoiceList);
 router.get("/invoice/invoicelist/invoicelistbyid/:id", getInvoiceListbyid);
 router.get("/invoice/invoicelistby/accountid/:id", getInvoiceListbyAccountid);
+router.get("/invoice/pending/invoicelistby/accountid/:id", getPendingInvoicesByAccountId);
 router.get('/invoice/invoiceforprint/:id', getInvoiceforPrint)
 router.delete("/invoices/by-account/:id", deleteInvoicesByAccountId);
 

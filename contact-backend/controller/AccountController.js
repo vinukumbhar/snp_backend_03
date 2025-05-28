@@ -57,7 +57,7 @@ const createAccount = async (req, res) => {
 //get all accounts
 const getAccounts = async (req, res) => {
   try {
-    const accounts = await Accounts.find({}).populate({ path: "tags", model: "Tags" }).populate({ path: "teamMember", model: "User" }).populate({ path: "contacts", model: "Contacts" }).populate({ path: "companyAddress", model: "companyAddress" });
+    const accounts = await Accounts.find({}).populate({ path: "tags", model: "Tags" }).populate({ path: "teamMember", model: "User" }).populate({ path: "contacts", model: "Contacts" });
     //sort({ createdAt: -1 });
     res.status(200).json({ message: "Accounts retrieved successfully", accounts });
   } catch (error) {
