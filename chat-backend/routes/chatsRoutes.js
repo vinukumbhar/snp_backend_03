@@ -12,8 +12,9 @@ const {
     updateMessage,
     deleteMessage,
     addClientTask,
-    updateTaskCheckedStatus,getUnreadChatsWithLatestMessage,updateChatStatus,getUnreadChatsByAccountId
-
+    updateTaskCheckedStatus,getUnreadChatsWithLatestMessage,updateChatStatus,getUnreadChatsByAccountId,
+getUnreadMessages , markMessageAsRead,
+  markAllMessagesAsRead
 } = require('../controller/chatsController');  // Adjust the path to where your controller file is
 
 // Route to get all chat templates
@@ -55,6 +56,8 @@ router.get('/unreadmessages',getUnreadChatsWithLatestMessage)
 
 router.post('/accountchat/updatestatus/:id',updateChatStatus)
 router.get('/unread/:accountid', getUnreadChatsByAccountId);
-
+router.get('/unread/:accountid/:fromwhome',getUnreadMessages )
+router.patch('/mark-as-read/:chatId/:messageId',markMessageAsRead)
+router.patch('/mark-all-read/:chatId/accounts/:accountId/:fromwhome',markAllMessagesAsRead)
 
 module.exports = router;

@@ -791,6 +791,88 @@ const getUnreadChatsWithLatestMessage = async (req, res) => {
   }
 };
 
+// const getUnreadChatsByAccountId = async (req, res) => {
+//   try {
+//     const { accountid } = req.params;
+
+//     if (!accountid) {
+//       return res.status(400).json({ error: "accountid is required in params" });
+//     }
+
+//     const unreadChats = await AccountwiseChat.find({
+//       "description.isRead": false,
+//       accountid: accountid,
+//     })
+//       .populate({ path: "accountid", model: "Accounts" })
+//       .populate({ path: "description.senderid", model: "User" });
+
+//     const chatsWithLatestMessage = [];
+
+//     for (const chat of unreadChats) {
+//       const account = await Accounts.findById(chat.accountid._id).populate("contacts");
+//       if (!account) continue;
+
+//       const validContact = account.contacts.filter((contact) => contact.login);
+
+//       const placeholderValues = {
+//         ACCOUNT_NAME: account.accountName || "",
+//         FIRST_NAME: validContact[0]?.firstName || "",
+//         MIDDLE_NAME: validContact[0]?.middleName || "",
+//         LAST_NAME: validContact[0]?.lastName || "",
+//         CONTACT_NAME: validContact[0]?.contactName || "",
+//         COMPANY_NAME: validContact[0]?.companyName || "",
+//         COUNTRY: validContact[0]?.country || "",
+//         STREET_ADDRESS: validContact[0]?.streetAddress || "",
+//         STATEPROVINCE: validContact[0]?.state || "",
+//         PHONE_NUMBER: validContact[0]?.phoneNumbers || "",
+//         ZIPPOSTALCODE: validContact[0]?.postalCode || "",
+//         CITY: validContact[0]?.city || "",
+//         CURRENT_DAY_FULL_DATE: new Date().toLocaleDateString(),
+//         CURRENT_DAY_NUMBER: new Date().getDate(),
+//         CURRENT_DAY_NAME: new Date().toLocaleString("default", { weekday: "long" }),
+//         CURRENT_MONTH_NUMBER: new Date().getMonth() + 1,
+//         CURRENT_MONTH_NAME: new Date().toLocaleString("default", { month: "long" }),
+//         CURRENT_YEAR: new Date().getFullYear(),
+//         // Optionally: handle LAST_*, NEXT_* placeholders as in original code
+//       };
+
+//       const replacePlaceholders = (template, data) => {
+//         return template.replace(/\[([\w\s]+)\]/g, (match, key) => data[key.trim()] || "");
+//       };
+
+     
+//       const latestMessageRaw = chat.description?.length
+//         ? chat.description.reduce((latest, current) =>
+//             new Date(current.time) > new Date(latest.time) ? current : latest
+//           )
+//         : null;
+
+//       const latestMessage = latestMessageRaw
+//         ? {
+//             ...latestMessageRaw,
+//             message: replacePlaceholders(latestMessageRaw.message || "", placeholderValues),
+//           }
+//         : null;
+
+//       chatsWithLatestMessage.push({
+//         _id: chat._id,
+//         accountid: chat.accountid,
+//         // chatsubject: processedSubject,
+//         latestMessage,
+//         // clienttasks: chat.clienttasks,
+//       });
+//     }
+
+//     res.status(200).json({
+//       message: "Unread chats for the account retrieved successfully",
+//       chats: chatsWithLatestMessage,
+//     });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
+
 const getUnreadChatsByAccountId = async (req, res) => {
   try {
     const { accountid } = req.params;
@@ -800,7 +882,7 @@ const getUnreadChatsByAccountId = async (req, res) => {
     }
 
     const unreadChats = await AccountwiseChat.find({
-      chatstatus: false,
+      "description.isRead": false,
       accountid: accountid,
     })
       .populate({ path: "accountid", model: "Accounts" })
@@ -833,14 +915,11 @@ const getUnreadChatsByAccountId = async (req, res) => {
         CURRENT_MONTH_NUMBER: new Date().getMonth() + 1,
         CURRENT_MONTH_NAME: new Date().toLocaleString("default", { month: "long" }),
         CURRENT_YEAR: new Date().getFullYear(),
-        // Optionally: handle LAST_*, NEXT_* placeholders as in original code
       };
 
       const replacePlaceholders = (template, data) => {
         return template.replace(/\[([\w\s]+)\]/g, (match, key) => data[key.trim()] || "");
       };
-
-      const processedSubject = replacePlaceholders(chat.chatsubject || "", placeholderValues);
 
       const latestMessageRaw = chat.description?.length
         ? chat.description.reduce((latest, current) =>
@@ -848,20 +927,15 @@ const getUnreadChatsByAccountId = async (req, res) => {
           )
         : null;
 
-      const latestMessage = latestMessageRaw
-        ? {
-            ...latestMessageRaw,
-            message: replacePlaceholders(latestMessageRaw.message || "", placeholderValues),
-          }
-        : null;
-
-      chatsWithLatestMessage.push({
-        _id: chat._id,
-        accountid: chat.accountid,
-        chatsubject: processedSubject,
-        latestMessage,
-        clienttasks: chat.clienttasks,
-      });
+      if (latestMessageRaw) {
+        chatsWithLatestMessage.push({
+          accountid: chat.accountid._id,
+          isRead:false,
+           senderName: latestMessageRaw.senderid?.username || "Unknown",
+           fromwhome: latestMessageRaw.fromwhome || "Unknown",
+          message: replacePlaceholders(latestMessageRaw.message || "", placeholderValues),
+        });
+      }
     }
 
     res.status(200).json({
@@ -899,6 +973,322 @@ const updateChatStatus = async (req, res) => {
   }
 };
 
+
+
+// const getUnreadMessages = async (req, res) => {
+//   try {
+//     const { accountid, fromwhome } = req.params;
+    
+//     // Validate fromwhome parameter
+//     if (fromwhome !== 'client' && fromwhome !== 'Admin') {
+//       return res.status(400).json({ error: "Invalid 'fromwhome' parameter. Must be 'Client' or 'Admin'" });
+//     }
+
+//     // Find all chats for the account
+//     const chats = await AccountwiseChat.find({
+//       accountid: accountid,
+//       active: true
+//     })
+//       .populate({ path: "accountid", model: "Accounts" })
+//       .populate({ path: "description.senderid", model: "User" });
+
+//     if (!chats || chats.length === 0) {
+//       return res.status(404).json({ error: "No chats found for this account" });
+//     }
+
+//     // Get account details for placeholder replacement
+//     const account = await Accounts.findById(accountid).populate("contacts");
+//     if (!account) {
+//       return res.status(404).json({ error: "Account not found" });
+//     }
+
+//     const validContact = account.contacts.filter((contact) => contact.login);
+
+//     // Prepare placeholder values
+//     const placeholderValues = {
+//       ACCOUNT_NAME: account.accountName || "",
+//       FIRST_NAME: validContact[0]?.firstName || "",
+//       MIDDLE_NAME: validContact[0]?.middleName || "",
+//       LAST_NAME: validContact[0]?.lastName || "",
+//       CONTACT_NAME: validContact[0]?.contactName || "",
+//       COMPANY_NAME: validContact[0]?.companyName || "",
+//       COUNTRY: validContact[0]?.country || "",
+//       STREET_ADDRESS: validContact[0]?.streetAddress || "",
+//       STATEPROVINCE: validContact[0]?.state || "",
+//       PHONE_NUMBER: validContact[0]?.phoneNumbers || "",
+//       ZIPPOSTALCODE: validContact[0]?.postalCode || "",
+//       CITY: validContact[0]?.city || "",
+//       CURRENT_DAY_FULL_DATE: new Date().toLocaleDateString(),
+//       CURRENT_DAY_NUMBER: new Date().getDate(),
+//       CURRENT_DAY_NAME: new Date().toLocaleString("default", { weekday: "long" }),
+//       CURRENT_MONTH_NUMBER: new Date().getMonth() + 1,
+//       CURRENT_MONTH_NAME: new Date().toLocaleString("default", { month: "long" }),
+//       CURRENT_YEAR: new Date().getFullYear(),
+//     };
+
+//     // Function to replace placeholders
+//     const replacePlaceholders = (template, data) => {
+//       return template.replace(/\[([\w\s]+)\]/g, (match, key) => data[key.trim()] || "");
+//     };
+
+//     // Collect all unread messages in a single array
+//     const allUnreadMessages = [];
+    
+//     chats.forEach(chat => {
+//       if (chat.description && Array.isArray(chat.description)) {
+//         chat.description.forEach(message => {
+//           if (message.fromwhome === fromwhome && message.isRead === false) {
+//             // Replace placeholders
+//             const processedChatSubject = replacePlaceholders(chat.chatsubject || "", placeholderValues);
+//             const processedMessage = replacePlaceholders(message.message || "", placeholderValues);
+
+//             allUnreadMessages.push({
+//               chatId: chat._id,
+//               chatSubject: processedChatSubject,
+//               messageId: message._id,
+//               message: processedMessage,
+//               sender: message.senderid,
+//               time: message.time,
+//               fromwhome: message.fromwhome,
+//               isRead: message.isRead
+//             });
+//           }
+//         });
+//       }
+//     });
+
+//     // Sort all messages by time (oldest first)
+//     allUnreadMessages.sort((a, b) => new Date(a.time) - new Date(b.time));
+
+//     res.status(200).json({
+//       message: `All unread messages from ${fromwhome} retrieved successfully`,
+//       count: allUnreadMessages.length,
+//       unreadMessages: allUnreadMessages
+//     });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
+
+const getUnreadMessages = async (req, res) => {
+  try {
+    const { accountid, fromwhome } = req.params;
+    
+    // Validate fromwhome parameter
+    if (fromwhome !== 'client' && fromwhome !== 'Admin') {
+      return res.status(400).json({ error: "Invalid 'fromwhome' parameter. Must be 'Client' or 'Admin'" });
+    }
+
+    // Find all chats for the account
+    const chats = await AccountwiseChat.find({
+      accountid: accountid,
+      active: true
+    })
+      .populate({ path: "accountid", model: "Accounts" })
+      .populate({ path: "description.senderid", model: "User" });
+
+    if (!chats || chats.length === 0) {
+      return res.status(404).json({ error: "No chats found for this account" });
+    }
+
+    // Get account details for placeholder replacement
+    const account = await Accounts.findById(accountid).populate("contacts");
+    if (!account) {
+      return res.status(404).json({ error: "Account not found" });
+    }
+
+    const validContact = account.contacts.filter((contact) => contact.login);
+
+    // Prepare placeholder values
+    const placeholderValues = {
+      ACCOUNT_NAME: account.accountName || "",
+      FIRST_NAME: validContact[0]?.firstName || "",
+      MIDDLE_NAME: validContact[0]?.middleName || "",
+      LAST_NAME: validContact[0]?.lastName || "",
+      CONTACT_NAME: validContact[0]?.contactName || "",
+      COMPANY_NAME: validContact[0]?.companyName || "",
+      COUNTRY: validContact[0]?.country || "",
+      STREET_ADDRESS: validContact[0]?.streetAddress || "",
+      STATEPROVINCE: validContact[0]?.state || "",
+      PHONE_NUMBER: validContact[0]?.phoneNumbers || "",
+      ZIPPOSTALCODE: validContact[0]?.postalCode || "",
+      CITY: validContact[0]?.city || "",
+      CURRENT_DAY_FULL_DATE: new Date().toLocaleDateString(),
+      CURRENT_DAY_NUMBER: new Date().getDate(),
+      CURRENT_DAY_NAME: new Date().toLocaleString("default", { weekday: "long" }),
+      CURRENT_MONTH_NUMBER: new Date().getMonth() + 1,
+      CURRENT_MONTH_NAME: new Date().toLocaleString("default", { month: "long" }),
+      CURRENT_YEAR: new Date().getFullYear(),
+    };
+
+    // Function to replace placeholders
+    const replacePlaceholders = (template, data) => {
+      return template.replace(/\[([\w\s]+)\]/g, (match, key) => data[key.trim()] || "");
+    };
+
+    // Group messages by chatId
+    const groupedMessages = {};
+    
+    chats.forEach(chat => {
+      if (chat.description && Array.isArray(chat.description)) {
+        const processedChatSubject = replacePlaceholders(chat.chatsubject || "", placeholderValues);
+        
+        chat.description.forEach(message => {
+          if (message.fromwhome === fromwhome && message.isRead === false) {
+            const processedMessage = replacePlaceholders(message.message || "", placeholderValues);
+            
+            if (!groupedMessages[chat._id]) {
+              groupedMessages[chat._id] = {
+                chatId: chat._id,
+                chatSubject: processedChatSubject,
+                messages: []
+              };
+            }
+            
+            groupedMessages[chat._id].messages.push({
+              messageId: message._id,
+              message: processedMessage,
+              sender: message.senderid,
+              time: message.time,
+              fromwhome: message.fromwhome,
+              isRead: message.isRead
+            });
+          }
+        });
+      }
+    });
+
+    // Convert to array and sort messages within each chat by time
+    const result = Object.values(groupedMessages).map(chat => ({
+      ...chat,
+      messages: chat.messages.sort((a, b) => new Date(a.time) - new Date(b.time)),
+      unreadCount: chat.messages.length
+    }));
+
+    // Sort chats by the time of their most recent message (newest first)
+    result.sort((a, b) => {
+      const aLatest = new Date(a.messages[a.messages.length - 1]?.time || 0);
+      const bLatest = new Date(b.messages[b.messages.length - 1]?.time || 0);
+      return bLatest - aLatest;
+    });
+
+    const totalUnreadCount = result.reduce((sum, chat) => sum + chat.unreadCount, 0);
+
+    res.status(200).json({
+      message: `Unread messages from ${fromwhome} retrieved successfully`,
+      count: totalUnreadCount,
+      chats: result
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const markMessageAsRead = async (req, res) => {
+  // Validate request parameters
+  
+
+  try {
+    const { chatId, messageId } = req.params;
+
+    // Find and update the specific message
+    const updatedChat = await AccountwiseChat.findOneAndUpdate(
+      {
+        _id: chatId,
+        'description._id': messageId,
+        'description.isRead': false // Only update if currently unread
+      },
+      {
+        $set: { 'description.$.isRead': true, 'description.$.readAt': new Date() }
+      },
+      { 
+        new: true,
+        runValidators: true 
+      }
+    ).populate({
+      path: 'description.senderid',
+      select: 'username email role'
+    });
+
+    if (!updatedChat) {
+      return res.status(404).json({ 
+        success: false,
+        message: "Message not found or already read"
+      });
+    }
+
+    // Extract the updated message
+    const updatedMessage = updatedChat.description.find(
+      msg => msg._id.toString() === messageId
+    );
+
+    res.status(200).json({
+      success: true,
+      data: {
+        chatId: updatedChat._id,
+        messageId: updatedMessage._id,
+        isRead: updatedMessage.isRead,
+        readAt: updatedMessage.readAt,
+        fromwhome: updatedMessage.fromwhome,
+        sender: updatedMessage.senderid
+      }
+    });
+
+  } catch (error) {
+    console.error('Error marking message as read:', error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message
+    });
+  }
+};
+
+
+const markAllMessagesAsRead = async (req, res) => {
+  try {
+    const { chatId } = req.params;
+
+    // Update all messages in the specified chat
+    const result = await AccountwiseChat.updateOne(
+      {
+        _id: chatId // Using chatId as the document _id
+      },
+      {
+        $set: {
+          'description.$[].isRead': true, // Update all messages in the array
+          
+        }
+      }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Chat not found or no messages to update"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Marked all messages as read in chat ${chatId}`,
+      data: {
+        chatId,
+        modifiedCount: result.modifiedCount
+      }
+    });
+
+  } catch (error) {
+    console.error('Error marking messages as read:', error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   getAllChats,
   getChats,
@@ -914,5 +1304,8 @@ module.exports = {
   updateTaskCheckedStatus,
   getUnreadChatsWithLatestMessage,
   updateChatStatus,
-  getUnreadChatsByAccountId
+  getUnreadChatsByAccountId,
+  getUnreadMessages,
+   markMessageAsRead,
+  markAllMessagesAsRead
 };

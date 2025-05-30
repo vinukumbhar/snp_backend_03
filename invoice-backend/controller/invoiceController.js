@@ -211,15 +211,7 @@ const createInvoice = async (req, res) => {
   } = req.body;
 
   try {
-      // // Generate the next invoice number
-      // const lastInvoice = await Invoice.findOne().sort({ invoicenumber: -1 }).select("invoicenumber");
-      // const invoicenumber = lastInvoice ? lastInvoice.invoicenumber + 1 : 1;
-
-      // // Check if the invoice already exists (redundant with autoincrement but kept for safety)
-      // const existingInvoice = await Invoice.findOne({ invoicenumber });
-      // if (existingInvoice) {
-      //     return res.status(409).json({ message: "Invoice already exists" ,existingInvoice});
-      // }
+ 
 
       // Create a new invoice
       const newInvoice = await Invoice.create({

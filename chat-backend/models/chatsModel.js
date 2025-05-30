@@ -19,7 +19,12 @@ const messageschema = new mongoose.Schema({
     replyTo: {
         type: mongoose.Schema.Types.ObjectId,
         default: null,
-    }
+    },
+    isRead: {
+        type: Boolean,
+        default: false, // Initially false, set to true when the receiver reads it
+    },
+
 });
 
 const AccountwiseChatSchema = new mongoose.Schema({
@@ -47,10 +52,10 @@ const AccountwiseChatSchema = new mongoose.Schema({
     },
 
     description : [ messageschema ],
-    chatstatus:{
-        type: Boolean,
-        default:false
-    },
+    // chatstatus:{
+    //     type: Boolean,
+    //     default:false
+    // },
     
 
     sendreminderstoclient: {
