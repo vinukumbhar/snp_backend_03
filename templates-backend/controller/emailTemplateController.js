@@ -61,41 +61,100 @@ const getEmailTemplateList = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+// const createEmailTemplate = async (req, res) => {
+//   const { templatename, from, emailsubject, emailbody, active,mode } = req.body;
+
+//   try {
+//     const existingTemplate = await EmailTemplate.findOne({ templatename });
+//     if (existingTemplate) {
+//       return res.status(200).json({ message: "EmailTemplate already exists" });
+//     }
+
+//     // Temporarily gather file info
+//     const attachments = req.files.map(file => ({
+//       originalPath: file.path,
+//       originalname: file.originalname,
+//       size: file.size,
+//     }));
+
+//     // Create EmailTemplate (without file info)
+//     const newEmailTemplate = new EmailTemplate({
+//       templatename,
+//       from,
+//       emailsubject,
+//       emailbody,
+//       mode,
+//       active,
+//     });
+
+//     await newEmailTemplate.save();
+
+//     // Create a folder named with the template ID
+//     const folderPath = path.join('uploads', newEmailTemplate._id.toString());
+//     if (!fs.existsSync(folderPath)) fs.mkdirSync(folderPath, { recursive: true });
+
+//     // Move files and update attachment paths
+//     const movedAttachments = [];
+
+//     for (const file of attachments) {
+//       const newFilePath = path.join(folderPath, file.originalname);
+//       await mv(file.originalPath, newFilePath);
+//       movedAttachments.push({
+//         filename: file.originalname,
+//         size: file.size,
+//       });
+//     }
+
+//     // Update template with attachments
+//     newEmailTemplate.attachments = movedAttachments;
+//     await newEmailTemplate.save();
+
+//     return res.status(201).json({
+//       message: "EmailTemplate created successfully",
+//       newEmailTemplate,
+//     });
+
+//   } catch (error) {
+//     console.error("Error creating EmailTemplate:", error);
+//     return res.status(500).json({ error: "Error creating EmailTemplate" });
+//   }
+// };
+
+//delete a JobTemplate
+
 const createEmailTemplate = async (req, res) => {
-  const { templatename, from, emailsubject, emailbody, active,mode } = req.body;
+  const { templatename, ...rest } = req.body;
 
   try {
-    const existingTemplate = await EmailTemplate.findOne({ templatename });
-    if (existingTemplate) {
-      return res.status(200).json({ message: "EmailTemplate already exists" });
-    }
-
-    // Temporarily gather file info
-    const attachments = req.files.map(file => ({
+    // Temporarily gather uploaded file info
+    const attachments = req.files?.map(file => ({
       originalPath: file.path,
       originalname: file.originalname,
       size: file.size,
-    }));
+    })) || [];
 
-    // Create EmailTemplate (without file info)
-    const newEmailTemplate = new EmailTemplate({
-      templatename,
-      from,
-      emailsubject,
-      emailbody,
-      mode,
-      active,
-    });
+    // Upsert the email template without attachments first
+    const emailTemplate = await EmailTemplate.findOneAndUpdate(
+      { templatename },
+      { ...rest },
+      {
+        upsert: true,
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      }
+    );
 
-    await newEmailTemplate.save();
+    const wasCreated = emailTemplate.isNew;
+    const folderPath = path.join('uploads', emailTemplate._id.toString());
 
-    // Create a folder named with the template ID
-    const folderPath = path.join('uploads', newEmailTemplate._id.toString());
-    if (!fs.existsSync(folderPath)) fs.mkdirSync(folderPath, { recursive: true });
+    // Ensure the folder exists
+    if (!fs.existsSync(folderPath)) {
+      fs.mkdirSync(folderPath, { recursive: true });
+    }
 
-    // Move files and update attachment paths
+    // Move uploaded files and prepare attachment data
     const movedAttachments = [];
-
     for (const file of attachments) {
       const newFilePath = path.join(folderPath, file.originalname);
       await mv(file.originalPath, newFilePath);
@@ -105,62 +164,26 @@ const createEmailTemplate = async (req, res) => {
       });
     }
 
-    // Update template with attachments
-    newEmailTemplate.attachments = movedAttachments;
-    await newEmailTemplate.save();
+    // Update email template with attachments if files were uploaded
+    if (movedAttachments.length > 0) {
+      emailTemplate.attachments = movedAttachments;
+      await emailTemplate.save();
+    }
 
-    return res.status(201).json({
-      message: "EmailTemplate created successfully",
-      newEmailTemplate,
-    });
+    const message = wasCreated
+      ? "EmailTemplate created successfully"
+      : "EmailTemplate updated successfully";
+
+    return res.status(wasCreated ? 201 : 200).json({ message, emailTemplate });
 
   } catch (error) {
-    console.error("Error creating EmailTemplate:", error);
-    return res.status(500).json({ error: "Error creating EmailTemplate" });
+    console.error("Error creating/updating EmailTemplate:", error);
+    return res.status(500).json({
+      error: "Error creating/updating EmailTemplate",
+      details: error.message,
+    });
   }
 };
-// const createEmailTemplate = async (req, res) => {
-//     const { templatename, from, emailsubject, emailbody, active } = req.body;
-  
-//     try {
-//       // Check if a template with the same name already exists
-//       const existingTemplate = await EmailTemplate.findOne({ templatename });
-  
-//       if (existingTemplate) {
-//         return res.status(200).json({ message: "EmailTemplate already exists" });
-//       }
-  
-//       // Extract file information from the uploaded files
-//       const attachments = req.files.map((file) => ({
-//         filename: file.filename, // Saved filename
-//         size: file.size, // File size in bytes
-//       }));
-  
-//       // Create a new email template with the file information
-//       const newEmailTemplate = await EmailTemplate.create({
-//         templatename,
-//         from,
-//         emailsubject,
-//         emailbody,
-//         active,
-//         attachments, // Save the file information in the 'attachments' field
-//       });
-  
-//       return res.status(201).json({ message: "EmailTemplate created successfully", newEmailTemplate });
-//     } catch (error) {
-//       console.error("Error creating EmailTemplate:", error);
-//       return res.status(500).json({ error: "Error creating EmailTemplate" });
-//     }
-//   };
-
-
-
-
-
-
-
-
-//delete a JobTemplate
 
 const deleteEmailTemplate = async (req, res) => {
     const { id } = req.params;
@@ -334,6 +357,27 @@ const deleteAttachment = async (req, res) => {
 //   };
 
 
+const checkTemplateNameExists = async (req, res) => {
+  const { name } = req.query;
+
+  if (!name) {
+    return res.status(400).json({ exists: false, message: 'Name is required' });
+  }
+
+  try {
+    const template = await EmailTemplate.findOne({ templatename: { $regex: `^${name.trim()}$`, $options: 'i' } });
+
+    if (template) {
+      return res.json({ exists: true });
+    } else {
+      return res.json({ exists: false });
+    }
+  } catch (error) {
+    console.error('Error checking template name:', error);
+    return res.status(500).json({ exists: false, message: 'Server error' });
+  }
+};
+
 
 module.exports = {
     createEmailTemplate,
@@ -341,5 +385,6 @@ module.exports = {
     getEmailTemplate,
     deleteEmailTemplate,
     updateEmailTemplate,
-    getEmailTemplateList, deleteAttachment
+    getEmailTemplateList, deleteAttachment,
+    checkTemplateNameExists
 }

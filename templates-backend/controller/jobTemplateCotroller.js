@@ -34,25 +34,56 @@ const getJobTemplate = async (req, res) => {
 };
 
 //POST a new JobTemplate
+// const createJobTemplate = async (req, res) => {
+//   console.log(req.body);
+//   const { templatename, jobname, addshortcode, description, jobassignees, priority, absolutedates, startsin, startsinduration, duein, dueinduration, startdate, enddate, comments, showinclientportal, jobnameforclient, clientfacingstatus, clientfacingDescription, active } = req.body;
+
+//   try {
+//     // Check if a task template with similar properties already exists
+//     const existingTemplate = await JobTemplate.findOne({
+//       templatename,
+//     });
+
+//     if (existingTemplate) {
+//       return res.status(400).json({ error: "Job template already exists" });
+//     }
+//     // If no existing template is found, create a new one
+//     const newJobTemplate = await JobTemplate.create({ templatename, jobname, description, addshortcode, jobassignees, priority, absolutedates, startsin, startsinduration, duein, dueinduration, startdate, enddate, comments, showinclientportal, jobnameforclient, clientfacingstatus, clientfacingDescription, active });
+//     return res.status(201).json({ message: "Job template created successfully", newJobTemplate });
+//   } catch (error) {
+//     console.error("Error creating JobTemplate:", error);
+//     return res.status(500).json({ error: "Error creating JobTemplate" });
+//   }
+// };
+
 const createJobTemplate = async (req, res) => {
-  console.log(req.body);
-  const { templatename, jobname, addshortcode, description, jobassignees, priority, absolutedates, startsin, startsinduration, duein, dueinduration, startdate, enddate, comments, showinclientportal, jobnameforclient, clientfacingstatus, clientfacingDescription, active } = req.body;
+  const { templatename, ...rest } = req.body;
 
   try {
-    // Check if a task template with similar properties already exists
-    const existingTemplate = await JobTemplate.findOne({
-      templatename,
-    });
+    const jobTemplate = await JobTemplate.findOneAndUpdate(
+      { templatename },
+      { ...rest },
+      {
+        upsert: true,
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      }
+    );
 
-    if (existingTemplate) {
-      return res.status(400).json({ error: "Job template already exists" });
-    }
-    // If no existing template is found, create a new one
-    const newJobTemplate = await JobTemplate.create({ templatename, jobname, description, addshortcode, jobassignees, priority, absolutedates, startsin, startsinduration, duein, dueinduration, startdate, enddate, comments, showinclientportal, jobnameforclient, clientfacingstatus, clientfacingDescription, active });
-    return res.status(201).json({ message: "Job template created successfully", newJobTemplate });
+    const wasCreated = jobTemplate.isNew;
+    const message = wasCreated
+      ? "Job template created successfully"
+      : "Job template updated successfully";
+
+    return res.status(wasCreated ? 201 : 200).json({ message, jobTemplate });
+
   } catch (error) {
-    console.error("Error creating JobTemplate:", error);
-    return res.status(500).json({ error: "Error creating JobTemplate" });
+    console.error("Error creating/updating JobTemplate:", error);
+    return res.status(500).json({
+      error: "Error creating/updating JobTemplate",
+      details: error.message,
+    });
   }
 };
 
@@ -117,6 +148,27 @@ const getJobTemplateList = async (req, res) => {
   }
 };
 
+const checkTemplateNameExists = async (req, res) => {
+  const { name } = req.query;
+
+  if (!name) {
+    return res.status(400).json({ exists: false, message: 'Name is required' });
+  }
+
+  try {
+    const template = await JobTemplate.findOne({ templatename: { $regex: `^${name.trim()}$`, $options: 'i' } });
+
+    if (template) {
+      return res.json({ exists: true });
+    } else {
+      return res.json({ exists: false });
+    }
+  } catch (error) {
+    console.error('Error checking template name:', error);
+    return res.status(500).json({ exists: false, message: 'Server error' });
+  }
+};
+
 module.exports = {
   createJobTemplate,
   getJobTemplate,
@@ -124,4 +176,5 @@ module.exports = {
   deleteJobTemplate,
   updateJobTemplate,
   getJobTemplateList,
+  checkTemplateNameExists
 };

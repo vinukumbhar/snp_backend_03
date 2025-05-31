@@ -153,20 +153,24 @@ const updateChatTemplate = async (req, res) => {
         return res.status(500).json({ error: error.message });
     }
 };
-const checkTemplateName = async (req, res) => {
+const checkTemplateNameExists = async (req, res) => {
   const { name } = req.query;
 
-  if (!name || !name.trim()) {
-    return res.status(400).json({ error: 'Template name is required' });
+  if (!name) {
+    return res.status(400).json({ exists: false, message: 'Name is required' });
   }
 
   try {
-    const existingTemplate = await ChatTemplate.findOne({ templatename: name.trim() });
+    const template = await ChatTemplate.findOne({ templatename: { $regex: `^${name.trim()}$`, $options: 'i' } });
 
-    return res.status(200).json({ exists: !!existingTemplate });
+    if (template) {
+      return res.json({ exists: true });
+    } else {
+      return res.json({ exists: false });
+    }
   } catch (error) {
     console.error('Error checking template name:', error);
-    return res.status(500).json({ error: 'Server error' });
+    return res.status(500).json({ exists: false, message: 'Server error' });
   }
 };
 module.exports = {
@@ -176,5 +180,5 @@ module.exports = {
     deleteChatTemplate,
     updateChatTemplate  ,
     getChatTemplateList,
-    checkTemplateName
+    checkTemplateNameExists
 }

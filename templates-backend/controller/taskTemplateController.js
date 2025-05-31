@@ -36,26 +36,55 @@ const getTaskTemplate = async (req, res) => {
 };
 
 //POST a new TaskTemplate 
+// const createTaskTemplate = async (req, res) => {
+//     const { templatename, status, description, taskassignees, tasktags, priority, absolutedates, startsin, startsinduration, duein, dueinduration, startdate, enddate,issubtaskschecked, subtasks, active } = req.body;
+
+//     try {
+        
+//         // Check if a task template with similar properties already exists
+//         const existingTemplate = await TaskTemplate.findOne({
+//             templatename
+//         });
+
+//         if (existingTemplate) {
+//             return res.status(400).json({ error: "Task Template already exists" });
+//         }
+//         // If no existing template is found, create a new one
+//         const newTaskTemplate = await TaskTemplate.create({ templatename, status, description, taskassignees, tasktags, priority, absolutedates, startsin, startsinduration, duein, dueinduration, startdate, enddate,issubtaskschecked, subtasks, active});
+        
+//         return res.status(201).json({ message: "Task Template created successfully", newTaskTemplate });
+//     } catch (error) {
+//         console.error("Error creating Task Template:", error);
+//         return res.status(500).json({ error: "Error creating Task Template" });
+//     }
+// };
+
 const createTaskTemplate = async (req, res) => {
-    const { templatename, status, description, taskassignees, tasktags, priority, absolutedates, startsin, startsinduration, duein, dueinduration, startdate, enddate,issubtaskschecked, subtasks, active } = req.body;
+    const { templatename, ...rest } = req.body;
 
     try {
-        
-        // Check if a task template with similar properties already exists
-        const existingTemplate = await TaskTemplate.findOne({
-            templatename
-        });
+        const taskTemplate = await TaskTemplate.findOneAndUpdate(
+            { templatename },
+            { ...rest },
+            {
+                upsert: true,
+                new: true,
+                runValidators: true,
+                setDefaultsOnInsert: true
+            }
+        );
 
-        if (existingTemplate) {
-            return res.status(400).json({ error: "Task Template already exists" });
-        }
-        // If no existing template is found, create a new one
-        const newTaskTemplate = await TaskTemplate.create({ templatename, status, description, taskassignees, tasktags, priority, absolutedates, startsin, startsinduration, duein, dueinduration, startdate, enddate,issubtaskschecked, subtasks, active});
-        
-        return res.status(201).json({ message: "Task Template created successfully", newTaskTemplate });
+        const wasCreated = taskTemplate.isNew;
+        const message = wasCreated ? "Task Template created successfully" : "Task Template updated successfully";
+
+        return res.status(wasCreated ? 201 : 200).json({ message, taskTemplate });
+
     } catch (error) {
-        console.error("Error creating Task Template:", error);
-        return res.status(500).json({ error: "Error creating Task Template" });
+        console.error("Error creating/updating Task Template:", error);
+        return res.status(500).json({
+            error: "Error creating/updating Task Template",
+            details: error.message
+        });
     }
 };
 
@@ -129,7 +158,26 @@ const getTaskTemplateList = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+const checkTemplateNameExists = async (req, res) => {
+  const { name } = req.query;
 
+  if (!name) {
+    return res.status(400).json({ exists: false, message: 'Name is required' });
+  }
+
+  try {
+    const template = await TaskTemplate.findOne({ templatename: { $regex: `^${name.trim()}$`, $options: 'i' } });
+
+    if (template) {
+      return res.json({ exists: true });
+    } else {
+      return res.json({ exists: false });
+    }
+  } catch (error) {
+    console.error('Error checking template name:', error);
+    return res.status(500).json({ exists: false, message: 'Server error' });
+  }
+};
 
 module.exports = {
     createTaskTemplate,
@@ -137,5 +185,6 @@ module.exports = {
     getTaskTemplates,
     deleteTaskTemplate,
     updateTaskTemplate,
-    getTaskTemplateList
+    getTaskTemplateList,
+    checkTemplateNameExists
 }

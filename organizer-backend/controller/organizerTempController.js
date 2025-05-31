@@ -26,27 +26,58 @@ const getOrganizerTemplate = async (req, res) => {
 };
 
 //POST a new OrganizerTemplate 
+// const createOrganizerTemplate = async (req, res) => {
+//   try {
+//     const { templatename, organizerName, sections,organizersettings, active } = req.body;
+//     try {
+//       // Check if a task template with similar properties already exists
+//       const existingTemplate = await OrganizerTemplate.findOne({ templatename });
+
+//       if (existingTemplate) {
+//         return res.status(200).json({ error: "Organizer Template already exists" });
+//       }
+//       // If no existing template is found, create a new one
+//       const newOrganizerTemplate = await OrganizerTemplate.create({ templatename, organizerName, sections, organizersettings,active });
+
+//       return res.status(200).json({ message: "Organizer Template created successfully", newOrganizerTemplate });
+//     } catch (error) {
+//       console.error("Error creating Organizer Template:", error);
+//       return res.status(500).json({ error: "Error creating Organizer Template" });
+//     }
+
+//   } catch (error) {
+//     res.status(400).send(error);
+//   }
+// };
+
 const createOrganizerTemplate = async (req, res) => {
+  const { templatename, ...rest } = req.body;
+
   try {
-    const { templatename, organizerName, sections,organizersettings, active } = req.body;
-    try {
-      // Check if a task template with similar properties already exists
-      const existingTemplate = await OrganizerTemplate.findOne({ templatename });
-
-      if (existingTemplate) {
-        return res.status(200).json({ error: "Organizer Template already exists" });
+    const organizerTemplate = await OrganizerTemplate.findOneAndUpdate(
+      { templatename },
+      { ...rest },
+      {
+        upsert: true,
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
       }
-      // If no existing template is found, create a new one
-      const newOrganizerTemplate = await OrganizerTemplate.create({ templatename, organizerName, sections, organizersettings,active });
+    );
 
-      return res.status(200).json({ message: "Organizer Template created successfully", newOrganizerTemplate });
-    } catch (error) {
-      console.error("Error creating Organizer Template:", error);
-      return res.status(500).json({ error: "Error creating Organizer Template" });
-    }
+    const wasCreated = organizerTemplate.isNew;
+    const message = wasCreated
+      ? "Organizer Template created successfully"
+      : "Organizer Template created successfully";
+
+    return res.status(wasCreated ? 201 : 200).json({ message, organizerTemplate });
 
   } catch (error) {
-    res.status(400).send(error);
+    console.error("Error creating/updating OrganizerTemplate:", error);
+    return res.status(500).json({
+      error: "Error creating/updating OrganizerTemplate",
+      details: error.message,
+    });
   }
 };
 
@@ -97,12 +128,31 @@ const updateOrganizerTemplate = async (req, res) => {
   }
 };
 
+const checkTemplateNameExists = async (req, res) => {
+  const { name } = req.query;
 
+  if (!name) {
+    return res.status(400).json({ exists: false, message: 'Name is required' });
+  }
+
+  try {
+    const template = await OrganizerTemplate.findOne({ templatename: { $regex: `^${name.trim()}$`, $options: 'i' } });
+
+    if (template) {
+      return res.json({ exists: true });
+    } else {
+      return res.json({ exists: false });
+    }
+  } catch (error) {
+    console.error('Error checking template name:', error);
+    return res.status(500).json({ exists: false, message: 'Server error' });
+  }
+};
 module.exports = {
   createOrganizerTemplate,
   getOrganizerTemplate,
   getOrganizerTemplates,
   deleteOrganizerTemplate,
   updateOrganizerTemplate,
-  // getJobTemplateList
+  checkTemplateNameExists
 }

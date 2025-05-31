@@ -265,6 +265,23 @@ if (!userid || !mongoose.Types.ObjectId.isValid(userid)) {
   }
 };
 
+
+const getTeamMemberByEmail = async (req, res) => {
+    const { email } = req.params;
+
+    try {
+        // Find the admin by email
+        const admin = await TeamMember.find({ email });
+
+        if (!admin) {
+            return res.status(404).json({ error: "No such TeamMember" });
+        }
+
+        res.status(200).json({ message: "TeamMember retrieved successfully", admin });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 module.exports = {
     createTeamMember,
     getTeamMembers,
@@ -273,5 +290,5 @@ module.exports = {
     updateTeamMember,
     getTeamMemberList,
     updateTeamMemberPassword,
-    findTeamMemberByUserId
+    findTeamMemberByUserId,getTeamMemberByEmail
 }

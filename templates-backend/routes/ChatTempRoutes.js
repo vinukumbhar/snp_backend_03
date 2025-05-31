@@ -3,7 +3,7 @@
 const express = require ('express');
 const router = express.Router();
 
-const { checkTemplateName,getChatTemplates, getChatTemplate, getChatTemplateList, createChatTemplate, deleteChatTemplate, updateChatTemplate } = require('../controller/ChatTempController') 
+const { checkTemplateNameExists,getChatTemplates, getChatTemplate, getChatTemplateList, createChatTemplate, deleteChatTemplate, updateChatTemplate } = require('../controller/ChatTempController') 
 
 
 router.get('/chattemplate', getChatTemplates)
@@ -13,6 +13,6 @@ router.post('/chattemplate', createChatTemplate)
 router.delete('/chattemplate/:id', deleteChatTemplate)
 router.patch('/chattemplate/:id', updateChatTemplate)
 
-router.get('/check-templatename', checkTemplateName);
+router.get('/check-name', checkTemplateNameExists);
 
 module.exports = router
