@@ -52,7 +52,9 @@ const accountSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-
+//  companyName: {
+//       type: String,
+//     },
     // companyAddress: {
     //   type: mongoose.Schema.Types.ObjectId,
     //   ref: "companyAddress", // Ensure this matches your CompanyAddresses model
