@@ -15,39 +15,45 @@ const Chat = require("../models/chatsModel")
 const createAccount = async (req, res) => {
   try {
     let newAccount;
-    let newCompanyAccount;
+    // let newCompanyAccount;
 
-    const { clientType, accountName, tags, teamMember, contacts, description,foldertemplate, userid,active } = req.body;
-
-    newAccount = await Accounts.create({ clientType, accountName, tags, teamMember, contacts, description,foldertemplate,userid,active });
+    const { clientType, accountName, tags, teamMember, contacts, description,foldertemplate, userid,companyName, country, streetAddress, city, state, postalCode,active } = req.body;
 
 
-    if (clientType === "Company") {
-      const { companyName, country, streetAddress, city, state, postalCode,foldertemplate, active } = req.body;
-
-      newCompanyAccount = await companyAddress.create({ companyName, country, streetAddress, city, state, postalCode, companyId: newAccount._id,foldertemplate, active });
-
-      // Optionally, update the Accounts document to reference the company address
-      newAccount.companyAddress = newCompanyAccount._id; // Ensure the Accounts schema includes companyAddress field
-      await newAccount.save();
+    // Check for existing account with the same name
+    const existingAccount = await Accounts.findOne({ accountName });
+    if (existingAccount) {
+      return res.status(409).json({ error: "Account name already exists" });
     }
+    newAccount = await Accounts.create({ clientType, accountName, tags, teamMember, contacts, description,foldertemplate,userid,companyName, country, streetAddress, city, state, postalCode,active });
+
+
+    // if (clientType === "Company") {
+    //   const { companyName, country, streetAddress, city, state, postalCode,foldertemplate, active } = req.body;
+
+    //   newCompanyAccount = await companyAddress.create({ companyName, country, streetAddress, city, state, postalCode, companyId: newAccount._id,foldertemplate, active });
+
+    //   // Optionally, update the Accounts document to reference the company address
+    //   newAccount.companyAddress = newCompanyAccount._id; // Ensure the Accounts schema includes companyAddress field
+    //   await newAccount.save();
+    // }
     res.status(200).json({
       message: "Account created successfully",
       newAccount,
-      newCompanyAccount: newCompanyAccount
-        ? {
-            companyId: newCompanyAccount.companyId,
-            companyName: newCompanyAccount.companyName,
-            country: newCompanyAccount.country,
-            streetAddress: newCompanyAccount.streetAddress,
-            city: newCompanyAccount.city,
-            state: newCompanyAccount.state,
-            postalCode: newCompanyAccount.postalCode,
-            foldertemplate: newCompanyAccount.foldertemplate,
-            userid:newCompanyAccount.userid,
-            active: newCompanyAccount.active,
-          }
-        : null,
+      // newCompanyAccount: newCompanyAccount
+      //   ? {
+      //       companyId: newCompanyAccount.companyId,
+      //       companyName: newCompanyAccount.companyName,
+      //       country: newCompanyAccount.country,
+      //       streetAddress: newCompanyAccount.streetAddress,
+      //       city: newCompanyAccount.city,
+      //       state: newCompanyAccount.state,
+      //       postalCode: newCompanyAccount.postalCode,
+      //       foldertemplate: newCompanyAccount.foldertemplate,
+      //       userid:newCompanyAccount.userid,
+      //       active: newCompanyAccount.active,
+      //     }
+      //   : null,
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -329,32 +335,32 @@ const updateAccount = async (req, res) => {
     }
 
     // If the client type is "Company", update the associated company address
-    if (clientType === "Company") {
-      if (!updatedAccount.companyAddress) {
-        return res.status(404).json({ error: "Company Address not found for this account" });
-      }
+    // if (clientType === "Company") {
+    //   if (!updatedAccount.companyAddress) {
+    //     return res.status(404).json({ error: "Company Address not found for this account" });
+    //   }
 
-      const updatedCompanyAddress = await companyAddress.findOneAndUpdate(
-        { _id: updatedAccount.companyAddress },
-        {
-          companyName,
-          country,
-          streetAddress,
-          city,
-          state,
-          postalCode,
-        },
-        { new: true }
-      );
+    //   const updatedCompanyAddress = await companyAddress.findOneAndUpdate(
+    //     { _id: updatedAccount.companyAddress },
+    //     {
+    //       companyName,
+    //       country,
+    //       streetAddress,
+    //       city,
+    //       state,
+    //       postalCode,
+    //     },
+    //     { new: true }
+    //   );
 
-      if (!updatedCompanyAddress) {
-        return res.status(404).json({ error: "Failed to update company address" });
-      }
+    //   if (!updatedCompanyAddress) {
+    //     return res.status(404).json({ error: "Failed to update company address" });
+    //   }
 
-      // Update the company address reference in the account, if needed (if not already existing)
-      updatedAccount.companyAddress = updatedCompanyAddress._id;
-      await updatedAccount.save();
-    }
+    //   // Update the company address reference in the account, if needed (if not already existing)
+    //   updatedAccount.companyAddress = updatedCompanyAddress._id;
+    //   await updatedAccount.save();
+    // }
 
     res.status(200).json({ message: "Account Updated successfully", updatedAccount });
   } catch (error) {
@@ -713,7 +719,26 @@ const updateContactsForMultipleAccounts = async (req, res) => {
 };
 
 
+const checkTemplateNameExists = async (req, res) => {
+  const { name } = req.query;
 
+  if (!name) {
+    return res.status(400).json({ exists: false, message: 'Name is required' });
+  }
+
+  try {
+    const template = await Accounts.findOne({ accountName: { $regex: `^${name.trim()}$`, $options: 'i' } });
+
+    if (template) {
+      return res.json({ exists: true });
+    } else {
+      return res.json({ exists: false });
+    }
+  } catch (error) {
+    console.error('Error checking account name:', error);
+    return res.status(500).json({ exists: false, message: 'Server error' });
+  }
+};
 module.exports = {
   createAccount,
   getAccount,
@@ -732,5 +757,5 @@ module.exports = {
   getAccountsIdAndName,
   getAccountsUserId,
   getAccountsByTeamMember,
-  updateAccountTags,getAllAccounts,getAccountsByUserId
+  updateAccountTags,getAllAccounts,getAccountsByUserId,checkTemplateNameExists
 };

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {getAccountsByUserId,getAllAccounts,updateAccountTags,getAccountsByTeamMember,getAccountsUserId,getAccountsIdAndName, updateContactsForMultipleAccounts, getActiveAccountList, getAccountListByUserId,createAccount, getAccount, getAccounts, updateAccount, deleteAccount, getAccountsList, getAccountsListById, getAccountsbyContactId, updateContactsForAccounts, removeContactFromAccount, getAccountbyIdAll } = require("../controller/AccountController"); // Adjust the path to your actual controller
+const {checkTemplateNameExists,getAccountsByUserId,getAllAccounts,updateAccountTags,getAccountsByTeamMember,getAccountsUserId,getAccountsIdAndName, updateContactsForMultipleAccounts, getActiveAccountList, getAccountListByUserId,createAccount, getAccount, getAccounts, updateAccount, deleteAccount, getAccountsList, getAccountsListById, getAccountsbyContactId, updateContactsForAccounts, removeContactFromAccount, getAccountbyIdAll } = require("../controller/AccountController"); // Adjust the path to your actual controller
 
 router.get("/accountdetails", getAccounts);
 router.get("/nameandid/accountdetails", getAccountsIdAndName);
@@ -31,5 +31,7 @@ router.get("/account/accountdetailslist/:isActive", getActiveAccountList);
 // getAccountsByTeamMember
 router.get("/getaccounts/:userid/:isActive", getAccountsByTeamMember);
 router.post("/accounts/update-contacts", updateContactsForMultipleAccounts);
+
+router.get('/check-name', checkTemplateNameExists);
 
 module.exports = router;
