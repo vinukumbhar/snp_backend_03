@@ -242,7 +242,8 @@ const User = require("../models/userModel");
 const mongoose = require("mongoose");
 const express = require("express");
 const bcrypt = require("bcryptjs");
-
+const path = require('path');
+const fs = require('fs');
 // const { use } = require("../middlewares/clientsignupOTPmail");
 
 const adminSignup = async (req, res) => {
@@ -537,6 +538,46 @@ const getVerifyUserbyPassword = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+const uploadProfilePicture = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const { id } = req.params; // Get user ID from URL params
+    const user = await User.findById(id);
+    
+    if (!user) {
+      // Delete the uploaded file if user doesn't exist
+      fs.unlinkSync(req.file.path);
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Delete old profile picture if exists
+    if (user.profilePicture) {
+      const oldImagePath = path.join(__dirname, '../uploads', user.profilePicture);
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlinkSync(oldImagePath);
+      }
+    }
+
+  // Store path relative to uploads directory
+    const relativePath = `users/${id}/${req.file.filename}`;
+    user.profilePicture = `uploads/${relativePath}`; // Include 'uploads' in the stored path
+    await user.save();
+
+    res.status(200).json({
+      message: 'Profile picture uploaded successfully',
+      profilePicture: user.profilePicture // Returns "uploads/users/..."
+    });
+  } catch (error) {
+    // Clean up uploaded file if error occurs
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
+    res.status(500).json({ error: error.message });
+  }
+};
 
 module.exports = {
   createUser,
@@ -552,4 +593,5 @@ module.exports = {
   getUsersByRoles,
   getVerifyUserbyPassword,
   updateUserPasswordwithoutAut,
+  uploadProfilePicture
 };

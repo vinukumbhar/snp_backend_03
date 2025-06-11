@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const { createFolderInFirm,uploadFileInFirm,getFilesByAccountId } = require("../controller/firmDocsController");
+const { createFolderInFirm,uploadFileInFirm,getFilesByAccountId,updatePermissions,downloadFile } = require("../controller/firmDocsController");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -37,4 +37,6 @@ router.post("/uploadfileinfirm", upload.single("file"), uploadFileInFirm);
 // Get files by accountId route
 router.get("/files/:accountId", getFilesByAccountId);
 router.post("/createFolderinfirm", createFolderInFirm);
+router.patch("/permissions/:fileId", updatePermissions);
+router.get("/download/:accountId/:filename", downloadFile);
 module.exports = router;

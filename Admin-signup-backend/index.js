@@ -162,6 +162,8 @@ app.use("/emailsynk", emailsync);
 const firmsetting = require("./routes/firmsettingRoutes");
 app.use("/adminfirm", firmsetting);
 
+
+app.use('/profilepicture', express.static(path.join(__dirname, 'uploads')));
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`connection is live at port no. ${PORT}`);

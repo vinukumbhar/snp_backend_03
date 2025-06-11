@@ -248,16 +248,16 @@ const createInvoice = async (req, res) => {
         },
       });
 
-      // Ensure the invoices directory exists
-      const invoicesDir = path.resolve(__dirname, "invoices");
-      if (!fs.existsSync(invoicesDir)) {
-          fs.mkdirSync(invoicesDir, { recursive: true });
-      }
+      // // Ensure the invoices directory exists
+      // const invoicesDir = path.resolve(__dirname, "invoices");
+      // if (!fs.existsSync(invoicesDir)) {
+      //     fs.mkdirSync(invoicesDir, { recursive: true });
+      // }
 
-      // Generate PDF for the invoice
-      const pdfPath = path.join(invoicesDir, `invoice_${newInvoice.invoicenumber}.pdf`);
+      // // Generate PDF for the invoice
+      // const pdfPath = path.join(invoicesDir, `invoice_${newInvoice.invoicenumber}.pdf`);
 
-      console.log("PDF successfully written to:", pdfPath);
+      // console.log("PDF successfully written to:", pdfPath);
       const replacePlaceholders = (template, data) => {
         return template.replace(/\[([\w\s]+)\]/g, (match, placeholder) => {
             return data[placeholder.trim()] || '';
@@ -388,11 +388,11 @@ const createInvoice = async (req, res) => {
       `;
 
           // Generate PDF with Puppeteer
-          const browser = await puppeteer.launch();
-          const page = await browser.newPage();
-          await page.setContent(printContent, { waitUntil: "networkidle0" });
-          await page.pdf({ path: pdfPath, format: "A4" });
-          await browser.close();
+          // const browser = await puppeteer.launch();
+          // const page = await browser.newPage();
+          // await page.setContent(printContent, { waitUntil: "networkidle0" });
+          // await page.pdf({ path: pdfPath, format: "A4" });
+          // await browser.close();
 
           console.log(`Preparing to send email to: ${contact.email}`);
           const mailOptions = {
@@ -404,7 +404,7 @@ const createInvoice = async (req, res) => {
               attachments: [
                   {
                       filename: `invoice_${newInvoice.invoicenumber}.pdf`, // Filename for the attachment
-                      path: pdfPath // Path to the P.DF file
+                      // path: pdfPath // Path to the P.DF file
                   }
               ]
           };

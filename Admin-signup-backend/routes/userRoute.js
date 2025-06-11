@@ -35,8 +35,8 @@
 
 const express = require("express");
 const router = express.Router();
-
-const { updateUserPasswordwithoutAut,createUser, getUsers, getUser, deleteUser, updateUser, adminSignup, getUserByEmail, updateUserPassword, updateLoginStatus, getUserListbyId, getUsersByRoles, getVerifyUserbyPassword } = require("../controller/userController");
+const upload = require('../multerConfig');
+const { updateUserPasswordwithoutAut,createUser, getUsers, getUser, deleteUser, updateUser, adminSignup, getUserByEmail, updateUserPassword, updateLoginStatus, getUserListbyId, getUsersByRoles, getVerifyUserbyPassword,uploadProfilePicture } = require("../controller/userController");
 // const { validateToken, logout, cleanupBlacklist } = require("../middleware/authJwt");
 const { validateToken, logout } = require("../middleware/authJwt");
 const { generatetoken } = require("../controller/loginController");
@@ -76,6 +76,10 @@ router.get("/user/userlist/list/:id", getUserListbyId);
 router.get("/users/roles", getUsersByRoles);
 // router.post("/user/verifyuser/verifybyemail/verifybypassword", getVerifyUserbyPassword)
 router.post("/user/verifyuserandpassword/", getVerifyUserbyPassword);
-
+router.post(
+  '/:id/profile-picture',
+  upload.single('profilePicture'), // 'profilePicture' is the field name in the form
+  uploadProfilePicture
+);
 //USER END******************** */
 module.exports = router;

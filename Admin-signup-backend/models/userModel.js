@@ -78,6 +78,11 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+     profilePicture: {
+      type: String, // This will store the path to the image
+      default: null
+    },
   },
   { timestamps: true }
 );

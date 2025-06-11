@@ -1,18 +1,7 @@
 const File = require("../models/FileModel"); // Adjust path if needed
 const path = require("path");
-const fs = require("fs/promises");
-// GET /api/files/:accountId
-// const getFilesByAccountId = async (req, res) => {
-//   const { accountId } = req.params;
+const fs = require("fs");
 
-//   try {
-//     const files = await File.find({ accountId });
-//     res.status(200).json(files);
-//   } catch (error) {
-//     console.error("Error fetching files by accountId:", error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };
 
 const getFilesByAccountId = async (req, res) => {
     const { accountId } = req.params;
@@ -34,100 +23,7 @@ const getFilesByAccountId = async (req, res) => {
     }
   };
   
-// const getFilesByAccountId = async (req, res) => {
-//     const { accountId } = req.params;
-//     const rootFolder = "Firm Docs Shared With Client";
-  
-//     try {
-//       const files = await File.find({
-//         accountId,
-//         filePath: { $regex: rootFolder, $options: "i" },
-//       });
-  
-//       const root = {
-//         name: rootFolder,
-//         files: [],
-//         subfolders: {}
-//       };
-  
-//       // Track folders that should be added even if they only contain #$default.txt
-//       const foldersWithOnlyDefault = new Set();
-  
-//       files.forEach((file) => {
-//         const relativePath = file.filePath.split(`/${accountId}/`)[1];
-//         const pathSegments = relativePath.split("/");
-  
-//         const rootIndex = pathSegments.indexOf(rootFolder);
-//         const folderPath = pathSegments.slice(rootIndex); // from "Firm Docs Shared With Client"
-  
-//         let current = root;
-  
-//         for (let i = 1; i < folderPath.length; i++) {
-//           const segment = folderPath[i];
-//           const isLast = i === folderPath.length - 1;
-  
-//           // Intermediate folder
-//           if (!current.subfolders[segment]) {
-//             current.subfolders[segment] = {
-//               name: segment,
-//               files: [],
-//               subfolders: {}
-//             };
-//           }
-  
-//           if (isLast) {
-//             if (file.filename === "#$default.txt") {
-//               // Remember this folder must be shown even without file
-//               foldersWithOnlyDefault.add(segment);
-//             } else {
-//               current.subfolders[segment].files.push(file.filename);
-//             }
-//           }
-  
-//           current = current.subfolders[segment];
-//         }
-  
-//         // If file is directly inside root folder
-//         if (folderPath.length === 1 && file.filename !== "#$default.txt") {
-//           root.files.push(file.filename);
-//         }
-//       });
-  
-//       // Add empty folders that only had #$default.txt
-//       foldersWithOnlyDefault.forEach((folderName) => {
-//         if (!root.subfolders[folderName]) {
-//           root.subfolders[folderName] = {
-//             name: folderName,
-//             files: [],
-//             subfolders: {}
-//           };
-//         }
-//       });
-  
-//       // Helper to convert subfolders object to array recursively
-//       const formatStructure = (folderNode) => {
-//         return Object.values(folderNode.subfolders).map((folder) => ({
-//           name: folder.name,
-//           files: folder.files,
-//           subfolders: formatStructure(folder)
-//         }));
-//       };
-  
-//       res.status(200).json({
-//         folderName: rootFolder,
-//         structure: [
-//           {
-//             // name: root.name,
-//             files: root.files,
-//             subfolders: formatStructure(root)
-//           }
-//         ]
-//       });
-//     } catch (error) {
-//       console.error("Error fetching files by accountId and folder:", error);
-//       res.status(500).json({ message: "Server error" });
-//     }
-//   };
+
   
 const uploadFileInFirm = async (req, res) => {
     let targetPath = req.body.destinationPath;
@@ -250,5 +146,74 @@ const uploadFileInFirm = async (req, res) => {
       return res.status(500).send({ error: "Failed to create folder" });
     }
   };
+  const updatePermissions = async (req, res) => {
+  const { fileId } = req.params;
+  const { permissions } = req.body;
 
-module.exports = { getFilesByAccountId,uploadFileInFirm,createFolderInFirm };
+  if (!fileId) {
+    return res.status(400).json({ message: "fileId is required in the URL." });
+  }
+
+  if (
+    !permissions ||
+    typeof permissions.canView !== "boolean" ||
+    typeof permissions.canDownload !== "boolean" ||
+    typeof permissions.canDelete !== "boolean" ||
+    typeof permissions.canUpdate !== "boolean"
+  ) {
+    return res.status(400).json({ message: "Invalid permissions structure." });
+  }
+
+  try {
+    const updatedFile = await File.findByIdAndUpdate(
+      fileId,
+      { permissions },
+      { new: true }
+    );
+
+    if (!updatedFile) {
+      return res.status(404).json({ message: "File or folder not found." });
+    }
+
+    return res.status(200).json({
+      message: "Permissions updated successfully.",
+      updatedPermissions: updatedFile.permissions,
+    });
+  } catch (error) {
+    console.error("Error updating permissions:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+const downloadFile = async (req, res) => {
+  const { accountId, filename } = req.params;
+
+  try {
+    const basePath = path.join(
+      __dirname,
+      "../uploads/AccountId",
+      accountId,
+      "Firm Docs Shared With Client"
+    );
+
+    const fullPath = path.join(basePath, filename);
+
+    console.log("Trying to download file at:", fullPath);
+
+    if (!fs.existsSync(fullPath)) {
+      console.error("File not found:", fullPath);
+      return res.status(404).json({ message: "File not found." });
+    }
+
+    return res.download(fullPath, filename, (err) => {
+      if (err) {
+        console.error("Download error:", err);
+        return res.status(500).json({ message: "Error downloading file." });
+      }
+    });
+  } catch (error) {
+    console.error("Server error:", error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+module.exports = { getFilesByAccountId,uploadFileInFirm,createFolderInFirm,updatePermissions,downloadFile };
