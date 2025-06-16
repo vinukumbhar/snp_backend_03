@@ -1626,22 +1626,36 @@ const getActiveJobListbyAccountId = async (req, res) => {
     for (const job of jobs) {
       // Extract pipeline and stages
       const pipeline = job.pipeline;
-      const stageNames = Array.isArray(job.stageid)
+      // const stageNames = Array.isArray(job.stageid)
+      //   ? job.stageid
+      //       .map((stageId) => {
+      //         const matchedStage = pipeline?.stages?.find((stage) =>
+      //           stage._id.equals(stageId)
+      //         );
+      //         return matchedStage ? matchedStage.name : null;
+      //       })
+      //       .filter(Boolean)
+      //   : job.stageid
+      //   ? [
+      //       pipeline?.stages?.find((stage) => stage._id.equals(job.stageid))
+      //         ?.name || null,
+      //     ]
+      //   : null;
+ // Get all stage details (not just names)
+      const stageDetails = Array.isArray(job.stageid)
         ? job.stageid
             .map((stageId) => {
               const matchedStage = pipeline?.stages?.find((stage) =>
                 stage._id.equals(stageId)
               );
-              return matchedStage ? matchedStage.name : null;
+              return matchedStage ? matchedStage : null;
             })
             .filter(Boolean)
         : job.stageid
         ? [
-            pipeline?.stages?.find((stage) => stage._id.equals(job.stageid))
-              ?.name || null,
+            pipeline?.stages?.find((stage) => stage._id.equals(job.stageid)) || null
           ]
         : null;
-
       // Extract job assignee names and account names
       const jobAssigneeNames = job.jobassignees.map(
         (assignee) => assignee.username
@@ -1722,7 +1736,8 @@ const getActiveJobListbyAccountId = async (req, res) => {
         JobAssignee: jobAssigneeNames,
         Pipeline: pipeline?.pipelineName || null,
         PipelineId: pipeline?._id,
-        Stage: stageNames,
+        // Stage: stageNames,
+        Stages: stageDetails,
         Account: accountsname,
         AccountId: accountId,
         visibilityForClient:job.showinclientportal,
