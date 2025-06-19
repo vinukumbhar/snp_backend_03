@@ -11,7 +11,7 @@ const {
     updateChatDescription,
     updateMessage,
     deleteMessage,
-    addClientTask,
+    addClientTask,updateChatFromClient,
     updateTaskCheckedStatus,getUnreadChatsWithLatestMessage,updateChatStatus,getUnreadChatsByAccountId,
 getUnreadMessages , markMessageAsRead,
   markAllMessagesAsRead
@@ -39,6 +39,11 @@ router.patch('/chatsaccountwise/:id', updateChats);
 router.get('/chatsaccountwise/isactivechat/:accountid/:isactive', getisactivechatAccountwise);
 
 router.patch('/chatsaccountwise/chatupdatemessage/:id', updateChatDescription);
+router.patch(
+  "/chatsaccountwise/chatmessagefromclient/:id",
+  updateChatFromClient
+);
+
 //update message
 router.patch('/chatsaccountwise/chatmessage/bymessageid/update', updateMessage)
 //delete msgs

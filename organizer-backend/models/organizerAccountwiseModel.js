@@ -149,6 +149,11 @@ const organizerAccountWiseSchema = new mongoose.Schema(
     status: {
       type: String,
     },
+
+    completedby: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User", // 👈 Replace with actual model name for clients
+  },
   },
   { timestamps: true }
 );

@@ -705,6 +705,58 @@ const updateOrganizerAccountWise = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+const transporter = require("../middleware/nodemailer.js");
+const User = require("../models/userModel.js")
+const updateOrganizerAndNotify = async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ error: "Invalid OrganizerAccountWise ID" });
+  }
+
+  try {
+    // Update organizer fields
+    await OrganizerAccountWise.findByIdAndUpdate(id, { ...req.body });
+
+    // Re-fetch with populated client and account info
+    const updatedOrganizerAccountWise = await OrganizerAccountWise.findById(id)
+      // .populate("organizer.completedby")
+      .populate({ path: "completedby", model: "User" })
+      .populate({ path: "accountid", model: "Accounts" }); // Assuming you have a ref to Account
+
+    if (!updatedOrganizerAccountWise) {
+      return res.status(404).json({ error: "No such OrganizerAccountWise" });
+    }
+console.log("updatedOrganizerAccountWise",updatedOrganizerAccountWise)
+    const completedByUsername =
+      updatedOrganizerAccountWise.completedby?.username || "Unknown User";
+    const accountName =
+      updatedOrganizerAccountWise.accountid?.accountName || "Unknown Account";
+
+    // ✅ Send email to admin
+    await transporter.sendMail({
+      from: `<${process.env.EMAIL}>`,
+      to: process.env.ADMIN_EMAIL,
+      subject: `#Organizer completed by ${completedByUsername}`,
+      html: `
+        <p><strong>Account:</strong> ${accountName}</p>
+        <p><strong>Completed by:</strong> ${completedByUsername}</p>
+        <p><strong>Status:</strong> Organizer marked as completed</p>
+      `,
+    });
+
+    res.status(200).json({
+      message: "Organizer updated and admin notified",
+      completedByUsername,
+      accountName,
+      updatedOrganizerAccountWise,
+    });
+  } catch (error) {
+    console.error("Error sending email:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 const updateOrganizerAccountWiseStatus = async (req, res) => {
   const { id, issubmited } = req.params;
 
@@ -778,4 +830,5 @@ module.exports = {
   updateOrganizerAccountWiseStatus,
   getActiveOrganizerByAccountId,getPendingOrganizersByAccountId,
   updateFormElementActiveStatus,
+  updateOrganizerAndNotify
 };

@@ -1,85 +1,93 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const messageschema = new mongoose.Schema({
-    message: {
-        type: String,
-    },
-    fromwhome : {
-        type: String,
-        
-    },
-    senderid: {
-       type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-    },
-    time: {
-        type: Date,
-        default: Date.now, // Automatically set the current time when the document is created
-    },
-    replyTo: {
-        type: mongoose.Schema.Types.ObjectId,
-        default: null,
-    },
-    isRead: {
-        type: Boolean,
-        default: false, // Initially false, set to true when the receiver reads it
-    },
+  message: {
+    type: String,
+  },
+  fromwhome: {
+    type: String,
+  },
+  senderid: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+  time: {
+    type: Date,
+    default: Date.now, // Automatically set the current time when the document is created
+  },
+  replyTo: {
+    type: mongoose.Schema.Types.ObjectId,
+    default: null,
+  },
+  isRead: {
+    type: Boolean,
+    default: false, // Initially false, set to true when the receiver reads it
+  },
 
+  // senderEmail: {
+  //   type: String,
+  // },
+  // senderName: {
+  //   type: String,
+  // },
 });
 
-const AccountwiseChatSchema = new mongoose.Schema({
+const AccountwiseChatSchema = new mongoose.Schema(
+  {
     accountid: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'account',
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Accounts",
     },
 
     chattemplateid: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'ChatTemplate',
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ChatTemplate",
     },
 
     templatename: {
-        type: String,
-       
+      type: String,
     },
     from: {
-        // type: mongoose.Schema.Types.ObjectId,
-         type: String,
+      // type: mongoose.Schema.Types.ObjectId,
+      type: String,
     },
 
     chatsubject: {
-        type: String,
+      type: String,
     },
 
-    description : [ messageschema ],
+    description: [messageschema],
     // chatstatus:{
     //     type: Boolean,
     //     default:false
     // },
-    
 
     sendreminderstoclient: {
-        type: Boolean,
+      type: Boolean,
     },
 
     daysuntilnextreminder: {
-        type: Number,
+      type: Number,
     },
 
     numberofreminders: {
-        type: Number,
+      type: Number,
     },
 
     clienttasks: {
-        type: Array
+      type: Array,
     },
-    
-    active: {
-        type: Boolean,
-        default: true
-    },
-  
-}, { timestamps: true });
 
-const AccountwiseChat = mongoose.model('AccountwiseChat', AccountwiseChatSchema);
+    active: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  { timestamps: true }
+);
+
+const AccountwiseChat = mongoose.model(
+  "AccountwiseChat",
+  AccountwiseChatSchema
+);
 module.exports = AccountwiseChat;

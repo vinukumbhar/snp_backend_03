@@ -835,6 +835,7 @@ const createProposalsAndElsAccounts = async (req, res) => {
         paymentterms,
         paymentduedate,
         paymentamount,
+        status,
         active
     } = req.body;
 
@@ -878,6 +879,7 @@ const createProposalsAndElsAccounts = async (req, res) => {
                 paymentterms,
                 paymentduedate,
                 paymentamount,
+                status,
                 active
             });
 
