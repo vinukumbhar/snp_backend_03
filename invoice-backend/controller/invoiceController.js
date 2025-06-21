@@ -136,7 +136,10 @@ const getInvoice = async (req, res) => {
   }
 
   try {
-    const invoice = await Invoice.findById(id);
+    const invoice = await Invoice.findById(id).populate({
+      path: "account",
+      model: "Accounts",
+    });
 
     if (!invoice) {
       return res.status(404).json({ error: "No such Invoice" });
@@ -762,6 +765,194 @@ const getPendingInvoicesByAccountId = async (req, res) => {
   }
 };
 
+
+const cron = require('node-cron');
+
+// Email transporter configuration
+const transporter = nodemailer.createTransport({
+    service: 'gmail', // or your email service
+    auth: {
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASSWORD
+    }
+});
+
+// Function to check overdue invoices and send reminders
+async function checkOverdueInvoicesAndSendReminders() {
+    try {
+        const now = new Date();
+        
+        // Find all pending invoices where due date has passed
+        const overdueInvoices = await Invoice.find({
+            invoiceStatus: 'Pending',
+            invoicedate: { $lt: now }
+        });
+
+        for (const invoice of overdueInvoices) {
+            const dueDate = new Date(invoice.invoicedate);
+            const daysOverdue = Math.floor((now - dueDate) / (1000 * 60 * 60 * 24));
+            
+            // Check if it's time to send a reminder based on daysuntilnextreminder
+            if (daysOverdue > 0 && daysOverdue % invoice.daysuntilnextreminder === 0) {
+                // Check if we haven't exceeded the numberOfreminder
+                const remindersSent = invoice.remindersSent || 0;
+                if (remindersSent < invoice.numberOfreminder) {
+                    await sendReminderEmail(invoice, daysOverdue, remindersSent + 1);
+                    
+                    // Update the invoice with the number of reminders sent
+                    invoice.remindersSent = remindersSent + 1;
+                    await invoice.save();
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error processing overdue invoices:', error);
+    }
+}
+
+// Function to send reminder emails
+// async function sendReminderEmail(invoice, daysOverdue, reminderNumber) {
+//     const totalAmount = invoice.summary.total;
+//     const dueDate = new Date(invoice.invoicedate).toLocaleDateString();
+    
+//     // Email content
+//     const mailOptions = {
+//         from: process.env.EMAIL,
+//         to: [process.env.ADMIN_EMAIL], // Client and admin emails
+//         subject: `#Reminder ${reminderNumber}: Invoice #${invoice.invoicenumber} Overdue`,
+//         html: `
+//             <h2>Invoice Overdue Reminder</h2>
+//             <p>This is a reminder that Invoice #${invoice.invoencumber} is overdue.</p>
+//             <p><strong>Due Date:</strong> ${dueDate}</p>
+//             <p><strong>Days Overdue:</strong> ${daysOverdue}</p>
+//             <p><strong>Amount Due:</strong> $${totalAmount.toFixed(2)}</p>
+//             <p><strong>Description:</strong> ${invoice.description}</p>
+//             <p>Please make the payment at your earliest convenience.</p>
+//             <p>This is reminder ${reminderNumber} of ${invoice.numberOfreminder}.</p>
+//         `
+//     };
+
+//     try {
+//         await transporter.sendMail(mailOptions);
+//         console.log(`Reminder ${reminderNumber} sent for invoice #${invoice.invoicenumber}`);
+//     } catch (error) {
+//         console.error(`Error sending reminder for invoice #${invoice.invoicenumber}:`, error);
+//     }
+// }
+
+// // Schedule the job to run daily at 9 AM
+// // cron.schedule('0 9 * * *', checkOverdueInvoicesAndSendReminders, {
+// //     scheduled: true,
+// //     timezone: "America/New_York" // Set your timezone
+// // });
+
+// // Schedule the job to run daily at 5:05 PM India Time (IST)
+// cron.schedule('52 17 * * *', checkOverdueInvoicesAndSendReminders, {
+//     scheduled: true,
+//     timezone: "Asia/Kolkata"  // India's timezone
+// });
+// console.log('Invoice reminder scheduler started...');
+
+// Verify email connection
+transporter.verify()
+    .then(() => console.log('✅ Email service ready'))
+    .catch(err => console.error('❌ Email setup failed:', err));
+
+async function checkAndNotifyOverdueInvoices() {
+    const now = new Date();
+    console.log(`\n[${now.toLocaleString()}] Checking overdue invoices...`);
+
+    try {
+        // Find invoices that are pending and past due
+        const overdueInvoices = await Invoice.find({
+            invoiceStatus: 'Overdue',
+            // invoicedate: { $lt: now }
+        }).populate({
+      path: "account",
+      model: "Accounts",
+    }); // Get account name
+
+        console.log(`Found ${overdueInvoices.length} overdue invoices`);
+
+        // Group by account for consolidated email
+        const accountsWithOverdueInvoices = {};
+        overdueInvoices.forEach(invoice => {
+            const accountName = invoice.account?.accountName || 'Unknown Account';
+            if (!accountsWithOverdueInvoices[accountName]) {
+                accountsWithOverdueInvoices[accountName] = [];
+            }
+            accountsWithOverdueInvoices[accountName].push({
+                number: invoice.invoicenumber,
+                amount: invoice.summary.total.toFixed(2),
+                dueDate: new Date(invoice.invoicedate).toLocaleDateString()
+            });
+        });
+
+        // Send one consolidated email to admin
+        if (Object.keys(accountsWithOverdueInvoices).length > 0) {
+            await sendOverdueAlertToAdmin(accountsWithOverdueInvoices);
+        } else {
+            console.log('No overdue invoices to notify');
+        }
+    } catch (error) {
+        console.error('Error processing invoices:', error);
+    }
+}
+
+async function sendOverdueAlertToAdmin(accountsWithInvoices) {
+    if (!process.env.ADMIN_EMAIL) {
+        console.error('ADMIN_EMAIL not configured');
+        return;
+    }
+
+    // Build email content
+    let emailHtml = `
+        <h2>Overdue Invoices Report</h2>
+        <p>The following invoices are currently overdue:</p>
+        <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
+            <tr>
+                <th>Account</th>
+                <th>Invoice #</th>
+                <th>Amount</th>
+                
+            </tr>
+    `;
+
+    for (const [accountName, invoices] of Object.entries(accountsWithInvoices)) {
+        invoices.forEach(invoice => {
+            emailHtml += `
+                <tr>
+                    <td>${accountName}</td>
+                    <td>${invoice.number}</td>
+                    <td>$${invoice.amount}</td>
+                   
+                </tr>
+            `;
+        });
+    }
+
+    emailHtml += `</table>`;
+
+    const mailOptions = {
+        from: `"Billing System" <${process.env.EMAIL}>`,
+        to: process.env.ADMIN_EMAIL,
+        subject: `Overdue Invoices Alert (${Object.keys(accountsWithInvoices).length} accounts)`,
+        html: emailHtml,
+        text: `Overdue invoices report is available in HTML format`
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log('Overdue invoice alert sent to admin');
+    } catch (error) {
+        console.error('Failed to send alert:', error);
+    }
+}
+
+// Run daily at 9 AM (adjust time as needed)
+cron.schedule('2 18 * * *', checkAndNotifyOverdueInvoices, {
+    timezone: "Asia/Kolkata"
+});
 module.exports = {
   getInvoiceCountByStatus,
   getInvoiceSummary,

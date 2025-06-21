@@ -250,9 +250,9 @@ app.post("/clientuploadedfiledocument", upload.single("file"), async (req, res) 
 
     // Send email notification to Admin
     const mailOptions = {
-      from: "youradminemail@gmail.com",   // Sender address
-      to: "adminrecipientemail@gmail.com", // Admin email address
-      subject: "New Document Uploaded",
+      from: `<${process.env.EMAIL}>`,   // Sender address
+      to: process.env.ADMIN_EMAIL, // Admin email address
+      subject: "#New Document Uploaded",
       html: `
         <h2>New Document Uploaded</h2>
         <p><strong>Account Name:</strong> ${accountName}</p>
