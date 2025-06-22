@@ -936,7 +936,7 @@ async function sendOverdueAlertToAdmin(accountsWithInvoices) {
     const mailOptions = {
         from: `"Billing System" <${process.env.EMAIL}>`,
         to: process.env.ADMIN_EMAIL,
-        subject: `Overdue Invoices Alert (${Object.keys(accountsWithInvoices).length} accounts)`,
+        subject: `#Overdue Invoices Alert (${Object.keys(accountsWithInvoices).length} accounts)`,
         html: emailHtml,
         text: `Overdue invoices report is available in HTML format`
     };
@@ -950,7 +950,7 @@ async function sendOverdueAlertToAdmin(accountsWithInvoices) {
 }
 
 // Run daily at 9 AM (adjust time as needed)
-cron.schedule('2 18 * * *', checkAndNotifyOverdueInvoices, {
+cron.schedule('21 10 * * *', checkAndNotifyOverdueInvoices, {
     timezone: "Asia/Kolkata"
 });
 module.exports = {

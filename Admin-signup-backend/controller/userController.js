@@ -248,7 +248,7 @@ const fs = require('fs');
 
 const adminSignup = async (req, res) => {
   const { username, email, password, role } = req.body;
-  console.log(req.body);
+  console.log("console",req.body);
 
   try {
     const user = await User.signup({ username, email, password, role });
@@ -258,9 +258,7 @@ const adminSignup = async (req, res) => {
   }
 };
 
-const adminInfo = async (req, res) => {
-  res.send("Hello World!");
-};
+
 
 //todo SOP api
 //GET all Users

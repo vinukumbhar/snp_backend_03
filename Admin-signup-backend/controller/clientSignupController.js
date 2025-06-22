@@ -36,10 +36,10 @@ const getClients = async (req, res) => {
   
     try {
       //check the email already exists
-      const existingClient = await Client.findOne({ email });
-      if (existingClient) {
-        return res.status(400).json({ message: "Client with this Email already exists" });
-      }
+      // const existingClient = await Client.findOne({ email });
+      // if (existingClient) {
+      //   return res.status(400).json({ message: "Client with this Email already exists" });
+      // }
   
       const client = await Client.create({
         firstName, middleName, lastName, accountName, phoneNumber, email, password, cpassword,userid, });
