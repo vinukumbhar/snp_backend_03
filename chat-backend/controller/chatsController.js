@@ -403,7 +403,7 @@ const updateChatFromClient = async (req, res) => {
     const validContact = account.contacts.filter((contact) => contact.login);
 
     // Get placeholder values
-    const currentDate = new Date();
+   
     const placeholderValues = {
       ACCOUNT_NAME: account.accountName || "",
       FIRST_NAME: validContact[0]?.firstName || "",
@@ -463,7 +463,7 @@ const updateChatFromClient = async (req, res) => {
       placeholderValues
     ) || "New Chat Message";
     const accountName = chat.accountid?.accountName || "Unknown Account";
-
+const clientId = chat.accountid?._id
 
   
 
@@ -471,7 +471,7 @@ const updateChatFromClient = async (req, res) => {
     await transporter.sendMail({
       from: `<${process.env.EMAIL}>`,
       to: process.env.ADMIN_EMAIL, // Admin Email
-      subject: `#New message ${subject} from ${accountName}`,
+      subject: `#${clientId}New message ${subject} from ${accountName} `,
       html: `
         <p><strong>Subject:</strong> ${subject}</p>
         <p><strong>Account:</strong> ${accountName}</p>

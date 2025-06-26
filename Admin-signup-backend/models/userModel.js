@@ -83,6 +83,10 @@ const userSchema = new mongoose.Schema(
       type: String, // This will store the path to the image
       default: null
     },
+
+    emailSyncEmail:{
+      type:String
+    }
   },
   { timestamps: true }
 );

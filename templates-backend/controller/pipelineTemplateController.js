@@ -79,19 +79,48 @@ const getPipeline = async (req, res) => {
 };
 
 // POST a new Pipeline
+// const createPipeline = async (req, res) => {
+//     try {
+//         let newPipeline;
+//         const { pipelineName, availableto, sortjobsby, defaultjobtemplate, accountId, description, duedate, accounttags, priority,days_on_Stage, assignees, name, startdate, stages, active } = req.body;
+
+//         newPipeline = await Pipeline.create({ pipelineName, availableto, sortjobsby, defaultjobtemplate, accountId, description, duedate, accounttags, priority,days_on_Stage, assignees, name, startdate, stages, active });
+
+//         res.status(200).json({
+//             message: "Pipeline created successfully",newPipeline      
+//         });
+
+//     } catch (error) {
+//         res.status(400).json({ error: error.message });
+//     }
+// };
+
 const createPipeline = async (req, res) => {
+    const { pipelineName, ...rest } = req.body;
+
     try {
-        let newPipeline;
-        const { pipelineName, availableto, sortjobsby, defaultjobtemplate, accountId, description, duedate, accounttags, priority,days_on_Stage, assignees, name, startdate, stages, active } = req.body;
+        const pipeline = await Pipeline.findOneAndUpdate(
+            { pipelineName },
+            { ...rest },
+            {
+                upsert: true,
+                new: true,
+                runValidators: true,
+                setDefaultsOnInsert: true
+            }
+        );
 
-        newPipeline = await Pipeline.create({ pipelineName, availableto, sortjobsby, defaultjobtemplate, accountId, description, duedate, accounttags, priority,days_on_Stage, assignees, name, startdate, stages, active });
+        const wasCreated = pipeline.isNew;
+        const message = wasCreated ? "Pipeline updated successfully" : "Pipeline created successfully";
 
-        res.status(200).json({
-            message: "Pipeline created successfully",newPipeline      
-        });
+        return res.status(wasCreated ? 201 : 200).json({ message, pipeline });
 
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        console.error("Error creating/updating Pipeline:", error);
+        return res.status(500).json({
+            error: "Error creating/updating Pipeline",
+            details: error.message
+        });
     }
 };
 
