@@ -906,33 +906,49 @@ async function sendOverdueAlertToAdmin(accountsWithInvoices) {
     }
 
     // Build email content
-    let emailHtml = `
-        <h2>Overdue Invoices Report</h2>
-        <p>The following invoices are currently overdue:</p>
-        <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
-            <tr>
-                <th>Account</th>
-                <th>Invoice #</th>
-                <th>Amount</th>
+    // let emailHtml = `
+    //     <h2>Overdue Invoices Report</h2>
+    //     <p>The following invoices are currently overdue:</p>
+    //     <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
+    //         <tr>
+    //             <th>Account</th>
+    //             <th>Invoice #</th>
+    //             <th>Amount</th>
                 
-            </tr>
-    `;
+    //         </tr>
+    // `;
 
-    for (const [accountName, invoices] of Object.entries(accountsWithInvoices)) {
-        invoices.forEach(invoice => {
-            emailHtml += `
-                <tr>
-                    <td>${accountName}</td>
-                    <td>${invoice.number}</td>
-                    <td>$${invoice.amount}</td>
+    // for (const [accountName, invoices] of Object.entries(accountsWithInvoices)) {
+    //     invoices.forEach(invoice => {
+    //         emailHtml += `
+    //             <tr>
+    //                 <td>${accountName}</td>
+    //                 <td>${invoice.number}</td>
+    //                 <td>$${invoice.amount}</td>
                    
-                </tr>
-            `;
-        });
-    }
+    //             </tr>
+    //         `;
+    //     });
+    // }
 
-    emailHtml += `</table>`;
+    // emailHtml += `</table>`;
+let emailHtml = `
+    <h2>Overdue Invoices Report</h2>
+    <p>The following invoices are currently overdue:</p>
+`;
 
+for (const [accountName, invoices] of Object.entries(accountsWithInvoices)) {
+    invoices.forEach(invoice => {
+        emailHtml += `
+            <p>
+                <strong>Account:</strong> ${accountName}<br>
+                <strong>Invoice #:</strong> ${invoice.number}<br>
+                <strong>Amount:</strong> $${invoice.amount}
+            </p>
+            <hr>
+        `;
+    });
+}
     const mailOptions = {
         from: `"Billing System" <${process.env.EMAIL}>`,
         to: process.env.ADMIN_EMAIL,
@@ -950,7 +966,7 @@ async function sendOverdueAlertToAdmin(accountsWithInvoices) {
 }
 
 // Run daily at 9 AM (adjust time as needed)
-cron.schedule('21 10 * * *', checkAndNotifyOverdueInvoices, {
+cron.schedule('05 5 * * *', checkAndNotifyOverdueInvoices, {
     timezone: "Asia/Kolkata"
 });
 module.exports = {

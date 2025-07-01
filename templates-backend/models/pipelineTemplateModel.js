@@ -83,6 +83,10 @@ const pipelineSchema = new mongoose.Schema(
       type: Boolean,
       default: false, // Provide a default value if needed
     },
+    clientFacing_status: {
+      type: Boolean,
+      default: false, // Provide a default value if needed
+    },
 
     startdate: {
       type: Boolean,

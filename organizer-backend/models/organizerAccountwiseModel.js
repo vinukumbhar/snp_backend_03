@@ -5,6 +5,9 @@ const SectionSettingConditionSchema = new mongoose.Schema({
     type: String,
     // required: true,
   },
+    questionId:{
+type: Number
+  },
   answer: {
     type: String,
 
