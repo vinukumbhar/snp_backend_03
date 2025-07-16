@@ -215,5 +215,35 @@ const downloadFile = async (req, res) => {
     return res.status(500).json({ message: "Internal server error." });
   }
 };
+const deleteFile = async (req, res) => {
+  const { accountId, filename } = req.params;
 
-module.exports = { getFilesByAccountId,uploadFileInFirm,createFolderInFirm,updatePermissions,downloadFile };
+  try {
+    // Find the file document in the database
+    const fileDoc = await File.findOne({ accountId, filename });
+
+    if (!fileDoc) {
+      return res.status(404).json({ message: "File record not found in database." });
+    }
+
+    const absolutePath = path.join( "../", fileDoc.filePath);
+
+    // Delete file from filesystem
+    if (fs.existsSync(absolutePath)) {
+      await fs.promises.unlink(absolutePath);
+    } else {
+      console.warn("File not found in filesystem:", absolutePath);
+    }
+
+    // Delete file document from database
+    await File.deleteOne({ _id: fileDoc._id });
+
+    return res.status(200).json({ message: "File deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting file:", error);
+    return res.status(500).json({ message: "Server error while deleting file." });
+  }
+};
+
+
+module.exports = { getFilesByAccountId,uploadFileInFirm,createFolderInFirm,updatePermissions,downloadFile,deleteFile };

@@ -1011,8 +1011,7 @@ const createProposalsAndElsAccounts = async (req, res) => {
                              `,
                 };
 
-                // <p>${username} has sent the following for your review and signature:</p>
-                // <p><a href="${proposalLink}">${proposalLink}</a></p>
+
                 await transporter.sendMail(mailOptions);
                 console.log(`Email sent to ${contact.email}`);
             }
@@ -1233,7 +1232,108 @@ const getPendingProposalsByAccountId = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+// const signProposal = async (req, res) => {
+//   try {
+//     const { signature, signedAt } = req.body;
+//     const { id } = req.params;
+    
+//     console.log("Signing proposal ID:", id);
+//     console.log("Signature data:", { signature, signedAt });
 
+//     const updatedProposal = await ProposalesandelsAccountwise.findByIdAndUpdate(
+//       id, // Use the ID from URL params
+//       {
+//         $set: {
+//           signature,
+//           signedAt: new Date(signedAt),
+//           status: 'Signed'
+//         }
+//       },
+//       { new: true }
+//     );
+
+//     console.log("Updated proposal:", updatedProposal);
+
+//     if (!updatedProposal) {
+//       console.error("Proposal not found with ID:", id);
+//       return res.status(404).json({ 
+//         success: false,
+//         message: 'Proposal not found' 
+//       });
+//     }
+
+//     res.status(200).json({
+//       success: true,
+//       data: updatedProposal,
+//       message: 'Proposal signed successfully'
+//     });
+//   } catch (error) {
+//     console.error('Error signing proposal:', error);
+//     res.status(500).json({ 
+//       success: false,
+//       message: 'Server error',
+//       error: error.message 
+//     });
+//   }
+// };
+
+const signProposal = async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ error: "Invalid Proposal ID" });
+  }
+
+  try {
+    const { signature, signedAt, signedBy } = req.body;
+
+    // Update the proposal with signature details
+    await ProposalesandelsAccountwise.findByIdAndUpdate(id, {
+      $set: {
+        signature,
+        signedAt: new Date(signedAt),
+        signedBy,
+        status: "Signed",
+      },
+    });
+
+    // Re-fetch the updated proposal with populated references
+    const updatedProposal = await ProposalesandelsAccountwise.findById(id)
+      .populate({ path: "signedBy", model: "User" })
+      .populate({ path: "accountid", model: "Accounts" });
+
+    if (!updatedProposal) {
+      return res.status(404).json({ error: "Proposal not found" });
+    }
+
+    console.log("Updated proposal:", updatedProposal);
+
+    const completedByUsername = updatedProposal.signedBy?.username || "Unknown User";
+    const accountName = updatedProposal.accountid?.accountName || "Unknown Account";
+
+    // Send email to admin
+    await transporter.sendMail({
+      from: `<${process.env.EMAIL}>`,
+      to: process.env.ADMIN_EMAIL,
+      subject: `#Proposal signed by ${completedByUsername}`,
+      html: `
+        <p><strong>Account:</strong> ${accountName}</p>
+        <p><strong>Signed by:</strong> ${completedByUsername}</p>
+        <p><strong>Status:</strong> Proposal is signed successfully</p>
+      `,
+    });
+
+    res.status(200).json({
+      message: "Proposal signed and admin notified",
+      completedByUsername,
+      accountName,
+      updatedProposal,
+    });
+  } catch (error) {
+    console.error("Error signing proposal:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
 module.exports = {
   createProposalsAndElsAccounts,
   getProposalesAndElsAccountswise,
@@ -1245,5 +1345,5 @@ module.exports = {
   getProposalandElsList,
   getProposalesAndElsAccountwisePrint,
   getPendingProposalesAndElsAccountswise,
-  getPendingProposalsByAccountId
+  getPendingProposalsByAccountId,signProposal
 };

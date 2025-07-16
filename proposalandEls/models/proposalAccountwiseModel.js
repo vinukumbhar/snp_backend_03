@@ -174,6 +174,17 @@ const proposalesandelsAccountwiseSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    signature: {
+      type: String, // This will store the base64 encoded signature image
+    },
+    signedAt: {
+      type: Date,
+    },
+    signedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
   },
   { timestamps: true }
 );

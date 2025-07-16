@@ -199,10 +199,10 @@ router.get('/login-with-token/:email', async (req, res) => {
 
     const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
 
-    // ✅ Get profile
+    //  Get profile
     const profile = await gmail.users.getProfile({ userId: 'me' });
 
-    // ✅ Get list of messages from inbox
+    //  Get list of messages from inbox
     const messageListResponse = await gmail.users.messages.list({
       userId: 'me',
       labelIds: ['INBOX'],
@@ -211,7 +211,7 @@ router.get('/login-with-token/:email', async (req, res) => {
 
     const messages = messageListResponse.data.messages || [];
 
-    // ✅ Fetch subject/snippet for each message
+    //  Fetch subject/snippet for each message
     const messageDetails = await Promise.all(
       messages.map(async (msg) => {
         const fullMsg = await gmail.users.messages.get({
@@ -226,7 +226,7 @@ router.get('/login-with-token/:email', async (req, res) => {
         const subject = headers.find(h => h.name === 'Subject')?.value || '(No Subject)';
         const from = headers.find(h => h.name === 'From')?.value || '(No Sender)';
 
-         // ✅ Extract body
+         //  Extract body
     let body = '';
 
     const getBodyFromPayload = (payload) => {
