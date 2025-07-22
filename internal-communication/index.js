@@ -17,7 +17,7 @@ app.use("/api/internalchat", internalChatRoutes);
 dbconnect()
 
 // Start the server
-const port = process.env.PORT || 8016;
+const port = process.env.PORT || 8017;
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
